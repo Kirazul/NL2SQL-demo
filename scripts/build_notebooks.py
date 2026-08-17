@@ -857,6 +857,24 @@ and sorted into three tiers.
 
 **That is the whole scalability argument.** Adding ten million rows adds nothing to
 the index. If a column outgrows the limit it moves to tier B and stores *less*.
+
+### Three ways to look a word up
+
+Tried in this order, each covering what the previous one cannot:
+
+1. **full-text search** (SQLite FTS5) on the tier-A index, with prefix matching, so
+   `"aspirin"*` reaches `ASPIRIN EC 81 MG PO TBEC`. All the words first, any of them
+   only if that returns nothing — otherwise "acute renal failure" brings back
+   everything containing "acute";
+2. **on-demand scan** for tier B — a bounded `LIKE` against the real column. Nothing
+   stored, so it works on a table of any size;
+3. **fuzzy scan** for misspellings (`rapidfuzz`). `asspirin` matches no token at all,
+   so steps 1 and 2 retrieve nothing and there is nothing to score. This one compares
+   the word against the entire vocabulary — the only complete list of what the
+   database contains, and it stays correct when the data changes. It is the expensive
+   path, 2 to 35 ms, and it only runs on a total miss. The bar is deliberately higher
+   there: when everything is a candidate, a loose threshold returns a confident-looking
+   match for any input at all.
 """)
     code(nb, """
 from hybridsql.db import value_index
@@ -870,9 +888,15 @@ print(f"  values stored          {s['values_indexed']:,}")
 print(f"  index size             {s['size_mb']} MB")
 print(f"  ceiling, any row count {total * value_index.VOCABULARY_LIMIT * 83 / 1e6:.0f} MB\\n")
 
-for mention in ["aspirin", "asspirin"]:
+for mention in ["aspirin", "asspirin", "Skilled Nursing Facility"]:
     hit = value_index.search(mention, limit=1)[0]
-    print(f"  {mention:<12}-> {hit.ref:<26}{hit.value!r}  ({hit.score:.2f})")
+    print(f"  {mention:<26}-> tier {hit.tier}  {hit.ref:<28}{hit.value!r}  ({hit.score:.2f})")
+
+from hybridsql.resources import glossary
+terms = glossary.load()
+print(f"
+  glossary: {len(terms)} business terms written by hand, e.g."
+      f" {list(terms)[0]} -> {terms[list(terms)[0]].columns[0]}")
 """)
 
     md(nb, """
@@ -928,6 +952,16 @@ Column names in a real database are glued-together words — `labname`, `routead
 are trying to stay independent of, so matching runs on **character trigrams**
 instead: `administration routes` and `medication.routeadmin` share `rou`, `out`,
 `ute`, `adm`, `dmi`. No dictionary, no model, 2 ms, and it works on any schema.
+
+Two other sources feed the same score. **The glossary** (`config/glossary.yaml`) is
+the only hand-written mapping in the system — about thirty business terms to the
+columns they mean. It exists for what cannot be derived: nothing in the schema says
+that *mortality* means `patient.hospitaldischargestatus`, or that `*offset` columns
+are in minutes. It also carries the business notes attached to the prompt. And
+**head words** — "diagnosis *names*", "discharge *status*" — are derived from the
+schema itself: a suffix shared by at least three column names that is not a table
+name, which yields `name`, `value`, `text`, `type`, `path`, `label`, `status`
+without anyone writing them down.
 """)
     code(nb, """
 from hybridsql.db import catalog
