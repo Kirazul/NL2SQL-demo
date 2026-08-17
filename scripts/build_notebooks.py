@@ -163,14 +163,25 @@ SECRETS = {
 REQUIRED = {{REQUIRED}}
 
 
+WHY = {}          # label -> why it could not be read, when it could not
+
+
 def secret(label, default=""):
-    """One secret, by label. Kaggle grants access per notebook, not per account."""
+    """One secret, by label. Kaggle grants access per notebook, not per account.
+
+    The reason a lookup failed is kept rather than swallowed: "not attached to
+    this notebook" and "the backend refused" both end as an empty string, and
+    without the reason the two are indistinguishable from the output.
+    """
     if ON_KAGGLE:
         try:
             from kaggle_secrets import UserSecretsClient
-            return UserSecretsClient().get_secret(label) or default
-        except Exception:
-            pass
+            value = UserSecretsClient().get_secret(label)
+            if value:
+                return value
+            WHY[label] = "Kaggle returned an empty value"
+        except Exception as error:
+            WHY[label] = f"{type(error).__name__}: {str(error)[:110]}"
     return os.environ.get(label, default)
 
 
@@ -203,6 +214,11 @@ def load_secrets(project=None):
         else:
             state = "-"
         print(f"  {label:<20}{state:<10}{purpose}")
+
+    if WHY:
+        print("\\n  why a secret could not be read")
+        for label, reason in WHY.items():
+            print(f"    {label:<20}{reason}")
 
     absent = [l for l in REQUIRED if not os.environ.get(l)]
     if absent:
