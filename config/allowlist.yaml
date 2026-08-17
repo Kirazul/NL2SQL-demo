@@ -74,6 +74,33 @@ grammar:
   - doing, badly, well, problems, problem, something, anything, interesting
   - data, wrong, right, overview, summary, numbers, look, ones, price, weather
   - please, note, example, instance, such, like, overall, respectively, non
+  # --- The vocabulary of asking a database a question -------------------------
+  # Added after measuring the gate in the other direction: 11 of 28 realistic
+  # analytical questions were refused, every one of them on a word like these.
+  # They are here for the reason the whole block exists — they are closed class
+  # and domain independent. "How many X records are associated with each Y" is the
+  # same sentence against a hospital, a bank or a warehouse; none of these words
+  # can name a drug. `scripts/measure_gate.py` reports what adding them costs, and
+  # `tests/test_egress_gate.py` fails the build if any of them is ever also a whole
+  # stored value — which is the only way one of them could hide a datum.
+  - record, records, entry, entries, row, rows, item, items, line, lines
+  - associated, associate, related, relate, linked, correspond, corresponding
+  - belong, belongs, belonging, contained, containing, holds, held
+  - unique, individual, single, separate, respective, various
+  - name, names, label, labels, category, categories, kind, kinds, types
+  - sign, signs, measurement, measurements, reading, readings, observations
+  - administration, routes, frequencies, doses
+  # `stay`, `visit` and `episode` are deliberately NOT here: they name a business
+  # object of this database, the glossary declares them, and making them grammar
+  # turned "length of stay" into a quantity with no significant word left.
+  - histories, result, results, test, tests, measure, measures, measured
+  - charting, charted, logged, registered, stored, listed, existing
+  - database, field, fields, attribute, attributes, entity, entities
+  - patients, hospitals, cases
+  # Spelled-out numerals. A bare `12` is already allowed as question grammar; the
+  # word "one" was not, so "at least one laboratory record" was refused. Same
+  # class, same argument — see `carries_information` in the gate.
+  - zero, one, two, three, four, five, six, seven, eight, nine, ten
 
 # --- SQL keywords -------------------------------------------------------------
 # The cloud model returns SQL, and the repair loop sends its own query back for

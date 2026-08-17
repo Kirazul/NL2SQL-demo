@@ -39,6 +39,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Literal
 
+from hybridsql.db import catalog
 from hybridsql.db.value_index import FoundValue, search
 from hybridsql.providers import extractor
 from hybridsql.resources import glossary
@@ -283,13 +284,37 @@ def _classify(mention: str, entity_type: str = "") -> Kind:
     covered = {w for m in glossary.recognize(mention) for w in m.trigger.split()}
     if all(w in covered for w in significant):
         return "concept"
+
+    # A mention whose head word is column-shaped names a column, whatever the
+    # glossary knows: "diagnosis names", "drug names", "discharge status". The
+    # rule is derived from the schema, not written down — see
+    # `db/catalog.head_words`. Placed after the exact-value test so that a stored
+    # value ending in such a word is still a value.
+    if catalog.names_a_column(mention):
+        return "concept"
     return "value"
 
 
 def _concept_column(mention: str) -> str | None:
-    """The main column a concept designates, for prompt scoping."""
+    """The main column a concept designates, for prompt scoping.
+
+    The glossary and the catalogue are combined rather than ranked one above the
+    other, because each is right about a different thing. The glossary knows which
+    columns are *business relevant* — it is a declaration, and it lists
+    `medication.drugname` ahead of the four other tables that also store a drug
+    name. The catalogue knows which of those columns the analyst actually **named**.
+
+    Taking the glossary's first column alone got "hospital region" wrong: the term
+    `hospital` lists `hospital.hospitalid` first, so a question about regions was
+    scoped to the identifier. Ranking the glossary's own candidates by how well each
+    matches the words typed keeps both answers.
+    """
     columns = glossary.columns_for(mention)
-    return columns[0] if columns else None
+    if columns:
+        scores = {m.ref: m.score for m in catalog.link(mention, limit=len(catalog.cards()))}
+        return max(columns, key=lambda c: (scores.get(c, 0.0), -columns.index(c)))
+    match = catalog.best(mention)
+    return match.ref if match else None
 
 
 def _scope(entity: extractor.Entity, default: list[str]) -> list[str]:
@@ -414,7 +439,14 @@ def _resolve(entity: extractor.Entity, scope: list[str]) -> Resolution:
                     break
 
     if not found:
-        return Resolution(entity.text, entity.type, None, None, 0.0)
+        return Resolution(
+            entity.text,
+            entity.type,
+            None,
+            _concept_column(entity.text),
+            0.0,
+            kind="concept" if catalog.best(entity.text) else "value",
+        )
 
     best, *others = found
     # The out-of-scope penalty exists because a *fuzzy* hit in an unexpected
@@ -423,11 +455,39 @@ def _resolve(entity: extractor.Entity, scope: list[str]) -> Resolution:
     # column the entity type predicted says the type guess was off, not that the
     # value is wrong. Penalising it dropped a perfect match to 0.70 and refused
     # the question.
-    penalised = out_of_scope and best.score < 1.0
+    #
+    # "Exact" now means the value equals the mention, not that the scorer returned
+    # 1.00. The two used to be conflated, and `_similarity` handed out 1.00 for a
+    # partial hit, so a wrong resolution in a wrong column escaped the penalty by
+    # scoring perfectly.
+    exact = str(best.value).strip().lower() == mention.strip().lower()
+    penalised = out_of_scope and not exact
     score = best.score * (OUT_OF_SCOPE_PENALTY if penalised else 1.0)
 
+    # The arbitration: does this mention match a **column** better than a value?
+    #
+    # Without it the index always wins, because a fuzzy search over thirty thousand
+    # values never comes back empty. Measured, before: "diagnosis names" resolved to
+    # `pasthistory.pasthistoryvalue = 'clinical diagnosis'` at 0.75 — confident
+    # enough to be masked, so the cloud model was told to filter on it, and a
+    # question asking for the ten most frequent diagnoses came back with one row.
+    #
+    # An exact match is never overruled: if the analyst typed a stored value
+    # verbatim, it is a value, whatever else it resembles.
+    column = catalog.best(mention)
+    if column and not exact and column.score >= score:
+        return Resolution(
+            mention=mention,
+            type=entity.type,
+            value=None,
+            column=column.ref,
+            score=0.0,
+            kind="concept",
+            alternatives=(f"{best.ref} = {best.value} ({score:.2f}, not used)",),
+        )
+
     return Resolution(
-        mention=entity.text,
+        mention=mention,
         type=entity.type,
         value=best.value,
         column=best.ref,

@@ -1,30 +1,30 @@
 {
  "standard": {
   "questions": 79,
-  "expected_values": 81,
-  "extraction_recall_pct": 93.8,
-  "resolution_accuracy_pct": 100.0,
-  "resolution_end_to_end_pct": 93.8,
+  "expected_values": 82,
+  "extraction_recall_pct": 98.8,
+  "resolution_accuracy_pct": 95.1,
+  "resolution_end_to_end_pct": 93.9,
   "concepts_evaluated": 43,
-  "kind_accuracy_pct": 93.0,
+  "kind_accuracy_pct": 97.7,
   "expected_names": 0,
   "names_protected_pct": 0.0,
-  "full_understanding_pct": 91.1,
-  "correct_questions": 72,
-  "median_ms": 183.7,
-  "p95_ms": 456.2,
+  "full_understanding_pct": 92.4,
+  "correct_questions": 73,
+  "median_ms": 280.6,
+  "p95_ms": 377.9,
   "details": [
    {
     "question": "How many patients received aspirin?",
     "correct": true,
-    "ms": 8760.8,
+    "ms": 9433.6,
     "problems": [],
     "resolutions": [
      {
       "mention": "aspirin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "aspirin",
+      "value": "ASPIRIN",
       "score": 1.0
      }
     ]
@@ -32,14 +32,14 @@
    {
     "question": "How many patients were treated with vancomycin?",
     "correct": true,
-    "ms": 185.9,
+    "ms": 310.2,
     "problems": [],
     "resolutions": [
      {
       "mention": "vancomycin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "vancomycin",
+      "value": "VANCOMYCIN",
       "score": 1.0
      }
     ]
@@ -47,7 +47,7 @@
    {
     "question": "List patients who received insulin during their stay",
     "correct": true,
-    "ms": 183.7,
+    "ms": 275.7,
     "problems": [],
     "resolutions": [
      {
@@ -62,14 +62,14 @@
    {
     "question": "Which patients were given heparin?",
     "correct": true,
-    "ms": 176.3,
+    "ms": 280.6,
     "problems": [],
     "resolutions": [
      {
       "mention": "heparin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "heparin",
+      "value": "HEPARIN",
       "score": 1.0
      }
     ]
@@ -77,14 +77,14 @@
    {
     "question": "Count patients on warfarin",
     "correct": true,
-    "ms": 169.9,
+    "ms": 275.1,
     "problems": [],
     "resolutions": [
      {
       "mention": "warfarin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "warfarin",
+      "value": "WARFARIN",
       "score": 1.0
      }
     ]
@@ -92,14 +92,14 @@
    {
     "question": "How many patients received furosemide?",
     "correct": true,
-    "ms": 176.7,
+    "ms": 285.3,
     "problems": [],
     "resolutions": [
      {
       "mention": "furosemide",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "furosemide",
+      "value": "FUROSEMIDE",
       "score": 1.0
      }
     ]
@@ -107,14 +107,14 @@
    {
     "question": "Show patients treated with propofol",
     "correct": true,
-    "ms": 167.4,
+    "ms": 270.8,
     "problems": [],
     "resolutions": [
      {
       "mention": "propofol",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "propofol",
+      "value": "PROPOFOL",
       "score": 1.0
      }
     ]
@@ -122,7 +122,7 @@
    {
     "question": "Which drugs were most often prescribed?",
     "correct": true,
-    "ms": 166.5,
+    "ms": 274.5,
     "problems": [],
     "resolutions": [
      {
@@ -137,13 +137,13 @@
    {
     "question": "How many patients were diagnosed with sepsis?",
     "correct": true,
-    "ms": 177.6,
+    "ms": 291.0,
     "problems": [],
     "resolutions": [
      {
       "mention": "diagnosed",
-      "kind": "concept",
-      "column": "diagnosis.diagnosisstring",
+      "kind": "quantity",
+      "column": null,
       "value": null,
       "score": 0.0
      },
@@ -159,7 +159,7 @@
    {
     "question": "Count patients with acute renal failure",
     "correct": true,
-    "ms": 211.1,
+    "ms": 348.6,
     "problems": [],
     "resolutions": [
      {
@@ -174,7 +174,7 @@
    {
     "question": "How many patients had pneumonia?",
     "correct": true,
-    "ms": 171.0,
+    "ms": 274.7,
     "problems": [],
     "resolutions": [
      {
@@ -189,14 +189,14 @@
    {
     "question": "List patients diagnosed with atrial fibrillation",
     "correct": true,
-    "ms": 167.7,
+    "ms": 280.9,
     "problems": [],
     "resolutions": [
      {
       "mention": "atrial fibrillation",
       "kind": "value",
-      "column": "pasthistory.pasthistoryvalue",
-      "value": "atrial fibrillation - chronic",
+      "column": "diagnosis.diagnosisstring",
+      "value": "cardiovascular|arrhythmias|atrial fibrillation",
       "score": 1.0
      }
     ]
@@ -204,7 +204,7 @@
    {
     "question": "How many patients presented with cardiac arrest?",
     "correct": true,
-    "ms": 173.8,
+    "ms": 503.8,
     "problems": [],
     "resolutions": [
      {
@@ -219,14 +219,14 @@
    {
     "question": "Count patients with diabetes",
     "correct": true,
-    "ms": 182.4,
+    "ms": 268.7,
     "problems": [],
     "resolutions": [
      {
       "mention": "diabetes",
       "kind": "value",
-      "column": "pasthistory.pasthistoryvalue",
-      "value": "insulin dependent diabetes",
+      "column": "diagnosis.diagnosisstring",
+      "value": "endocrine|glucose metabolism|diabetes mellitus",
       "score": 1.0
      }
     ]
@@ -234,14 +234,14 @@
    {
     "question": "How many patients suffered a stroke?",
     "correct": true,
-    "ms": 183.9,
+    "ms": 319.0,
     "problems": [],
     "resolutions": [
      {
       "mention": "stroke",
       "kind": "value",
-      "column": "pasthistory.pasthistoryvalue",
-      "value": "stroke - remote",
+      "column": "diagnosis.diagnosisstring",
+      "value": "neurologic|disorders of vasculature|stroke",
       "score": 1.0
      }
     ]
@@ -249,7 +249,7 @@
    {
     "question": "How many cultures grew Klebsiella pneumoniae?",
     "correct": true,
-    "ms": 170.3,
+    "ms": 409.7,
     "problems": [],
     "resolutions": [
      {
@@ -271,7 +271,7 @@
    {
     "question": "Which patients had Staphylococcus aureus?",
     "correct": true,
-    "ms": 164.7,
+    "ms": 346.0,
     "problems": [],
     "resolutions": [
      {
@@ -286,13 +286,13 @@
    {
     "question": "Count cultures positive for Escherichia coli",
     "correct": true,
-    "ms": 167.4,
+    "ms": 323.2,
     "problems": [],
     "resolutions": [
      {
       "mention": "Count cultures",
       "kind": "concept",
-      "column": "microlab.organism",
+      "column": "microlab.culturesite",
       "value": null,
       "score": 0.0
      },
@@ -308,16 +308,24 @@
    {
     "question": "What is the average potassium level?",
     "correct": false,
-    "ms": 207.4,
+    "ms": 279.5,
     "problems": [
-     "not extracted: 'potassium'"
+     "'potassium' -> admissiondrug.drugname (expected: lab.labname|medication.drugname|intakeoutput.celllabel)"
     ],
-    "resolutions": []
+    "resolutions": [
+     {
+      "mention": "potassium",
+      "kind": "value",
+      "column": "admissiondrug.drugname",
+      "value": "POTASSIUM",
+      "score": 1.0
+     }
+    ]
    },
    {
     "question": "Show the creatinine results for patients",
     "correct": true,
-    "ms": 171.5,
+    "ms": 282.1,
     "problems": [],
     "resolutions": [
      {
@@ -332,7 +340,7 @@
    {
     "question": "What is the average glucose value?",
     "correct": false,
-    "ms": 173.4,
+    "ms": 277.3,
     "problems": [
      "not extracted: 'glucose'"
     ],
@@ -340,16 +348,18 @@
    },
    {
     "question": "Average hemoglobin per hospital",
-    "correct": true,
-    "ms": 181.6,
-    "problems": [],
+    "correct": false,
+    "ms": 322.4,
+    "problems": [
+     "'hemoglobin' confidently resolved to lab.labname (0.87) although no value matches"
+    ],
     "resolutions": [
      {
       "mention": "hemoglobin",
       "kind": "value",
-      "column": "diagnosis.diagnosisstring",
-      "value": "hematology|bleeding and red blood cell disorders|disorders of hemoglobin|sickle cell disease",
-      "score": 0.7
+      "column": "lab.labname",
+      "value": "Methemoglobin",
+      "score": 0.8696
      },
      {
       "mention": "hospital",
@@ -363,30 +373,30 @@
    {
     "question": "How many female patients are there?",
     "correct": true,
-    "ms": 173.8,
+    "ms": 279.6,
     "problems": [],
     "resolutions": [
      {
-      "mention": "female patients",
+      "mention": "female",
       "kind": "value",
       "column": "patient.gender",
       "value": "Female",
-      "score": 0.8333
+      "score": 1.0
      }
     ]
    },
    {
     "question": "Count male patients admitted to the ICU",
     "correct": true,
-    "ms": 176.3,
+    "ms": 287.0,
     "problems": [],
     "resolutions": [
      {
-      "mention": "male patients",
+      "mention": "male",
       "kind": "value",
       "column": "patient.gender",
       "value": "Male",
-      "score": 0.75
+      "score": 1.0
      },
      {
       "mention": "ICU",
@@ -400,11 +410,11 @@
    {
     "question": "How many Caucasian patients were admitted?",
     "correct": true,
-    "ms": 179.8,
+    "ms": 303.3,
     "problems": [],
     "resolutions": [
      {
-      "mention": "Caucasian patients",
+      "mention": "Caucasian",
       "kind": "value",
       "column": "patient.ethnicity",
       "value": "Caucasian",
@@ -422,20 +432,20 @@
    {
     "question": "What is the mortality rate by hospital region?",
     "correct": true,
-    "ms": 167.2,
+    "ms": 293.0,
     "problems": [],
     "resolutions": [
      {
       "mention": "mortality rate",
       "kind": "concept",
-      "column": "patient.hospitaldischargestatus",
+      "column": "apachepatientresult.actualicumortality",
       "value": null,
       "score": 0.0
      },
      {
       "mention": "hospital region",
       "kind": "concept",
-      "column": "hospital.hospitalid",
+      "column": "hospital.region",
       "value": null,
       "score": 0.0
      }
@@ -444,14 +454,14 @@
    {
     "question": "What is the average length of stay?",
     "correct": true,
-    "ms": 174.3,
+    "ms": 278.4,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "How many patients died in the hospital?",
     "correct": true,
-    "ms": 184.1,
+    "ms": 272.6,
     "problems": [],
     "resolutions": [
      {
@@ -466,35 +476,35 @@
    {
     "question": "Average ICU length of stay per unit type",
     "correct": true,
-    "ms": 172.6,
+    "ms": 284.4,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "How many patients were discharged home?",
     "correct": true,
-    "ms": 171.1,
+    "ms": 377.9,
     "problems": [],
     "resolutions": [
      {
-      "mention": "discharged home",
+      "mention": "home",
       "kind": "value",
       "column": "patient.hospitaldischargelocation",
       "value": "Home",
-      "score": 0.8571
+      "score": 1.0
      }
     ]
    },
    {
     "question": "How many hospitals are there?",
     "correct": true,
-    "ms": 171.2,
+    "ms": 275.0,
     "problems": [],
     "resolutions": [
      {
       "mention": "hospitals",
-      "kind": "concept",
-      "column": "hospital.hospitalid",
+      "kind": "quantity",
+      "column": null,
       "value": null,
       "score": 0.0
      }
@@ -503,13 +513,13 @@
    {
     "question": "Count patients per hospital region",
     "correct": true,
-    "ms": 172.2,
+    "ms": 275.8,
     "problems": [],
     "resolutions": [
      {
       "mention": "hospital region",
       "kind": "concept",
-      "column": "hospital.hospitalid",
+      "column": "hospital.region",
       "value": null,
       "score": 0.0
      }
@@ -518,7 +528,7 @@
    {
     "question": "How many patients stayed in a MICU?",
     "correct": true,
-    "ms": 177.9,
+    "ms": 278.1,
     "problems": [],
     "resolutions": [
      {
@@ -533,7 +543,7 @@
    {
     "question": "List teaching hospitals",
     "correct": true,
-    "ms": 192.4,
+    "ms": 267.9,
     "problems": [],
     "resolutions": [
      {
@@ -548,7 +558,7 @@
    {
     "question": "What is the average APACHE score?",
     "correct": true,
-    "ms": 184.9,
+    "ms": 279.6,
     "problems": [],
     "resolutions": [
      {
@@ -563,7 +573,7 @@
    {
     "question": "Show patients with the highest severity score",
     "correct": true,
-    "ms": 185.4,
+    "ms": 283.5,
     "problems": [],
     "resolutions": [
      {
@@ -578,7 +588,7 @@
    {
     "question": "How many patients underwent hemodialysis?",
     "correct": true,
-    "ms": 187.9,
+    "ms": 274.1,
     "problems": [],
     "resolutions": [
      {
@@ -593,13 +603,13 @@
    {
     "question": "Count patients who were intubated",
     "correct": true,
-    "ms": 175.6,
+    "ms": 277.1,
     "problems": [],
     "resolutions": [
      {
       "mention": "intubated",
-      "kind": "concept",
-      "column": "respiratorycare.airwaytype",
+      "kind": "quantity",
+      "column": null,
       "value": null,
       "score": 0.0
      }
@@ -608,7 +618,7 @@
    {
     "question": "How many patients received mechanical ventilation?",
     "correct": true,
-    "ms": 182.4,
+    "ms": 289.1,
     "problems": [],
     "resolutions": [
      {
@@ -623,7 +633,7 @@
    {
     "question": "How many patients are allergic to penicillin?",
     "correct": true,
-    "ms": 188.6,
+    "ms": 291.3,
     "problems": [],
     "resolutions": [
      {
@@ -637,7 +647,7 @@
       "mention": "penicillin",
       "kind": "value",
       "column": "allergy.allergyname",
-      "value": "penicillin",
+      "value": "PENICILLIN",
       "score": 1.0
      }
     ]
@@ -645,14 +655,14 @@
    {
     "question": "List patients with a history of hypertension",
     "correct": true,
-    "ms": 179.3,
+    "ms": 286.0,
     "problems": [],
     "resolutions": [
      {
       "mention": "hypertension",
       "kind": "value",
-      "column": "pasthistory.pasthistoryvalue",
-      "value": "hypertension requiring treatment",
+      "column": "diagnosis.diagnosisstring",
+      "value": "cardiovascular|vascular disorders|hypertension",
       "score": 1.0
      }
     ]
@@ -660,14 +670,14 @@
    {
     "question": "How many patients received aspirin for sepsis?",
     "correct": true,
-    "ms": 173.8,
+    "ms": 286.4,
     "problems": [],
     "resolutions": [
      {
       "mention": "aspirin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "aspirin",
+      "value": "ASPIRIN",
       "score": 1.0
      },
      {
@@ -682,13 +692,13 @@
    {
     "question": "What is the mortality rate for patients treated with vancomycin?",
     "correct": true,
-    "ms": 199.8,
+    "ms": 293.4,
     "problems": [],
     "resolutions": [
      {
       "mention": "mortality rate",
       "kind": "concept",
-      "column": "patient.hospitaldischargestatus",
+      "column": "apachepatientresult.actualicumortality",
       "value": null,
       "score": 0.0
      },
@@ -696,7 +706,7 @@
       "mention": "vancomycin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "vancomycin",
+      "value": "VANCOMYCIN",
       "score": 1.0
      }
     ]
@@ -704,7 +714,7 @@
    {
     "question": "Average length of stay for patients with Klebsiella pneumoniae",
     "correct": true,
-    "ms": 184.0,
+    "ms": 286.7,
     "problems": [],
     "resolutions": [
      {
@@ -719,15 +729,15 @@
    {
     "question": "How many female patients received insulin?",
     "correct": true,
-    "ms": 186.9,
+    "ms": 284.6,
     "problems": [],
     "resolutions": [
      {
-      "mention": "female patients",
+      "mention": "female",
       "kind": "value",
       "column": "patient.gender",
       "value": "Female",
-      "score": 0.8333
+      "score": 1.0
      },
      {
       "mention": "insulin",
@@ -741,29 +751,29 @@
    {
     "question": "Count patients with diabetes who were prescribed metformin",
     "correct": true,
-    "ms": 190.3,
+    "ms": 296.5,
     "problems": [],
     "resolutions": [
      {
       "mention": "diabetes",
       "kind": "value",
-      "column": "pasthistory.pasthistoryvalue",
-      "value": "insulin dependent diabetes",
+      "column": "diagnosis.diagnosisstring",
+      "value": "endocrine|glucose metabolism|diabetes mellitus",
       "score": 1.0
      },
      {
       "mention": "metformin",
       "kind": "value",
-      "column": "allergy.allergyname",
-      "value": "metformin",
-      "score": 0.7
+      "column": "medication.drugname",
+      "value": "METFORMIN HCL 500 MG PO TABS",
+      "score": 1.0
      }
     ]
    },
    {
     "question": "What medications did patient 141764 receive?",
     "correct": true,
-    "ms": 209.2,
+    "ms": 288.8,
     "problems": [],
     "resolutions": [
      {
@@ -775,18 +785,27 @@
      },
      {
       "mention": "patient 141764",
-      "kind": "person",
-      "column": null,
+      "kind": "concept",
+      "column": "patient.patientunitstayid",
       "value": null,
       "score": 0.0
+     },
+     {
+      "mention": "141764",
+      "kind": "quantity",
+      "column": null,
+      "value": "141764",
+      "score": 1.0
      }
     ]
    },
    {
     "question": "List all lab results for stay 143870",
-    "correct": true,
-    "ms": 179.4,
-    "problems": [],
+    "correct": false,
+    "ms": 287.4,
+    "problems": [
+     "'143870' confidently resolved to None (1.00) although no value matches"
+    ],
     "resolutions": [
      {
       "mention": "lab results",
@@ -794,13 +813,20 @@
       "column": "lab.labname",
       "value": null,
       "score": 0.0
+     },
+     {
+      "mention": "143870",
+      "kind": "quantity",
+      "column": null,
+      "value": "143870",
+      "score": 1.0
      }
     ]
    },
    {
     "question": "What was the diagnosis of patient 002-1039?",
     "correct": true,
-    "ms": 172.4,
+    "ms": 297.7,
     "problems": [],
     "resolutions": [
      {
@@ -812,17 +838,31 @@
      },
      {
       "mention": "patient 002-1039",
-      "kind": "person",
-      "column": null,
+      "kind": "concept",
+      "column": "patient.patientunitstayid",
       "value": null,
       "score": 0.0
+     },
+     {
+      "mention": "002",
+      "kind": "quantity",
+      "column": null,
+      "value": "002",
+      "score": 1.0
+     },
+     {
+      "mention": "1039",
+      "kind": "quantity",
+      "column": null,
+      "value": "1039",
+      "score": 1.0
      }
     ]
    },
    {
     "question": "Which patients with sepsis received vancomycin and died in the ICU?",
     "correct": true,
-    "ms": 185.5,
+    "ms": 302.2,
     "problems": [],
     "resolutions": [
      {
@@ -836,7 +876,7 @@
       "mention": "vancomycin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "vancomycin",
+      "value": "VANCOMYCIN",
       "score": 1.0
      },
      {
@@ -851,21 +891,21 @@
    {
     "question": "List patients who received both aspirin and heparin",
     "correct": true,
-    "ms": 441.8,
+    "ms": 282.3,
     "problems": [],
     "resolutions": [
      {
       "mention": "aspirin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "aspirin",
+      "value": "ASPIRIN",
       "score": 1.0
      },
      {
       "mention": "heparin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "heparin",
+      "value": "HEPARIN",
       "score": 1.0
      }
     ]
@@ -873,7 +913,7 @@
    {
     "question": "Which patients had a Staphylococcus aureus culture and were treated with vancomycin?",
     "correct": true,
-    "ms": 512.0,
+    "ms": 295.0,
     "problems": [],
     "resolutions": [
      {
@@ -894,7 +934,7 @@
       "mention": "vancomycin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "vancomycin",
+      "value": "VANCOMYCIN",
       "score": 1.0
      }
     ]
@@ -902,21 +942,21 @@
    {
     "question": "Count female patients with diabetes admitted from the Emergency Department",
     "correct": true,
-    "ms": 442.2,
+    "ms": 306.1,
     "problems": [],
     "resolutions": [
      {
-      "mention": "female patients",
+      "mention": "female",
       "kind": "value",
       "column": "patient.gender",
       "value": "Female",
-      "score": 0.8333
+      "score": 1.0
      },
      {
       "mention": "diabetes",
       "kind": "value",
-      "column": "pasthistory.pasthistoryvalue",
-      "value": "insulin dependent diabetes",
+      "column": "diagnosis.diagnosisstring",
+      "value": "endocrine|glucose metabolism|diabetes mellitus",
       "score": 1.0
      },
      {
@@ -931,7 +971,7 @@
    {
     "question": "Which patients in the MICU received propofol and were intubated?",
     "correct": true,
-    "ms": 456.2,
+    "ms": 372.0,
     "problems": [],
     "resolutions": [
      {
@@ -939,19 +979,19 @@
       "kind": "value",
       "column": "patient.unittype",
       "value": "MICU",
-      "score": 0.7
+      "score": 1.0
      },
      {
       "mention": "propofol",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "propofol",
+      "value": "PROPOFOL",
       "score": 1.0
      },
      {
       "mention": "intubated",
-      "kind": "concept",
-      "column": "respiratorycare.airwaytype",
+      "kind": "quantity",
+      "column": null,
       "value": null,
       "score": 0.0
      }
@@ -960,7 +1000,7 @@
    {
     "question": "List patients admitted from the Operating Room who developed pneumonia",
     "correct": true,
-    "ms": 411.5,
+    "ms": 291.1,
     "problems": [],
     "resolutions": [
      {
@@ -982,7 +1022,7 @@
    {
     "question": "Which Caucasian patients with atrial fibrillation received warfarin?",
     "correct": true,
-    "ms": 378.5,
+    "ms": 294.9,
     "problems": [],
     "resolutions": [
      {
@@ -995,15 +1035,15 @@
      {
       "mention": "atrial fibrillation",
       "kind": "value",
-      "column": "pasthistory.pasthistoryvalue",
-      "value": "atrial fibrillation - chronic",
+      "column": "diagnosis.diagnosisstring",
+      "value": "cardiovascular|arrhythmias|atrial fibrillation",
       "score": 1.0
      },
      {
       "mention": "warfarin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "warfarin",
+      "value": "WARFARIN",
       "score": 1.0
      }
     ]
@@ -1011,13 +1051,13 @@
    {
     "question": "How many patients were discharged to a Skilled Nursing Facility?",
     "correct": true,
-    "ms": 432.4,
+    "ms": 283.0,
     "problems": [],
     "resolutions": [
      {
       "mention": "discharged",
-      "kind": "concept",
-      "column": "patient.hospitaldischargelocation",
+      "kind": "quantity",
+      "column": null,
       "value": null,
       "score": 0.0
      },
@@ -1033,7 +1073,7 @@
    {
     "question": "List patients transferred to Rehabilitation after their ICU stay",
     "correct": true,
-    "ms": 398.7,
+    "ms": 291.4,
     "problems": [],
     "resolutions": [
      {
@@ -1041,7 +1081,7 @@
       "kind": "value",
       "column": "patient.hospitaldischargelocation",
       "value": "Rehabilitation",
-      "score": 0.7
+      "score": 1.0
      },
      {
       "mention": "ICU",
@@ -1055,7 +1095,7 @@
    {
     "question": "How many patients came from Other Hospital?",
     "correct": true,
-    "ms": 366.7,
+    "ms": 159.7,
     "problems": [],
     "resolutions": [
      {
@@ -1069,11 +1109,9 @@
    },
    {
     "question": "Count patients admitted from the Floor to a Neuro ICU",
-    "correct": false,
-    "ms": 389.0,
-    "problems": [
-     "not extracted: 'Floor'"
-    ],
+    "correct": true,
+    "ms": 140.8,
+    "problems": [],
     "resolutions": [
      {
       "mention": "admitted",
@@ -1088,17 +1126,21 @@
       "column": "patient.unittype",
       "value": "Neuro ICU",
       "score": 1.0
+     },
+     {
+      "mention": "floor",
+      "kind": "value",
+      "column": "patient.hospitaladmitsource",
+      "value": "Floor",
+      "score": 1.0
      }
     ]
    },
    {
     "question": "Compare mortality between teaching and non-teaching hospitals",
-    "correct": false,
-    "ms": 601.8,
-    "problems": [
-     "'teaching' treated as a value -> admissiondx.admitdxname",
-     "'hospitals' treated as a value -> admissiondx.admitdxname"
-    ],
+    "correct": true,
+    "ms": 134.7,
+    "problems": [],
     "resolutions": [
      {
       "mention": "mortality",
@@ -1109,17 +1151,17 @@
      },
      {
       "mention": "non-teaching hospitals",
-      "kind": "value",
-      "column": "admissiondx.admitdxname",
-      "value": "non-Q",
-      "score": 0.6222
+      "kind": "concept",
+      "column": "hospital.teachingstatus",
+      "value": null,
+      "score": 0.0
      }
     ]
    },
    {
     "question": "Compare length of stay between the Midwest and the South regions",
     "correct": true,
-    "ms": 450.1,
+    "ms": 129.7,
     "problems": [],
     "resolutions": [
      {
@@ -1141,7 +1183,7 @@
    {
     "question": "Is mortality higher in hospitals with fewer than 100 beds?",
     "correct": true,
-    "ms": 427.9,
+    "ms": 129.9,
     "problems": [],
     "resolutions": [
      {
@@ -1153,17 +1195,24 @@
      },
      {
       "mention": "hospitals",
-      "kind": "concept",
-      "column": "hospital.hospitalid",
+      "kind": "quantity",
+      "column": null,
       "value": null,
       "score": 0.0
+     },
+     {
+      "mention": "100",
+      "kind": "quantity",
+      "column": null,
+      "value": "100",
+      "score": 1.0
      }
     ]
    },
    {
     "question": "Which unit type has the highest mortality?",
     "correct": true,
-    "ms": 405.0,
+    "ms": 116.8,
     "problems": [],
     "resolutions": [
      {
@@ -1177,11 +1226,9 @@
    },
    {
     "question": "Which organisms were Resistant to vancomycin?",
-    "correct": false,
-    "ms": 441.3,
-    "problems": [
-     "not extracted: 'Resistant'"
-    ],
+    "correct": true,
+    "ms": 120.6,
+    "problems": [],
     "resolutions": [
      {
       "mention": "organisms",
@@ -1194,18 +1241,23 @@
       "mention": "vancomycin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "vancomycin",
+      "value": "VANCOMYCIN",
+      "score": 1.0
+     },
+     {
+      "mention": "resistant",
+      "kind": "value",
+      "column": "microlab.sensitivitylevel",
+      "value": "Resistant",
       "score": 1.0
      }
     ]
    },
    {
     "question": "List cultures Sensitive to ciprofloxacin",
-    "correct": false,
-    "ms": 367.1,
-    "problems": [
-     "not extracted: 'Sensitive'"
-    ],
+    "correct": true,
+    "ms": 126.1,
+    "problems": [],
     "resolutions": [
      {
       "mention": "cultures",
@@ -1217,8 +1269,15 @@
      {
       "mention": "ciprofloxacin",
       "kind": "value",
-      "column": "microlab.antibiotic",
-      "value": "ciprofloxacin",
+      "column": "medication.drugname",
+      "value": "CIPROFLOXACIN IN D5W 400 MG/200ML IV SOLN",
+      "score": 1.0
+     },
+     {
+      "mention": "sensitive",
+      "kind": "value",
+      "column": "microlab.sensitivitylevel",
+      "value": "Sensitive",
       "score": 1.0
      }
     ]
@@ -1226,7 +1285,7 @@
    {
     "question": "Which culture sites grew Escherichia coli?",
     "correct": true,
-    "ms": 372.6,
+    "ms": 126.8,
     "problems": [],
     "resolutions": [
      {
@@ -1240,22 +1299,31 @@
    },
    {
     "question": "What was the average potassium level for patients who received furosemide?",
-    "correct": true,
-    "ms": 370.5,
-    "problems": [],
+    "correct": false,
+    "ms": 149.1,
+    "problems": [
+     "'potassium' -> allergy.drugname (expected: lab.labname|medication.drugname|intakeoutput.celllabel)"
+    ],
     "resolutions": [
      {
       "mention": "potassium level",
       "kind": "value",
-      "column": "lab.labname",
-      "value": "potassium",
-      "score": 0.7
+      "column": "allergy.drugname",
+      "value": "AMOXICILLIN/POTASSIUM CLAVULANATE",
+      "score": 0.5793
      },
      {
       "mention": "furosemide",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "furosemide",
+      "value": "FUROSEMIDE",
+      "score": 1.0
+     },
+     {
+      "mention": "potassium",
+      "kind": "value",
+      "column": "admissiondrug.drugname",
+      "value": "POTASSIUM",
       "score": 1.0
      }
     ]
@@ -1263,7 +1331,7 @@
    {
     "question": "Show creatinine results for patients who underwent hemodialysis",
     "correct": true,
-    "ms": 213.0,
+    "ms": 124.1,
     "problems": [],
     "resolutions": [
      {
@@ -1285,7 +1353,7 @@
    {
     "question": "What is the average Hgb for patients with sickle cell disease?",
     "correct": true,
-    "ms": 204.8,
+    "ms": 132.0,
     "problems": [],
     "resolutions": [
      {
@@ -1293,13 +1361,13 @@
       "kind": "value",
       "column": "lab.labname",
       "value": "Hgb",
-      "score": 0.7
+      "score": 1.0
      },
      {
       "mention": "sickle cell disease",
       "kind": "value",
-      "column": "pasthistory.pasthistoryvalue",
-      "value": "sickle cell disease",
+      "column": "diagnosis.diagnosisstring",
+      "value": "hematology|bleeding and red blood cell disorders|disorders of hemoglobin|sickle cell disease",
       "score": 1.0
      }
     ]
@@ -1307,13 +1375,13 @@
    {
     "question": "How many patients have a Drug allergy?",
     "correct": true,
-    "ms": 179.4,
+    "ms": 128.5,
     "problems": [],
     "resolutions": [
      {
       "mention": "Drug allergy",
       "kind": "concept",
-      "column": "medication.drugname",
+      "column": "allergy.allergyname",
       "value": null,
       "score": 0.0
      }
@@ -1322,16 +1390,16 @@
    {
     "question": "List patients allergic to penicillin who still received an antibiotic",
     "correct": false,
-    "ms": 180.7,
+    "ms": 206.8,
     "problems": [
      "'antibiotic' treated as a value -> allergy.allergyname"
     ],
     "resolutions": [
      {
-      "mention": "allergic to penicillin",
+      "mention": "penicillin",
       "kind": "value",
       "column": "allergy.allergyname",
-      "value": "penicillin",
+      "value": "PENICILLIN",
       "score": 1.0
      },
      {
@@ -1346,7 +1414,7 @@
    {
     "question": "Which patient had the highest APACHE score?",
     "correct": true,
-    "ms": 181.9,
+    "ms": 114.9,
     "problems": [],
     "resolutions": [
      {
@@ -1361,7 +1429,7 @@
    {
     "question": "Show the diagnoses of the patient with the longest ICU stay",
     "correct": true,
-    "ms": 178.3,
+    "ms": 116.7,
     "problems": [],
     "resolutions": [
      {
@@ -1383,7 +1451,7 @@
    {
     "question": "Which hospital has the most admissions?",
     "correct": true,
-    "ms": 177.1,
+    "ms": 109.9,
     "problems": [],
     "resolutions": [
      {
@@ -1405,7 +1473,7 @@
    {
     "question": "What is the most frequently prescribed drug in the Cardiac ICU?",
     "correct": true,
-    "ms": 177.7,
+    "ms": 114.9,
     "problems": [],
     "resolutions": [
      {
@@ -1427,21 +1495,21 @@
    {
     "question": "List patients with a history of hypertension who received furosemide",
     "correct": true,
-    "ms": 182.4,
+    "ms": 116.2,
     "problems": [],
     "resolutions": [
      {
       "mention": "hypertension",
       "kind": "value",
-      "column": "pasthistory.pasthistoryvalue",
-      "value": "hypertension requiring treatment",
+      "column": "diagnosis.diagnosisstring",
+      "value": "cardiovascular|vascular disorders|hypertension",
       "score": 1.0
      },
      {
       "mention": "furosemide",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "furosemide",
+      "value": "FUROSEMIDE",
       "score": 1.0
      }
     ]
@@ -1449,7 +1517,7 @@
    {
     "question": "Which patients on home oxygen were readmitted?",
     "correct": true,
-    "ms": 211.6,
+    "ms": 118.8,
     "problems": [],
     "resolutions": [
      {
@@ -1461,7 +1529,7 @@
      },
      {
       "mention": "readmitted",
-      "kind": "value",
+      "kind": "quantity",
       "column": null,
       "value": null,
       "score": 0.0
@@ -1471,7 +1539,7 @@
    {
     "question": "Count patients who received a blood transfusion in the SICU",
     "correct": true,
-    "ms": 218.3,
+    "ms": 116.2,
     "problems": [],
     "resolutions": [
      {
@@ -1479,7 +1547,7 @@
       "kind": "value",
       "column": "treatment.treatmentstring",
       "value": "cardiovascular|shock|blood product administration|packed red blood cells|transfusion of 1-2 units prbc's",
-      "score": 0.7059
+      "score": 0.7857
      },
      {
       "mention": "SICU",
@@ -1496,21 +1564,21 @@
   "questions": 28,
   "expected_values": 21,
   "extraction_recall_pct": 100.0,
-  "resolution_accuracy_pct": 100.0,
-  "resolution_end_to_end_pct": 100.0,
-  "concepts_evaluated": 5,
-  "kind_accuracy_pct": 80.0,
+  "resolution_accuracy_pct": 90.5,
+  "resolution_end_to_end_pct": 90.5,
+  "concepts_evaluated": 4,
+  "kind_accuracy_pct": 100.0,
   "expected_names": 8,
   "names_protected_pct": 100.0,
-  "full_understanding_pct": 96.4,
-  "correct_questions": 27,
-  "median_ms": 173.4,
-  "p95_ms": 216.7,
+  "full_understanding_pct": 92.9,
+  "correct_questions": 26,
+  "median_ms": 119.2,
+  "p95_ms": 248.4,
   "details": [
    {
     "question": "Did Mr. Bensalah receive his insulin?",
     "correct": true,
-    "ms": 221.9,
+    "ms": 118.6,
     "problems": [],
     "resolutions": [
      {
@@ -1532,7 +1600,7 @@
    {
     "question": "What was Sarah Johnson's last potassium result?",
     "correct": true,
-    "ms": 190.8,
+    "ms": 121.0,
     "problems": [],
     "resolutions": [
      {
@@ -1543,7 +1611,7 @@
       "score": 0.0
      },
      {
-      "mention": "potassium result",
+      "mention": "potassium",
       "kind": "value",
       "column": "lab.labname",
       "value": "potassium",
@@ -1554,7 +1622,7 @@
    {
     "question": "Show me the chart for Ahmed Trabelsi",
     "correct": true,
-    "ms": 214.1,
+    "ms": 116.9,
     "problems": [],
     "resolutions": [
      {
@@ -1569,7 +1637,7 @@
    {
     "question": "Was Maria Gonzalez discharged home?",
     "correct": true,
-    "ms": 181.5,
+    "ms": 107.4,
     "problems": [],
     "resolutions": [
      {
@@ -1584,14 +1652,14 @@
       "kind": "value",
       "column": "patient.hospitaldischargelocation",
       "value": "Home",
-      "score": 0.8571
+      "score": 1.0
      }
     ]
    },
    {
     "question": "Which patients did Dr. Martinez treat in the SICU?",
     "correct": true,
-    "ms": 216.7,
+    "ms": 120.0,
     "problems": [],
     "resolutions": [
      {
@@ -1613,7 +1681,7 @@
    {
     "question": "Compare the outcomes of John Smith and Robert Williams",
     "correct": true,
-    "ms": 168.4,
+    "ms": 115.7,
     "problems": [],
     "resolutions": [
      {
@@ -1635,7 +1703,7 @@
    {
     "question": "Has Fatma Ben Ali been intubated?",
     "correct": true,
-    "ms": 165.7,
+    "ms": 115.7,
     "problems": [],
     "resolutions": [
      {
@@ -1647,8 +1715,8 @@
      },
      {
       "mention": "intubated",
-      "kind": "concept",
-      "column": "respiratorycare.airwaytype",
+      "kind": "quantity",
+      "column": null,
       "value": null,
       "score": 0.0
      }
@@ -1657,65 +1725,63 @@
    {
     "question": "Who is doing badly?",
     "correct": true,
-    "ms": 161.3,
+    "ms": 116.8,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "Any problems with the heart patients?",
-    "correct": false,
-    "ms": 173.4,
-    "problems": [
-     "'patients' treated as a value -> admissiondx.admitdxname"
-    ],
+    "correct": true,
+    "ms": 126.3,
+    "problems": [],
     "resolutions": [
      {
-      "mention": "heart patients",
+      "mention": "heart",
       "kind": "value",
-      "column": "admissiondx.admitdxname",
-      "value": "CHF, congestive heart failure",
-      "score": 0.6667
+      "column": "diagnosis.diagnosisstring",
+      "value": "transplant|s/p heart transplant|s/p heart transplant",
+      "score": 1.0
      }
     ]
    },
    {
     "question": "Show me something interesting about the data",
     "correct": true,
-    "ms": 176.5,
+    "ms": 112.7,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "What went wrong last month?",
     "correct": true,
-    "ms": 165.1,
+    "ms": 119.5,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "Give me an overview",
     "correct": true,
-    "ms": 204.2,
+    "ms": 114.0,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "Are the numbers normal?",
     "correct": true,
-    "ms": 190.7,
+    "ms": 115.8,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "Which cases should I look at first?",
     "correct": true,
-    "ms": 170.8,
+    "ms": 117.9,
     "problems": [],
     "resolutions": [
      {
       "mention": "cases",
-      "kind": "concept",
-      "column": "patient.patienthealthsystemstayid",
+      "kind": "quantity",
+      "column": null,
       "value": null,
       "score": 0.0
      }
@@ -1724,23 +1790,25 @@
    {
     "question": "How many patients got vanco?",
     "correct": true,
-    "ms": 169.4,
+    "ms": 114.4,
     "problems": [],
     "resolutions": [
      {
       "mention": "vanco",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "vancomycin",
+      "value": "VANCOCIN",
       "score": 1.0
      }
     ]
    },
    {
     "question": "Average K+ for septic patients",
-    "correct": true,
-    "ms": 181.3,
-    "problems": [],
+    "correct": false,
+    "ms": 121.1,
+    "problems": [
+     "'septic' confidently resolved to diagnosis.diagnosisstring (0.77) although no value matches"
+    ],
     "resolutions": [
      {
       "mention": "K+",
@@ -1754,14 +1822,14 @@
       "kind": "value",
       "column": "diagnosis.diagnosisstring",
       "value": "infectious diseases|skin, bone and joint infections|septic arthritis",
-      "score": 0.7333
+      "score": 0.7742
      }
     ]
    },
    {
     "question": "Any patients with afib on anticoagulation?",
     "correct": true,
-    "ms": 175.6,
+    "ms": 192.6,
     "problems": [],
     "resolutions": [
      {
@@ -1783,7 +1851,7 @@
    {
     "question": "Show BP readings for ICU patients",
     "correct": true,
-    "ms": 178.3,
+    "ms": 114.3,
     "problems": [],
     "resolutions": [
      {
@@ -1805,29 +1873,29 @@
    {
     "question": "How many pts were vented?",
     "correct": true,
-    "ms": 170.5,
+    "ms": 248.4,
     "problems": [],
     "resolutions": [
      {
       "mention": "pts",
       "kind": "value",
-      "column": null,
-      "value": null,
-      "score": 0.0
+      "column": "lab.labname",
+      "value": "PT",
+      "score": 0.56
      },
      {
       "mention": "vented",
       "kind": "value",
-      "column": null,
-      "value": null,
-      "score": 0.0
+      "column": "nursecharting.nursingchartvalue",
+      "value": "VENT",
+      "score": 0.56
      }
     ]
    },
    {
     "question": "Count the DNR patients",
     "correct": true,
-    "ms": 162.9,
+    "ms": 123.2,
     "problems": [],
     "resolutions": [
      {
@@ -1835,72 +1903,74 @@
       "kind": "value",
       "column": "careplangoal.cplgoalvalue",
       "value": "Older adult: Provide adequate time for patients to process new information",
-      "score": 0.56
+      "score": 0.5833
      }
     ]
    },
    {
     "question": "how many patietns recieved aspirn",
     "correct": true,
-    "ms": 178.0,
+    "ms": 260.4,
     "problems": [],
     "resolutions": [
      {
       "mention": "patietns",
       "kind": "value",
-      "column": null,
-      "value": null,
-      "score": 0.0
+      "column": "note.notevalue",
+      "value": "Patient",
+      "score": 0.56
      },
      {
       "mention": "aspirn",
       "kind": "value",
-      "column": null,
-      "value": null,
-      "score": 0.0
+      "column": "admissiondrug.drugname",
+      "value": "ASPIRIN",
+      "score": 0.6462
      }
     ]
    },
    {
     "question": "patients with sepssis and renal falure",
-    "correct": true,
-    "ms": 171.7,
-    "problems": [],
+    "correct": false,
+    "ms": 195.1,
+    "problems": [
+     "'renal falure' -> pasthistory.pasthistorypath (expected: diagnosis.diagnosisstring|admissiondx.admitdxname|treatment.treatmentstring|note.notevalue)"
+    ],
     "resolutions": [
      {
       "mention": "sepssis",
       "kind": "value",
-      "column": null,
-      "value": null,
-      "score": 0.0
+      "column": "apachepredvar.admitdiagnosis",
+      "value": "SEPSISGI",
+      "score": 0.56
      },
      {
       "mention": "renal falure",
       "kind": "value",
-      "column": "admissiondx.admitdxname",
-      "value": "Renal failure, acute",
-      "score": 0.9167
+      "column": "pasthistory.pasthistorypath",
+      "value": "notes/Progress Notes/Past History/Organ Systems/Renal  (R)/Renal Failure/renal failure - hemodialysis",
+      "score": 0.96
      }
     ]
    },
    {
     "question": "the ones who died, what did they have",
     "correct": true,
-    "ms": 173.4,
+    "ms": 117.9,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "vancomycin, how many, by unit, last year",
     "correct": true,
-    "ms": 173.2,
+    "ms": 119.2,
     "problems": [],
     "resolutions": [
      {
       "mention": "vancomycin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "vancomycin",
+      "value": "VANCOMYCIN",
       "score": 1.0
      }
     ]
@@ -1908,28 +1978,28 @@
    {
     "question": "I need the sepsis patients but only the ones in the MICU who also got vancomycin and died",
     "correct": true,
-    "ms": 212.7,
+    "ms": 137.8,
     "problems": [],
     "resolutions": [
      {
-      "mention": "sepsis patients",
+      "mention": "sepsis",
       "kind": "value",
-      "column": "admissiondx.admitdxname",
-      "value": "Sepsis, GI",
-      "score": 0.7059
+      "column": "diagnosis.diagnosisstring",
+      "value": "cardiovascular|shock / hypotension|sepsis",
+      "score": 1.0
      },
      {
       "mention": "MICU",
       "kind": "value",
       "column": "patient.unittype",
       "value": "MICU",
-      "score": 0.7
+      "score": 1.0
      },
      {
       "mention": "vancomycin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "vancomycin",
+      "value": "VANCOMYCIN",
       "score": 1.0
      }
     ]
@@ -1937,14 +2007,14 @@
    {
     "question": "What is the price of aspirin?",
     "correct": true,
-    "ms": 168.8,
+    "ms": 123.4,
     "problems": [],
     "resolutions": [
      {
       "mention": "aspirin",
       "kind": "value",
       "column": "medication.drugname",
-      "value": "aspirin",
+      "value": "ASPIRIN",
       "score": 1.0
      }
     ]
@@ -1952,7 +2022,7 @@
    {
     "question": "How many nurses work in the ICU?",
     "correct": true,
-    "ms": 160.1,
+    "ms": 120.9,
     "problems": [],
     "resolutions": [
      {
@@ -1967,15 +2037,556 @@
    {
     "question": "What is the weather today?",
     "correct": true,
-    "ms": 159.7,
+    "ms": 111.5,
     "problems": [],
     "resolutions": []
    }
   ]
  },
+ "analytics": {
+  "questions": 26,
+  "expected_values": 5,
+  "extraction_recall_pct": 100.0,
+  "resolution_accuracy_pct": 100.0,
+  "resolution_end_to_end_pct": 100.0,
+  "concepts_evaluated": 40,
+  "kind_accuracy_pct": 85.0,
+  "expected_names": 0,
+  "names_protected_pct": 0.0,
+  "full_understanding_pct": 84.6,
+  "correct_questions": 22,
+  "median_ms": 133.5,
+  "p95_ms": 279.8,
+  "details": [
+   {
+    "question": "How many patients received aspirin?",
+    "correct": true,
+    "ms": 108.1,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "aspirin",
+      "kind": "value",
+      "column": "medication.drugname",
+      "value": "ASPIRIN",
+      "score": 1.0
+     }
+    ]
+   },
+   {
+    "question": "What are the 10 most common drug names in the medication table?",
+    "correct": true,
+    "ms": 124.8,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "drug names",
+      "kind": "concept",
+      "column": "medication.drugname",
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "10",
+      "kind": "quantity",
+      "column": null,
+      "value": "10",
+      "score": 1.0
+     }
+    ]
+   },
+   {
+    "question": "What are the most common medication administration routes?",
+    "correct": false,
+    "ms": 118.4,
+    "problems": [
+     "'administration routes' -> medication.drugname (expected column: medication.routeadmin)"
+    ],
+    "resolutions": [
+     {
+      "mention": "medication administration routes",
+      "kind": "concept",
+      "column": "medication.drugname",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "What are the most common medication frequencies?",
+    "correct": true,
+    "ms": 117.1,
+    "problems": [],
+    "resolutions": []
+   },
+   {
+    "question": "What are the 10 most frequently recorded laboratory tests?",
+    "correct": true,
+    "ms": 119.6,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "10 most frequently recorded laboratory tests",
+      "kind": "concept",
+      "column": "lab.labname",
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "10",
+      "kind": "quantity",
+      "column": null,
+      "value": "10",
+      "score": 1.0
+     }
+    ]
+   },
+   {
+    "question": "How many laboratory records are associated with each patient ICU stay?",
+    "correct": true,
+    "ms": 136.2,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "laboratory records",
+      "kind": "concept",
+      "column": "lab.labname",
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "patient",
+      "kind": "concept",
+      "column": "patient.patientunitstayid",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "What are the 10 most common diagnosis names?",
+    "correct": true,
+    "ms": 125.3,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "diagnosis",
+      "kind": "concept",
+      "column": "diagnosis.diagnosisstring",
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "10",
+      "kind": "quantity",
+      "column": null,
+      "value": "10",
+      "score": 1.0
+     }
+    ]
+   },
+   {
+    "question": "How many diagnosis records are associated with each patient ICU stay?",
+    "correct": true,
+    "ms": 133.5,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "diagnosis records",
+      "kind": "concept",
+      "column": "diagnosis.diagnosisstring",
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "patient",
+      "kind": "concept",
+      "column": "patient.patientunitstayid",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "How many patients are admitted to each ICU unit type?",
+    "correct": true,
+    "ms": 134.3,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "ICU unit type",
+      "kind": "concept",
+      "column": "patient.unittype",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "What is the average height of patients?",
+    "correct": true,
+    "ms": 122.5,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "average height",
+      "kind": "concept",
+      "column": "patient.admissionheight",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "How many patients are male and female?",
+    "correct": true,
+    "ms": 111.2,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "male",
+      "kind": "value",
+      "column": "patient.gender",
+      "value": "Male",
+      "score": 1.0
+     },
+     {
+      "mention": "female",
+      "kind": "value",
+      "column": "patient.gender",
+      "value": "Female",
+      "score": 1.0
+     }
+    ]
+   },
+   {
+    "question": "How many patients belong to each ethnicity?",
+    "correct": true,
+    "ms": 117.2,
+    "problems": [],
+    "resolutions": []
+   },
+   {
+    "question": "How many patients are associated with each hospital?",
+    "correct": true,
+    "ms": 118.6,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "patients",
+      "kind": "quantity",
+      "column": null,
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "hospital",
+      "kind": "concept",
+      "column": "hospital.hospitalid",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "Which hospital has the most patient ICU stays?",
+    "correct": true,
+    "ms": 120.7,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "hospital",
+      "kind": "concept",
+      "column": "hospital.hospitalid",
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "ICU stays",
+      "kind": "concept",
+      "column": "patient.patientunitstayid",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "How many patients are in each hospital region?",
+    "correct": true,
+    "ms": 118.7,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "hospital region",
+      "kind": "concept",
+      "column": "hospital.region",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "How many periodic vital-sign records are associated with each patient ICU stay?",
+    "correct": false,
+    "ms": 140.1,
+    "problems": [
+     "'vital-sign records' treated as a value -> nursecharting.nursingchartcelltypecat",
+     "'periodic vital-sign records' treated as a value -> nursecharting.nursingchartcelltypecat"
+    ],
+    "resolutions": [
+     {
+      "mention": "vital-sign",
+      "kind": "value",
+      "column": "nursecharting.nursingchartcelltypecat",
+      "value": "Vital Signs",
+      "score": 0.63
+     },
+     {
+      "mention": "ICU stay",
+      "kind": "concept",
+      "column": "patient.patientunitstayid",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "How many periodic vital-sign records are in the database?",
+    "correct": false,
+    "ms": 125.0,
+    "problems": [
+     "'vital-sign records' treated as a value -> nursecharting.nursingchartcelltypecat",
+     "'periodic vital-sign records' treated as a value -> nursecharting.nursingchartcelltypecat"
+    ],
+    "resolutions": [
+     {
+      "mention": "vital-sign",
+      "kind": "value",
+      "column": "nursecharting.nursingchartcelltypecat",
+      "value": "Vital Signs",
+      "score": 0.63
+     }
+    ]
+   },
+   {
+    "question": "How many intake/output records are associated with each patient ICU stay?",
+    "correct": true,
+    "ms": 134.2,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "intake/output records",
+      "kind": "concept",
+      "column": "intakeoutput.cellpath",
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "ICU stay",
+      "kind": "concept",
+      "column": "patient.patientunitstayid",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "How many nursing charting records are associated with each patient ICU stay?",
+    "correct": true,
+    "ms": 152.5,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "nursing charting records",
+      "kind": "concept",
+      "column": "nursecharting.nursingchartcelltypevalname",
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "patient ICU stay",
+      "kind": "value",
+      "column": "careplangeneral.cplitemvalue",
+      "value": "Patient capable of communication",
+      "score": 0.7692
+     }
+    ]
+   },
+   {
+    "question": "Which patients have the largest number of nursing charting records?",
+    "correct": true,
+    "ms": 142.6,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "nursing charting records",
+      "kind": "concept",
+      "column": "nursecharting.nursingchartcelltypevalname",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "How many patients received aspirin and have at least one laboratory record?",
+    "correct": true,
+    "ms": 151.3,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "aspirin",
+      "kind": "value",
+      "column": "medication.drugname",
+      "value": "ASPIRIN",
+      "score": 1.0
+     },
+     {
+      "mention": "laboratory record",
+      "kind": "concept",
+      "column": "lab.labname",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "How many patients have both a diagnosis and a medication record?",
+    "correct": true,
+    "ms": 279.8,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "diagnosis",
+      "kind": "concept",
+      "column": "diagnosis.diagnosisstring",
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "medication record",
+      "kind": "concept",
+      "column": "medication.drugname",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "What is the average age of patients who received aspirin?",
+    "correct": true,
+    "ms": 280.1,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "average age",
+      "kind": "concept",
+      "column": "patient.age",
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "aspirin",
+      "kind": "value",
+      "column": "medication.drugname",
+      "value": "ASPIRIN",
+      "score": 1.0
+     }
+    ]
+   },
+   {
+    "question": "For each hospital, how many unique patients received medication?",
+    "correct": true,
+    "ms": 215.0,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "hospital",
+      "kind": "concept",
+      "column": "hospital.hospitalid",
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "unique patients",
+      "kind": "quantity",
+      "column": null,
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "medication",
+      "kind": "concept",
+      "column": "medication.drugname",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "Which hospitals have patients with the highest number of medication records?",
+    "correct": true,
+    "ms": 192.0,
+    "problems": [],
+    "resolutions": [
+     {
+      "mention": "hospitals",
+      "kind": "quantity",
+      "column": null,
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "medication records",
+      "kind": "concept",
+      "column": "medication.drugname",
+      "value": null,
+      "score": 0.0
+     }
+    ]
+   },
+   {
+    "question": "Give me the vital signs of patient 1234",
+    "correct": false,
+    "ms": 158.6,
+    "problems": [
+     "'vital signs' treated as a value -> nursecharting.nursingchartcelltypecat"
+    ],
+    "resolutions": [
+     {
+      "mention": "vital",
+      "kind": "value",
+      "column": "nursecharting.nursingchartcelltypecat",
+      "value": "Vital Signs",
+      "score": 0.7
+     },
+     {
+      "mention": "patient 1234",
+      "kind": "concept",
+      "column": "patient.patientunitstayid",
+      "value": null,
+      "score": 0.0
+     },
+     {
+      "mention": "1234",
+      "kind": "quantity",
+      "column": null,
+      "value": "1234",
+      "score": 1.0
+     },
+     {
+      "mention": "vital signs",
+      "kind": "value",
+      "column": "nursecharting.nursingchartcelltypecat",
+      "value": "Vital Signs",
+      "score": 1.0
+     }
+    ]
+   }
+  ]
+ },
  "overall": {
-  "questions": 107,
-  "correct_questions": 99,
-  "full_understanding_pct": 92.5
+  "questions": 133,
+  "correct_questions": 121,
+  "full_understanding_pct": 91.0
  }
 }

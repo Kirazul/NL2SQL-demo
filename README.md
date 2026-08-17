@@ -180,7 +180,7 @@ The interface is live only while a notebook session is running.
 
 ```
 src/hybridsql/
-  db/          schema reading, read-only connection, value index
+  db/          schema reading, read-only connection, value index, column catalogue
   pipeline/    understand > anonymize > generate > opaque > answer
   providers/   cloud (the only outbound socket), extractor, local model
   security/    egress gate, SQL validator, audit journal

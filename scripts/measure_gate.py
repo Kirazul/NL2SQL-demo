@@ -1,4 +1,19 @@
-"""Measure the egress gate against every value in the database.
+"""Measure the egress gate — in both directions.
+
+Why two measurements and not one
+--------------------------------
+A gate has two ways of being wrong, and optimising either one alone produces a
+useless system:
+
+- it **lets a value through** — a leak, which is what the first measurement counts;
+- it **refuses an ordinary question** — which is what the second one counts, and
+  what was missing. A gate that blocks everything scores a perfect leak rate and
+  gets switched off on first use. Measured before this was added: 11 of 28
+  realistic analytical questions were refused, every one of them on ordinary
+  English (`records`, `associated`, `one`, `unique`) that no database owns.
+
+So both numbers are printed together, and no change to the gate is justified by
+one of them alone.
 
 What this script produces
 -------------------------
@@ -32,6 +47,7 @@ import json
 import re
 import sqlite3
 import sys
+from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -63,6 +79,77 @@ def cause(value: str, identifiers: frozenset[str]) -> str:
     if any(w in identifiers for w in bearing):
         return "partially collides with a column name"
     return "allowlist vocabulary"
+
+
+QUESTION_SETS = (
+    Path("data/evaluation/questions_standard.yaml"),
+    Path("data/evaluation/questions_hard.yaml"),
+    Path("data/evaluation/questions_analytics.yaml"),
+)
+
+
+def load_questions() -> list[str]:
+    import yaml
+
+    questions: list[str] = []
+    for path in QUESTION_SETS:
+        if not path.exists():
+            continue
+        for case in yaml.safe_load(path.read_text(encoding="utf-8")) or ():
+            question = str(case.get("question") or "").strip()
+            if question:
+                questions.append(question)
+    return questions
+
+
+def refusal_rate() -> dict[str, object]:
+    """How often does the gate refuse a question that carries nothing to hide?
+
+    The whole pipeline is replayed, not just the gate: the question is understood,
+    its values are masked, and the segments that would actually be sent are the ones
+    checked. Checking the raw question instead would count every drug name as a
+    refusal, when masking is precisely what stops it from being one.
+
+    A question refused **because a person's name is in it** is not counted: that
+    refusal is the system working.
+    """
+    from hybridsql.pipeline import generate
+    from hybridsql.pipeline.anonymize import UnmaskableQuestion, anonymize
+    from hybridsql.pipeline.understand import understand
+
+    refused: list[tuple[str, tuple[str, ...]]] = []
+    tokens: Counter[str] = Counter()
+    checked = skipped = 0
+
+    for question in load_questions():
+        try:
+            understanding = understand(question)
+            masked = anonymize(understanding)
+        except UnmaskableQuestion:
+            skipped += 1
+            continue
+        except Exception:  # noqa: BLE001 — a broken question is not a gate verdict
+            skipped += 1
+            continue
+
+        checked += 1
+        bad: list[str] = []
+        for segment in generate.build_segments(understanding, masked):
+            verdict = gate.check_segment(segment, "measure")
+            if not verdict.allowed:
+                bad.extend(verdict.refused_tokens)
+        if bad:
+            refused.append((question, tuple(dict.fromkeys(bad))))
+            tokens.update(bad)
+
+    return {
+        "questions_checked": checked,
+        "questions_skipped": skipped,
+        "questions_refused": len(refused),
+        "refusal_rate_pct": round(100 * len(refused) / checked, 2) if checked else 0.0,
+        "tokens": tokens.most_common(),
+        "examples": [{"question": q, "refused": list(t)} for q, t in refused[:12]],
+    }
 
 
 def main() -> None:
@@ -102,12 +189,33 @@ def main() -> None:
         for example in items[:4]:
             print(f"      - {example[:56]}")
 
+    print()
+    print("=" * 72)
+    print("EGRESS GATE — refusal rate on questions that carry nothing to hide")
+    print("=" * 72)
+    refusals = refusal_rate()
+    print(f"{'Questions replayed end to end':<{width}} {refusals['questions_checked']:>8}")
+    print(f"{'  refused by the gate':<{width}} {refusals['questions_refused']:>8}"
+          f"  {refusals['refusal_rate_pct']:5.2f} %")
+    print(f"{'  not counted (a name, or unmaskable)':<{width}} {refusals['questions_skipped']:>8}")
+    if refusals["tokens"]:
+        print("\n  words the gate refused, most frequent first")
+        for token, n in refusals["tokens"][:15]:
+            print(f"      {n:>3}x  {token}")
+        print("\n  examples")
+        for case in refusals["examples"][:6]:
+            print(f"      {case['question'][:60]}")
+            print(f"          refused: {', '.join(case['refused'])}")
+    else:
+        print("\n  no ordinary question is refused.")
+
     report = Path("data/warehouse/gate_measurement.json")
     report.write_text(
         json.dumps(
             {
                 "allowlist_words": len(words),
                 "removed_words": len(gate.forbidden_words_extended()),
+                "value_token_vocabulary": len(gate.value_tokens()),
                 "values_tested": len(values),
                 "values_bearing": len(bearing),
                 "passed_all": len(passed_all),
@@ -115,6 +223,7 @@ def main() -> None:
                 "rate_all_pct": round(rate_all, 3),
                 "rate_bearing_pct": round(rate_bearing, 3),
                 "by_cause": {k: {"count": len(v), "examples": v[:12]} for k, v in causes.items()},
+                "questions": refusals,
             },
             indent=1,
             ensure_ascii=False,

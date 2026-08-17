@@ -86,6 +86,12 @@ NUMBER_RE = re.compile(r"^[-+]?\d+([.,]\d+)?%?$")
 # `intakeoutput.celllabel` holds whole sentences. Measured threshold, not theory.
 MAX_WORDS_SHORT_VALUE = 3
 
+# Numbers written out. Treated exactly like digits — see `carries_information`.
+NUMERALS = frozenset(
+    "zero one two three four five six seven eight nine ten "
+    "eleven twelve twenty thirty forty fifty hundred thousand".split()
+)
+
 Origin = Literal["authored", "template", "schema", "glossary", "question"]
 
 
@@ -469,19 +475,48 @@ BLOOM_THRESHOLD = 200_000
 
 @lru_cache(maxsize=1)
 def value_tokens() -> object:
-    """Every word appearing inside a stored value, as an O(1) membership test.
+    """Every word appearing inside a **short** stored value, as an O(1) membership test.
 
     This is what replaces "ask the database for each token". It is built from the
     tier-A index, whose size the indexing policy already bounds by column count
     rather than row count (see docs/03-INDEXING.md) — which is precisely what
     makes this check scale.
 
+    Why only short values
+    ---------------------
+    This used to harvest the words of *every* value, and that is what made the gate
+    unusable in practice. eICU stores hierarchical free text —
+    `hematology|coagulation disorders|DIC syndrome|associated with intravascular
+    clotting` — so ordinary English ends up inside stored values, and the gate then
+    refused ordinary questions:
+
+        "how many laboratory records are associated with each ICU stay"
+            -> refused on 'associated'
+
+    Learning that our questions contain the word "associated" tells a provider
+    nothing about this database; every database's free text contains it. This is the
+    same argument `carries_information` already makes about "56" and "id", applied
+    to a word rather than to a string.
+
+    The threshold is not new either: `forbidden_words_extended` already stops at
+    `MAX_WORDS_SHORT_VALUE` words, for the same reason and with the same
+    measurement behind it. It was simply never applied here. Effect, measured on
+    eICU: 8 708 words -> 7 419. `associated`, `unique`, `necrotizing` and 1 286
+    others stop being treated as data; `aspirin`, `female`, `alive`, `hgb` and every
+    other real value word stay.
+
+    What still protects the long values: `find_known_values` matches them **whole**,
+    exactly and exhaustively, before this check ever runs.
+
     Returns a `set` on small databases and a `BloomFilter` beyond
     `BLOOM_THRESHOLD`. Both answer `in`.
     """
     tokens: set[str] = set()
     for value in _index_values(distinct=True):
-        tokens.update(w for w in re.findall(r"[a-zà-ÿ0-9]{3,}", str(value).lower()))
+        text = str(value)
+        if len(re.findall(r"[A-Za-zÀ-ÿ]{3,}", text)) > MAX_WORDS_SHORT_VALUE:
+            continue
+        tokens.update(w for w in re.findall(r"[a-zà-ÿ0-9]{3,}", text.lower()))
     # Tier-B columns are not indexed by value, but their word vocabulary is
     # harvested at build time — otherwise the guarantee would stop at tier A and a
     # value from a high-cardinality column could cross unnoticed.
@@ -548,14 +583,42 @@ def carries_information(value: str) -> bool:
     keeps the short medical abbreviations that *are* real values — `hgb`, `chf`,
     `dvt`, `crp`. This is a floor on information content, not a vocabulary: it
     needs no maintenance and it does not grow when the database does.
+
+    Spelled-out numerals are the one addition, and they follow from the same
+    argument rather than extending it. `12` is already exempt because every
+    database contains it; `one` was not, so "patients with at least **one**
+    laboratory record" was refused as a leak while "with at least **1**" passed.
+    Ten words, closed class, no maintenance.
     """
     stripped = (value or "").strip()
     if len(stripped) < 3:
         return False
+    if stripped.lower() in NUMERALS:
+        return False
     return any(char.isalpha() for char in stripped)
 
 
-def find_known_values(text: str, max_ngram: int = 6) -> list[str]:
+@lru_cache(maxsize=1)
+def longest_value_words() -> int:
+    """How many words the longest stored value has. Bounds the n-gram scan exactly.
+
+    The scan used to stop at six words, which was fine while `value_tokens` held
+    the words of *every* value: a longer value was caught word by word. Now that it
+    only holds the words of short values, a seventeen-word value —
+    *"Patient transferred from another hospital to the current hospital within 48
+    hours prior to ICU admission"* — was matched by neither, and crossed. The canary
+    test caught it.
+
+    Deriving the bound from the data rather than guessing it means the two layers
+    cannot drift apart again: whatever the longest value is, the scan reaches it.
+    Capped at 32 words so that a pathological value cannot make the scan quadratic
+    in a long SQL response.
+    """
+    longest = max((len(str(v).split()) for v in known_values()), default=6)
+    return min(max(longest, 6), 32)
+
+
+def find_known_values(text: str, max_ngram: int | None = None) -> list[str]:
     """Return the database values appearing in `text`, longest first.
 
     Matching runs on word n-grams rather than substrings: a substring search would
@@ -583,8 +646,9 @@ def find_known_values(text: str, max_ngram: int = 6) -> list[str]:
         exempt = generic_vocabulary()
 
     words = re.findall(r"[A-Za-zÀ-ÿ0-9+&/.-]+", text or "")
+    ceiling = max_ngram if max_ngram is not None else longest_value_words()
     found: list[str] = []
-    for size in range(min(max_ngram, len(words)), 0, -1):
+    for size in range(min(ceiling, len(words)), 0, -1):
         for i in range(len(words) - size + 1):
             candidate = " ".join(words[i : i + size]).lower()
             if candidate not in values or candidate in found:

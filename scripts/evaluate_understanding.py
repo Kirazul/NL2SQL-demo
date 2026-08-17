@@ -41,6 +41,10 @@ from hybridsql.pipeline.understand import understand  # noqa: E402
 SETS = {
     "standard": Path("data/evaluation/questions_standard.yaml"),
     "hard": Path("data/evaluation/questions_hard.yaml"),
+    # Questions that name a column and aggregate over it, which is what an analyst
+    # actually types. They carry no value to mask, so the two older sets never
+    # exercised the path where the index invents one.
+    "analytics": Path("data/evaluation/questions_analytics.yaml"),
 }
 OUTPUT = Path("data/evaluation/understanding_results.json")
 
@@ -173,6 +177,25 @@ def evaluate(path: Path) -> dict:
                 perfect = False
                 problems.append(
                     f"{mention!r} treated as a value -> {obtained[key].column}"
+                )
+
+        # --- 3b: where a concept must point -------------------------------------
+        # Classifying "diagnosis names" as a concept is only half the job: it also
+        # has to reach `diagnosis.diagnosisstring`, because that column is what
+        # scopes the schema sent to the cloud. Checked only where the annotation
+        # says so — many concepts have no single defensible column.
+        for mention, ok_columns in (case.get("columns") or {}).items():
+            key = find_mention(mention, names)
+            if key is None:
+                continue
+            total_concepts += 1
+            acceptable = {c.strip() for c in str(ok_columns).split("|")}
+            if obtained[key].column in acceptable:
+                concepts_ok += 1
+            else:
+                perfect = False
+                problems.append(
+                    f"{mention!r} -> {obtained[key].column} (expected column: {ok_columns})"
                 )
 
         if perfect:

@@ -638,12 +638,40 @@ assert not violations, "the declared foreign keys do not hold"
 
 ## 6. The value index
 
-A question says *aspirin*. The database stores `ASPIRIN EC 81 MG PO TBEC`. The
-index is what closes that gap, locally, before anything is sent.
+### The problem it solves
 
-Indexing every value would make the cost grow with the number of rows, which is
-the wrong shape for a system meant to scale. Columns are classified instead, and
-only the bounded ones are stored. Notebook 2 goes through this in detail.
+A question says *aspirin*. The database stores `ASPIRIN EC 81 MG PO TBEC`. So
+`WHERE drugname = 'aspirin'` returns **nothing**, and the question fails without
+anyone noticing.
+
+The index is a small second database that maps what a person writes to what is
+actually stored. It is built **here, once**, and it is what makes masking possible
+at all: it is the moment the system learns which exact string must never leave.
+
+### Why not simply index every value
+
+Because the cost would then grow with the number of rows, and a design that stops
+working on a large database is not a design. So every text column is measured once
+and put in one of three tiers.
+
+| Tier | What the column holds | What is stored | Example |
+|---|---|---|---|
+| **A** | a bounded vocabulary | **every distinct value** | `medication.drugname`, 1 402 names |
+| **B** | thousands of distinct strings | **nothing** — searched on demand | `lab.labresulttext`, 7 669 |
+| **C** | identifiers, timestamps, free text | **nothing** — never searched | `patientunitstayid` |
+
+The decision is made from measurements, not from column names: how many distinct
+values, how long they are, and how close the distinct count is to the row count. A
+column with almost as many distinct values as rows is an identifier whatever it is
+called — that is how `patient.uniquepid`, 73 % unique, was kept out of a file meant
+for business vocabulary.
+
+**What this buys.** The stored size is `columns x limit` — it does not depend on the
+number of rows. Adding ten million rows changes nothing. If a column outgrows the
+limit it moves to tier B, which stores *less*. The index below stays a few megabytes
+whatever this database grows into.
+
+Notebook 2 shows a lookup running, and what happens when the scorer gets it wrong.
 """)
     code(nb, """
 started = time.time()
@@ -721,41 +749,39 @@ def build_understanding(nb: Notebook) -> None:
 
 ## 2. The problem
 
-Someone asks, in English:
+Someone types, in English:
 
 > *{{Q}}*
 
-Answering it means writing SQL, and writing good SQL over 31 unfamiliar tables is
-something large cloud models do well and small local models do badly. But sending
-the question to a cloud model sends the thing you are trying to protect, because
-the question is about the data: it names a drug, an age, a ward.
+To answer it we need SQL. Writing good SQL over 31 unfamiliar tables is something
+large cloud models do well and small local models do badly. But sending the
+question to a cloud model sends what we are protecting, because the question *is
+about the data*: it names a drug, an age, a ward.
 
-This notebook shows the way out. By the end of it the question has become a
-schema, a set of symbols and an exact stored value, and **nothing has been sent
-anywhere**. What can then be sent is the subject of notebook 3.
+So the question is taken apart **here**, on this machine, before anything is sent.
+Four steps, four different jobs:
 
-Four stages, all local, in this order:
-
-| Stage | Does | Module |
+| Step | The question it answers | Tool |
 |---|---|---|
-| **Extract** | finds the entities in the sentence | `pipeline/understand.py` |
-| **Resolve** | turns each one into a real database value | `db/value_index.py` |
-| **Mask** | replaces every value with a symbol | `pipeline/anonymize.py` |
-| **Verify** | checks every outgoing word before a socket opens | `security/egress_gate.py` |
+| 1 | which **words** matter? | GLiNER2, a small local model |
+| 2 | is a word a **stored value**? | the value index |
+| 3 | is a word a **column name**? | the column catalogue |
+| 4 | can what is left **safely leave**? | the egress gate |
+
+At the end, the question has become four things and none of them is a secret: the
+tables, the column names, the values (kept here, replaced by symbols), and the
+sentence with holes in it.
 """, Q=QUESTION)
 
     md(nb, """
 ---
 
-## 3. The data
+## 3. The database
 
-**eICU-CRD** is 31 tables of intensive-care records: patients, their stays, the
-drugs they were given, their lab results, their diagnoses.
-
-Almost every table hangs off one column. `patientunitstayid` identifies a single
-patient's stay in a single ICU, and it appears in 28 of the 31 tables. That one
-column is what makes a question like *which patients on aspirin had a high
-creatinine* answerable: `medication` and `lab` both carry it, so they join.
+31 tables of intensive-care records. Almost every one hangs off a single column:
+`patientunitstayid` identifies one patient's stay in one ICU and appears in 28 of
+them. That is what makes *which patients on aspirin had a high creatinine*
+answerable — `medication` and `lab` both carry it, so they join.
 """)
     code(nb, """
 from hybridsql.db import schema as sch
@@ -763,188 +789,378 @@ from hybridsql.db import schema as sch
 for key, value in sch.summary().items():
     print(f"  {key:<16}{value:,}")
 
-tables = sch.read_schema()
-print("\\n  largest tables")
-for name in sorted(tables, key=lambda t: -tables[t].row_count)[:6]:
-    print(f"    {name:<20}{tables[name].row_count:>10,} rows   {len(tables[name].columns):>3} columns")
-
-joined = sum(1 for t in tables.values() if "patientunitstayid" in t.columns)
-print(f"\\n  {joined} of {len(tables)} tables carry patientunitstayid")
+print("\\n" + sch.ddl({"medication"}, with_row_counts=True)[:430])
 """)
 
     md(nb, """
-### The schema, as the cloud model receives it
+The DDL above is **the entire disclosure** of the protected architecture: table
+names, column names, types, row counts, foreign keys. Not one value from any row.
 
-This is the entire disclosure of the Hybrid architecture: table names, column
-names, types, row counts and the foreign keys. No value from any row.
-""")
-    code(nb, """
-print(sch.ddl({"patient", "medication"}, with_row_counts=True)[:850])
-""")
-
-    md(nb, """
 ---
 
-## 4. Stage 1, extract the entities
+## 4. Step 1 — find the words that matter
 
-GLiNER2 reads the sentence and returns the spans that carry meaning, each with a
-confidence. It runs in this process, on the CPU, and it is zero-shot: the types
-below are described in English at call time, not trained in.
+**GLiNER2** is a 208 M-parameter model that reads a sentence and returns the spans
+that carry meaning. Two properties are why it is here instead of an LLM:
 
-The model does not know what a `drugname` column is. It knows the sentence
-contains a drug, and where.
+- it runs **inside this process, on the CPU**, in about 100 ms — so the question
+  never leaves the machine to be understood;
+- it is **zero-shot**: the entity types are written in plain English at call time.
+  Changing domain means editing a list of strings, not retraining anything.
+
+It finds *where* something interesting is. It does not know this database, and it
+returns `drug`, not `medication.drugname`. The next two steps do that.
+
+Two limits, both measured rather than assumed. **The span is a guess**: it returns
+`hemoglobin lab test` where only `hemoglobin` is stored, so shorter spans are tried
+against the index rather than trusting the boundaries. And **it does not see numbers
+as data**: `hospital id 56` came back as one entity and `56` went out in clear text,
+so numbers are found by a separate regular expression, which cannot miss one.
 """)
     code(nb, """
-from hybridsql.pipeline.understand import understand
+from hybridsql.providers import extractor
 
-u = understand("{{Q}}")
+print(f"  model  {extractor.state()['model']}   loaded in {extractor.state()['load_ms']} ms")
+print(f"  types  {', '.join(extractor.ENTITY_TYPES[:4])}, +{len(extractor.ENTITY_TYPES) - 4} more\\n")
 
-print(f"  extractor  {u.active_extractor}")
-print(f"  tables     {', '.join(sorted(u.tables))}\\n")
-print(f"  {'span':<14}{'type':<12}{'confidence':>11}")
-for r in u.resolutions:
-    print(f"  {r.mention:<14}{r.kind:<12}{r.score:>11.2f}")
+for question in ["{{Q}}", "Did Mr. Bensalah get his insulin?"]:
+    print(f"  {question}")
+    for e in extractor.extract(question):
+        print(f"      {e.text:<24}{e.type:<12}{e.score:.2f}")
+    print()
 """, Q=QUESTION)
 
     md(nb, """
 ---
 
-## 5. Stage 2, resolve them against the database
+## 5. Step 2 — is the word a stored value?
 
-*aspirin* is not a value. `ASPIRIN EC 81 MG PO TBEC` is. Something has to bridge
-them without asking a cloud model what the database contains, and that something
-is an index built once by notebook 1.
+The analyst writes *aspirin*. The database stores `ASPIRIN EC 81 MG PO TBEC`. A
+query written `WHERE drugname = 'aspirin'` returns **nothing**. An index built once
+by notebook 1 closes that gap locally — and it is the same step that tells us which
+exact string must never leave.
 
-### Why not simply index everything
+### Why not index every value
 
-Because the cost would then grow with the number of rows, and a privacy design
-that stops working on a large database is not a design. So every text column is
-measured once and sorted into one of three tiers.
+Because then the cost grows with the number of rows, and a privacy design that
+stops working on a big database is not a design. Every text column is measured once
+and sorted into three tiers.
 
-| Tier | The column looks like | What is stored |
+| Tier | The column looks like | Stored |
 |---|---|---|
-| **A** | a bounded vocabulary: 6 drug note types, 12 wards | every distinct value |
-| **B** | high cardinality: thousands of distinct strings | nothing, searched on demand |
-| **C** | free text, identifiers, constants | nothing, never searched |
+| **A** | a bounded vocabulary — 1 402 drug names, 12 ward types | every distinct value |
+| **B** | thousands of distinct strings | **nothing** — searched on demand |
+| **C** | identifiers, timestamps, free text | **nothing** — never searched |
 
-The stored size is therefore `columns x vocabulary limit`, and adding ten million
-rows to a table adds nothing to the index as long as the set of distinct values
-does not grow.
+**That is the whole scalability argument.** Adding ten million rows adds nothing to
+the index. If a column outgrows the limit it moves to tier B and stores *less*.
 """)
     code(nb, """
 from hybridsql.db import value_index
 
 s = value_index.stats()
-print(f"  columns examined   {s['tiers']['A'] + s['tiers']['B'] + s['tiers']['C']}")
-print(f"  tier A, indexed    {s['tiers']['A']}")
-print(f"  tier B, on demand  {s['tiers']['B']}")
-print(f"  tier C, excluded   {s['tiers']['C']}")
-print(f"  values stored      {s['values_indexed']:,}")
-print(f"  index size         {s['size_mb']} MB")
+total = sum(s["tiers"].values())
+print(f"  text columns examined  {total}")
+print(f"  tier A / B / C         {s['tiers']['A']} indexed, {s['tiers'].get('B', 0)} on demand, "
+      f"{s['tiers'].get('C', 0)} excluded")
+print(f"  values stored          {s['values_indexed']:,}")
+print(f"  index size             {s['size_mb']} MB")
+print(f"  ceiling, any row count {total * value_index.VOCABULARY_LIMIT * 83 / 1e6:.0f} MB\\n")
+
+for mention in ["aspirin", "asspirin"]:
+    hit = value_index.search(mention, limit=1)[0]
+    print(f"  {mention:<12}-> {hit.ref:<26}{hit.value!r}  ({hit.score:.2f})")
 """)
 
     md(nb, """
-### The decision, column by column
+### The scorer, and the bug that lived in it
 
-The classification is written down when the index is built, so it can be read
-back and argued with. These are real columns from the database.
+Similarity here is **not symmetric**, and treating it as if it were was the worst
+defect this pipeline has had.
+
+The legitimate case is the analyst naming *part* of a longer value: "aspirin" for
+`ASPIRIN EC 81 MG PO TBEC`. The reverse — a short stored value found inside a long
+question — is not a match at all. Measured, before the fix:
+
+| The question said | What the index answered | Score |
+|---|---|---|
+| `10 most frequently recorded laboratory tests` | `10` | **1.00** |
+| `laboratory records` | `lab` | **1.00** |
+| `male patients` | `Older adult: Provide adequate time for patients…` | **0.76** |
+
+All three cleared the confidence threshold, so all three were masked and sent to
+the cloud model as filters. The queries ran and answered a different question.
+
+Two rules fixed it: when the value is **shorter** than the mention only whole-string
+similarity counts, and a compound value (`renal|acute renal failure|…`) is compared
+**segment by segment** instead of as one long string that shares a word with
+everything.
 """)
     code(nb, """
-report = json.loads(Path(os.environ["DB_PATH"]).with_name("column_classification.json").read_text())
-columns = report["columns"]
-
-print(f"  {'column':<42}{'tier':<6}{'distinct':>9}   reason")
-for tier in ("A", "B", "C"):
-    for c in [c for c in columns if c["tier"] == tier][:3]:
-        print(f"  {c['ref'][:40]:<42}{c['tier']:<6}{c['distinct']:>9}   {c['reason']}")
-""")
-
-    md(nb, """
-### Resolving one word
-
-`medication.drugname` is a tier A column with a few thousand distinct spellings.
-Asking the index for *aspirin* returns the real values, the column each came
-from, and a score.
-""")
-    code(nb, """
-for hit in value_index.search("aspirin", limit=5):
-    print(f"  {hit.score:.2f}  {hit.ref:<28}{hit.value}")
-""")
-
-    md(nb, """
-Two things came back, and the second matters as much as the first: the exact
-value **and the column it belongs to**. Knowing that `:v1` is a value of
-`medication.drugname` is what later lets the opaque architecture describe the
-query without naming the drug or the column.
-
-Here is the full resolution for our question.
-""")
-    code(nb, """
-print(f"  {'span':<14}{'column':<28}resolved to")
-for r in u.resolutions:
-    print(f"  {r.mention:<14}{str(r.column or '-'):<28}{r.value or '-'}")
+print(f"  {'the question says':<44}{'the index now answers':<40}score")
+for mention in ["10 most frequently recorded laboratory tests", "laboratory records",
+                "male patients", "aspirin"]:
+    hits = value_index.search(mention, limit=1)
+    answer = f"{hits[0].ref} = {hits[0].value}"[:38] if hits else "nothing, which is correct"
+    print(f"  {mention:<44}{answer:<40}{hits[0].score:.2f}" if hits
+          else f"  {mention:<44}{answer:<40}")
 """)
 
     md(nb, """
 ---
 
-## 6. Stage 3, mask
+## 6. Step 3 — is the word a column name?
 
-Every resolved value is replaced by a symbol. `ASPIRIN EC 81 MG PO TBEC` becomes
-`:v1`, `65` becomes `:v2`, and the mapping between them stays in this process.
+The index answers *"which value is this?"*. It always answers something: a fuzzy
+search over 30 000 values never comes back empty. So we also need the other
+question — *"which column is this?"* — or every question that names a column gets
+turned into a filter on an invented value. That is exactly what happened:
 
-The symbols are renumbered on every request, so `:v1` in one question and `:v1`
-in the next are unrelated. Nobody watching the outgoing traffic can follow a
-value across two questions.
+> *"What are the 10 most common **diagnosis names**?"*
+> → matched `pasthistory.pasthistoryvalue = 'clinical diagnosis'` at 0.75, masked it,
+> asked the cloud to filter on it, and came back with **one row**.
+
+Column names in a real database are glued-together words — `labname`, `routeadmin`,
+`nursingchartcelltypecat`. Splitting them would need a dictionary of the domain we
+are trying to stay independent of, so matching runs on **character trigrams**
+instead: `administration routes` and `medication.routeadmin` share `rou`, `out`,
+`ute`, `adm`, `dmi`. No dictionary, no model, 2 ms, and it works on any schema.
+""")
+    code(nb, """
+from hybridsql.db import catalog
+
+print(f"  {catalog.stats()['columns_catalogued']} columns catalogued\\n")
+print(f"  {'the question says':<34}the columns it could mean")
+for mention in ["diagnosis names", "medication administration routes",
+                "hospital region", "ethnicity", "aspirin", "sepsis"]:
+    shown = "  ".join(f"{m.ref} ({m.score:.2f})" for m in catalog.link(mention, limit=2))
+    print(f"  {mention:<34}{shown or 'nothing — so it is not a column'}")
+""")
+
+    md(nb, """
+`aspirin` and `sepsis` are real values, and they match **no column at all**. That
+gap is what the decision below runs on.
+
+---
+
+## 7. Step 4 — decide
+
+One rule:
+
+> A word is a **value** only if it matches a value better than it matches a column.
+> A word stored in the database **exactly as typed** is never overruled.
+
+The second clause is not a detail: `creatinine`, `glucose` and `albumin` are lab
+values in `lab.labname` **and** column names in `apacheapsvar`.
+
+Numbers skip all of this and are always masked. "Over 65" is a threshold the
+analyst chose, but "hospital id 56" identifies one hospital, and the sentence does
+not reliably tell them apart. The model never needs a number's value to write
+`WHERE hospitalid = :v1`, so masking every one costs nothing.
+""")
+    code(nb, """
+from hybridsql.pipeline.understand import understand
+
+for question in ["{{Q}}",
+                 "What are the 10 most common diagnosis names?",
+                 "How many patients in hospital id 56?"]:
+    r = understand(question)
+    print(f"  {question}")
+    for x in r.resolutions:
+        kept = f"   kept here: {x.value!r}" if x.value else ""
+        print(f"      {x.mention:<22}{x.kind:<10}{str(x.column or '-'):<32}{kept}")
+    print()
+""", Q=QUESTION)
+
+    md(nb, """
+Three kinds come out. **value** exists in the database, so it is a secret and gets
+masked. **concept** names a column — not a secret, the column name is in the DDL
+anyway, and masking it would leave the model unable to write the query. **quantity**
+is a number, masked.
+
+---
+
+## 8. Masking
+
+Each value and each number becomes a symbol. The mapping stays in this process, and
+the symbols are **renumbered on every request** — `:v1` here and `:v1` in the next
+question are unrelated, so nobody watching the traffic can follow a value across two
+questions.
 """)
     code(nb, """
 from hybridsql.pipeline.anonymize import anonymize
 
+u = understand("{{Q}}")
 a = anonymize(u)
 
 print(f"  asked   {u.question}")
 print(f"  sent    {a.masked_question}\\n")
-print("  kept here")
+print("  kept here, and nowhere else")
 for symbol, value in a.mapping.items():
-    print(f"    {symbol:<6}{value!r:<32}{a.columns.get(symbol, '')}")
-""")
+    print(f"    {symbol:<6}{value!r:<34}{a.columns.get(symbol, '')}")
+""", Q=QUESTION)
 
+    # --- The egress gate ------------------------------------------------------
     md(nb, """
 ---
 
-## 7. Stage 4, verify
+## 9. The egress gate
 
-The masking is the design. The gate is what makes it checkable.
+Masking is the design. **The gate is what makes it checkable.**
 
-One rule holds the system up: **exactly one module may open a socket, and every
-piece of text it sends is verified first**. The outgoing prompt is not checked as
-one blob. It is split by where each part came from, and each part is checked by
-the rule that can actually prove that kind of text safe.
+> One rule: exactly one module may open a socket, and every piece of text it sends
+> is verified first.
 
-| Origin | Proven safe by |
-|---|---|
-| `authored` | matching the fingerprint of a literal in the source |
-| `template` | matching the fingerprint of the wording |
-| `schema` | regenerating it from the database and comparing |
-| `glossary` | membership in the declared notes |
-| `question` | word by word, the only untrusted part |
+Not "should be" — the gate raises an exception, so an unverified send does not
+happen.
+
+### Checking by origin, not by vocabulary
+
+The first version read the whole prompt word by word. It worked, and it forced
+hundreds of ordinary English words into a hand-written list so that **our own
+sentences** could pass. Every new question added one more word, and each addition
+widened the hole.
+
+The prompt is now split by where each part came from, and each part is checked by
+the rule that can actually prove *that kind* of text safe. Three of the four are
+reconstructions: the gate recomputes what the part should contain and compares.
+
+| Origin | Proven safe by | Can it hide a value? |
+|---|---|---|
+| `authored` | SHA-256 of a literal written in the source | no, it is a constant |
+| `template` | SHA-256 of the wording, labels blanked out | no, only `t3`, `c7`, numbers vary |
+| `schema` | regenerating the DDL from the database and comparing | no, the DDL holds no row |
+| `glossary` | membership among the declared notes | no, a modified note is not a note |
+| `question` | **word by word, fail-closed** | yes — the only untrusted part |
 """)
     code(nb, """
 from hybridsql.pipeline import generate as gen
 from hybridsql.security import egress_gate
 
+print(f"  {'verdict':<8}{'origin':<11}{'proven by':<30}text")
 for segment in gen.build_segments(u, a):
     verdict = egress_gate.check_segment(segment, "notebook")
-    mark = "pass " if verdict.allowed else "BLOCK"
-    print(f"  [{mark}] {segment.origin:<9}{verdict.verified_by:<26}"
-          f"{' '.join(segment.text.split())[:38]}...")
+    print(f"  [{'pass' if verdict.allowed else 'BLOCK':<4}] {segment.origin:<11}"
+          f"{verdict.verified_by:<30}{' '.join(segment.text.split())[:32]}...")
 """)
 
     md(nb, """
-### A real value, submitted on purpose
+### The question: two layers, and what they are made of
 
-The gate is only worth something if it refuses. This sends a genuine drug name
-through it. The exception is the correct result, and no socket opens.
+**Layer 1, the exhaustive denylist.** We *own the database*, so we hold the complete
+inventory of values for every indexed column. Matching against it is not an estimate,
+it is exact — a value present in the database cannot slip past. This is the
+difference from PII detection, which is a heuristic with a recall (MaskSQL measures
+61.4 % on this task, so four values in ten leave in clear text).
+
+**Layer 2, the allowlist, fail-closed.** For what the denylist cannot know: values of
+non-indexed columns, misspellings, words nobody declared. A word that survives layer
+1 is refused if it is a word of a short stored value.
+
+Three sources, and only the first is written by hand. That proportion is the point:
+the vocabulary a question may contain is mostly **read from the database itself**, so
+it cannot drift away from it.
+""")
+    code(nb, """
+import random
+
+print(f"  {'text':<54}verdict")
+for text in ["How many patients over :v2 received :v1?",
+             "How many patients received aspirin?",
+             "How many patients came from Skilled Nursing Facility?",
+             "SELECT COUNT(*) FROM medication WHERE drugname = :v1"]:
+    v = egress_gate.check(text, "notebook")
+    print(f"  {text[:52]:<54}"
+          f"{'passed' if v.allowed else 'REFUSED on ' + str(list(v.refused_tokens))}")
+
+grammar = egress_gate.generic_vocabulary()
+derived = egress_gate._schema_identifiers() | egress_gate.glossary_concepts()
+
+print(f"  {'question grammar (written by hand)':<40}{len(grammar):>7}")
+print(f"  {'schema identifiers (read from the db)':<40}{len(egress_gate._schema_identifiers()):>7}")
+print(f"  {'glossary concepts (read from yaml)':<40}{len(egress_gate.glossary_concepts()):>7}")
+print(f"  {'total allowed':<40}{len(egress_gate.allowlist()):>7}   "
+      f"{100 * len(derived) / max(len(egress_gate.allowlist()), 1):.0f} % derived")
+print(f"  {'words of stored values (blocked)':<40}{len(egress_gate.value_tokens()):>7}")
+print(f"  {'complete values (blocked)':<40}{len(egress_gate.known_values()):>7}")
+
+random.seed(7)
+blocked = sorted(w for w in egress_gate.value_tokens() if w.isalpha() and len(w) > 4)
+print("\\n  a sample of the words a question may NOT contain")
+for _ in range(3):
+    print("    " + "  ".join(f"{w:<18}" for w in random.sample(blocked, 4)))
+""")
+
+    md(nb, """
+### Refusing too much is a bug as well
+
+A gate has two ways of being wrong. It can let a value through — and it can refuse a
+question that carries nothing to hide, which teaches the analyst to reword until
+something passes. Only the first was ever measured, and the second was happening
+constantly:
+
+> *"How many laboratory records are **associated** with each patient ICU stay?"*
+> → refused on `associated`.
+
+`associated` is not data. In this database it appears only inside long hierarchical
+diagnosis strings such as `hematology|coagulation disorders|DIC syndrome|associated
+with intravascular clotting`. Every database's free text contains it.
+
+Two changes, both rules rather than patches:
+
+1. the blocked vocabulary now takes the words of **short values only** (three words
+   or fewer) — a threshold already measured and used elsewhere in the same file, but
+   never applied here. 8 708 words → 7 419. `aspirin`, `female`, `alive` and `hgb`
+   stay; `associated`, `unique` and `necrotizing` go. Long values are still caught
+   **whole** by layer 1;
+2. the closed-class grammar was extended with the vocabulary of *asking a database a
+   question* — `records`, `unique`, `names`, `one`. The same words serve a hospital,
+   a bank or a warehouse; none can name a drug. A test fails the build if a word
+   added there is ever also a whole stored value.
+""")
+    code(nb, """
+print("  words that used to be refused in an ordinary question")
+for word in ["associated", "records", "unique", "one", "administration"]:
+    v = egress_gate.check(f"how many {word} per hospital", "notebook")
+    print(f"    {word:<16}{'passes now' if v.allowed else 'still refused'}")
+
+print("\\n  and the values they might have hidden are still refused")
+for value in ["Medical Records", "aspirin", "Female", "Skilled Nursing Facility"]:
+    v = egress_gate.check(f"how many patients with {value}", "notebook")
+    print(f"    {value:<26}{'refused, correct' if not v.allowed else 'PASSED — a leak'}")
+""")
+
+    md(nb, """
+### Both rates, measured
+
+`scripts/measure_gate.py` replays every distinct value of the database through the
+gate, and every question of the three evaluation sets through the whole pipeline.
+Neither number means anything without the other.
+""")
+    code(nb, """
+measurement = Path(os.environ["DB_PATH"]).with_name("gate_measurement.json")
+if measurement.exists():
+    g = json.loads(measurement.read_text())
+    q = g.get("questions", {})
+    print(f"  {'information-bearing values tested':<44}{g['values_bearing']:>8,}")
+    print(f"  {'LEAK: how many cross the gate':<44}{g['passed_bearing']:>8,}"
+          f"  {g['rate_bearing_pct']:>6.2f} %")
+    print(f"  {'questions replayed end to end':<44}{q.get('questions_checked', 0):>8}")
+    print(f"  {'REFUSAL: ordinary questions blocked':<44}{q.get('questions_refused', 0):>8}"
+          f"  {q.get('refusal_rate_pct', 0):>6.2f} %")
+else:
+    print("  run scripts/measure_gate.py to produce this file")
+""")
+
+    md(nb, """
+The residual leak is explainable rather than mysterious: it is the words that are
+**both a column name and a value**. `apacheapsvar` has columns `albumin`,
+`creatinine`, `bun` and `wbc`, which are also lab names in `lab.labname`. Blocking
+them would stop the model writing SQL against those columns.
+
+### The proof: a real value, submitted on purpose
+
+The gate is only worth something if it refuses.
 """)
     code(nb, """
 from hybridsql.security.egress_gate import LeakBlocked, Segment
@@ -961,13 +1177,34 @@ except LeakBlocked as blocked:
     md(nb, """
 ---
 
-## 8. What would leave
+## 10. What is measured, and what would leave
 
-The question arrived in English and named a drug. What is now ready to send names
-no drug, no patient and no row.
+Three annotated question sets, 133 questions. `complete` is the strict figure: every
+value, every column and every name right in the same question — the only one that
+describes what the user sees.
+
+- **standard**, 79 questions naming something stored;
+- **hard**, 28 written to break it — typos, slang, person names, values absent from
+  this extract;
+- **analytics**, 26 that name a **column** and aggregate over it, which is what an
+  analyst actually types. Added the day the system answered *"the 10 most common
+  diagnosis names"* with one row.
 """)
     code(nb, """
-print(f"  the question    {u.question}")
+results = PROJECT / "data/evaluation/understanding_results.json"
+if results.exists():
+    r = json.loads(results.read_text())
+    print(f"  {'set':<12}{'questions':>10}{'extraction':>12}{'resolution':>12}{'complete':>10}")
+    for name in ("standard", "hard", "analytics"):
+        s = r.get(name)
+        if s:
+            print(f"  {name:<12}{s['questions']:>10}{s['extraction_recall_pct']:>11.1f}%"
+                  f"{s['resolution_accuracy_pct']:>11.1f}%{s['full_understanding_pct']:>9.1f}%")
+    o = r["overall"]
+    print(f"\\n  {o['correct_questions']}/{o['questions']} questions understood completely "
+          f"({o['full_understanding_pct']} %)")
+
+print(f"\\n  the question    {u.question}")
 print(f"  what is sent    {a.masked_question}")
 print(f"  values out      0")
 print(f"  kept here       {len(a.mapping)} value(s), {len(u.tables)} table name(s)")
@@ -1016,6 +1253,33 @@ def ask(question, arm, write=False):
     return r
 '''
 
+DIAGRAMS = '''
+from hybridsql import graph
+from IPython.display import Image, Markdown, display
+
+
+def diagram(arm):
+    """Draw the compiled graph of one architecture.
+
+    A notebook renders markdown, not mermaid, so the source that `graph.mermaid()`
+    returns arrives as a block of text rather than as a picture. It is drawn to a
+    PNG instead. If that service cannot be reached the stages are printed: the
+    diagram is worth having, not worth stopping the notebook for.
+    """
+    drawing = graph.compiled(arm).get_graph()
+    display(Markdown(f"**{arm}**"))
+    try:
+        display(Image(drawing.draw_mermaid_png(max_retries=3, retry_delay=2.0)))
+    except Exception as error:
+        stages = [name for name in drawing.nodes if not name.startswith("__")]
+        print(f"  no diagram ({type(error).__name__}), the stages are")
+        print("  start -> " + " -> ".join(stages) + " -> end")
+
+
+for arm in ARMS:
+    diagram(arm)
+'''
+
 COMPARISON = """
 from collections import defaultdict
 
@@ -1054,7 +1318,7 @@ def build_architectures(nb: Notebook) -> None:
 
 ## 2. The cloud provider
 
-Three of the four architectures call a cloud model. This checks it answers before
+Three of the four architectures call a cloud model. This checks one answers before
 running twelve questions against it, so a missing key shows up here as one line
 rather than as four empty rows in the results table.
 """)
@@ -1063,48 +1327,101 @@ rather than as four empty rows in the results table.
     md(nb, """
 ---
 
-## 3. Four architectures
+## 3. The four designs
 
-Each one answers the same question. They differ in who writes the SQL, who writes
-the answer, and what crosses the network to make that happen.
+Notebook 2 turned the question into a schema, some symbols and an exact value, with
+nothing sent. The question now is **what may leave**, and there is more than one
+defensible answer. Four are built, and they are compared on the same questions.
 
-| | Writes the SQL | Writes the answer | What is sent | Values sent |
+| | Who writes the SQL | Who writes the answer | What leaves | Real values sent |
 |---|---|---|---|---|
-| **Hybrid** | cloud, from symbols | local | schema and a masked question | 0 |
-| **Hybrid Opaque** | cloud, from labels | local | labels only, no business word | 0 |
+| **Hybrid** | cloud, from symbols | local | schema + a sentence with holes | **0** |
+| **Hybrid Opaque** | cloud, from labels | local | labels only, no business word | **0** |
 | **Full Cloud** | cloud, raw question | cloud | the question and every row | all |
-| **Full Local** | local 1.7 B | local | nothing | 0 |
+| **Full Local** | local 1.7 B model | local | **nothing** | 0 |
+
+Full Cloud is the baseline everybody ships. Full Local is the other extreme. The two
+in the middle are the point of the project, and the table at the end says what each
+costs.
 
 They are built as state machines that share every stage they have in common, so a
-fix to execution is a fix in all four. The diagrams below are generated from the
-compiled graphs, which means they cannot describe an architecture that is not the
-one running.
+fix to execution is a fix in all four. The diagrams are generated from the compiled
+graphs, which means they cannot describe an architecture that is not the one
+running.
 """)
     code(nb, ASK)
-    code(nb, """
-from hybridsql import graph
-from IPython.display import Markdown, display
+    code(nb, DIAGRAMS)
 
-for arm in ARMS:
-    display(Markdown(f"**{arm}**\\n\\n```mermaid\\n{graph.mermaid(arm)}\\n```"))
-""")
-
-    # --- Hybrid -------------------------------------------------------------
+    # --- The symbols ---------------------------------------------------------
     md(nb, """
 ---
 
-## 4. Hybrid
+## 4. The symbols: `:v1`, `t1`, `c1`
 
-Hybrid gives the cloud model the schema and a sentence with holes in it. The
-model writes `WHERE drugname = :v1`. The value is bound here, through the SQLite
-driver, so the query text and the value never meet in a single string.
+Everything below rests on three kinds of substitution. They are simple, and it is
+worth being exact about which one hides what.
+
+### `:v1` — a value
+
+A value is never written into the query text. It becomes `:v1`, and the real string
+is bound at execution time by the SQLite driver:
+
+```
+      asked   How many patients received aspirin?
+       sent   How many patients received :v1?
+    written   SELECT COUNT(*) FROM medication WHERE drugname = :v1
+   executed   the driver binds :v1 = 'ASPIRIN EC 81 MG PO TBEC'
+```
+
+The query text and the value **never meet in a single string**. That is also why
+SQL injection is impossible here: the value is not part of the statement.
+
+The numbering is redrawn on every request, so `:v1` in one question and `:v1` in the
+next are unrelated. Nobody watching the traffic can follow a value across two
+questions.
+
+### `t1`, `c1` — a table and a column
+
+Hybrid still sends the schema, and 31 table names with 391 column names describe a
+business even when no row does. `medication` says this is a hospital;
+`drugname` says which column holds the drugs.
+
+Hybrid Opaque replaces those too. `medication` becomes `t3`, `drugname` becomes
+`c7`, and — like the values — **the labels are drawn again on every request**, so
+the same table is a different label next time.
+
+```
+      real   SELECT COUNT(*) FROM medication WHERE drugname = :v1
+     model   SELECT COUNT(*) FROM t3        WHERE c7       = :v1
+```
+
+The model receives the second line, and the answer is translated back here.
+
+### Why the model can still write the query
+
+Stripping schema names normally wrecks text-to-SQL, because the names carry the
+meaning. It works here because **the meaning was already resolved locally**: the
+index has established which column the value belongs to, so the prompt can state
+`:v1 is a value of c7` and leave the model a mechanical job — follow the foreign
+keys, place the aggregate.
+""")
+
+    # --- Hybrid --------------------------------------------------------------
+    md(nb, """
+---
+
+## 5. Hybrid
+
+The cloud model gets the schema and a sentence with holes in it. It writes
+`WHERE drugname = :v1`. The value is bound here, so nothing about it leaves.
 
 **Modules:** `pipeline/understand.py`, `pipeline/anonymize.py`,
 `pipeline/generate.py`, `security/egress_gate.py`, `providers/cloud.py`,
 `db/connection.py`, `pipeline/answer.py`
-""")
 
-    md(nb, "**This is the whole prompt that leaves.**")
+The cell below prints **the whole prompt that leaves**, verbatim. There is nothing
+else in it.
+""")
     code(nb, """
 from hybridsql.pipeline.understand import understand
 from hybridsql.pipeline.anonymize import anonymize
@@ -1120,15 +1437,15 @@ for message in gen.build_messages(u, a):
 print(f"kept here: {a.mapping}")
 """)
 
-    md(nb, "**Running it.**")
+    md(nb, "**Running it**, on three questions.")
     code(nb, 'for q in QUESTIONS:\n    ask(q, "hybrid")')
 
     md(nb, """
 ### The answer is written here
 
-The rows never left. Turning them into a sentence is the local model's job, and
-it is what lets the results of a protected architecture stay on this machine. The
-first call loads 1.1 GB of weights, so it is slow once and quick afterwards.
+The rows never left. Turning them into a sentence is the local model's job, and that
+is what lets the results of a protected architecture stay on this machine. The first
+call loads 1.1 GB of weights, so it is slow once and quick afterwards.
 """)
     code(nb, """
 written = public(run(QUESTIONS[0], arm="hybrid", write=True))
@@ -1140,28 +1457,17 @@ print(f"  answer written by  {written['answer_author']}")
 print(f"\\n  {written['answer']}")
 """)
 
-    # --- Hybrid Opaque ------------------------------------------------------
+    # --- Hybrid Opaque -------------------------------------------------------
     md(nb, """
 ---
 
-## 5. Hybrid Opaque
+## 6. Hybrid Opaque
 
-Hybrid still sends the schema, and 31 table names with 391 column names describe
-a business even when no row does. Hybrid Opaque replaces those too. `medication`
-becomes `t3`, `drugname` becomes `c7`, and the labels are drawn again on every
-request.
-
-Stripping schema names normally wrecks text-to-SQL, because the names carry the
-meaning. It works here because the meaning was already resolved locally. The
-index has established which column the value belongs to, so the prompt can state
-`:v1 is a value of c7` and leave the model a mechanical job: follow the foreign
-keys, place the aggregate. The SQL that comes back is translated to real names
-here.
+Same pipeline, one stage added: the schema names are replaced by labels before the
+prompt is built, and the SQL that comes back is translated to the real names here.
 
 **Modules:** Hybrid's, plus `pipeline/opaque.py`
 """)
-
-    md(nb, "**What Hybrid sends, and what Opaque sends instead.**")
     code(nb, """
 view = gen.build_opaque(u, a).view()
 
@@ -1169,78 +1475,78 @@ print(f"  asked       {QUESTIONS[0]}")
 print(f"  hybrid      {a.masked_question}")
 print(f"  opaque      {view['question']}")
 print(f"\\n  {view['parameters'].strip()}")
-print(f"\\n  schema: {view['tables']} tables, {view['columns']} columns, every name a label")
-print(view["ddl"][:420])
+print(f"\\n  schema sent: {view['tables']} tables, {view['columns']} columns, every name a label")
+print(view["ddl"][:340])
+
+print("\\n  the dictionary that stays here — read it right to left:")
+for alias, real in view["labels"].items():
+    print(f"    {alias:<6}{real}")
 """)
 
-    md(nb, "**The dictionary that stays here.** Read it right to left: these names never left.")
-    code(nb, 'for alias, real in view["labels"].items():\n    print(f"  {alias:<6}{real}")')
-
-    md(nb, "**Running it.** The line to watch is `relabelled`. That is what the model received.")
+    md(nb, "**Running it.** The line to watch is `relabelled`: that is what the model received.")
     code(nb, 'for q in QUESTIONS:\n    ask(q, "hybrid_opaque")')
 
-    # --- Full Cloud ---------------------------------------------------------
+    # --- Full Cloud ----------------------------------------------------------
     md(nb, """
 ---
 
-## 6. Full Cloud
+## 7. Full Cloud
 
-Full Cloud is the baseline. There is no masking stage, and its absence is the
-architecture: the question leaves as typed, the model writes the SQL, and then
-the rows are sent back to the model so it can write the answer. Every cell of
-every row crosses the network.
+The baseline. There is no masking stage, and its absence *is* the architecture: the
+question leaves as typed, the model writes the SQL, and the rows are then sent back
+to the model so it can write the answer. Every cell of every row crosses the network.
 
-It is here to be measured, not recommended. The egress gate is bypassed
-explicitly, `PRIVACY_MODE=strict` refuses that outright, and the audit journal
-records every bypass.
+It is here to be measured, not recommended. The egress gate is bypassed explicitly,
+`PRIVACY_MODE=strict` refuses that outright, and the audit journal records every
+bypass.
 
 **Modules:** `pipeline/generate.py`, `providers/cloud.py`, `db/connection.py`
 """)
-    code(nb, 'for q in QUESTIONS:\n    ask(q, "full_cloud")')
-
-    md(nb, "**The journal.** Every bypass is written down.")
     code(nb, """
+for q in QUESTIONS:
+    ask(q, "full_cloud")
+
 from hybridsql.security import audit
 
-lines = audit.read()
+print("  the journal — every bypass is written down")
 for key, value in audit.leak_rate().items():
-    print(f"  {key:<20}{value}")
-print(f"  {'bypassed':<20}{sum(1 for line in lines if line.get('bypassed'))}")
+    print(f"    {key:<20}{value}")
+lines = audit.read()
+print(f"    {'bypassed':<20}{sum(1 for line in lines if line.get('bypassed'))}")
 """)
 
-    # --- Full Local ---------------------------------------------------------
+    # --- Full Local ----------------------------------------------------------
     md(nb, """
 ---
 
-## 7. Full Local
+## 8. Full Local
 
-Full Local sends nothing. The 1.7 B model writes the SQL itself, on two CPU
-cores, from the same schema the cloud model would have received.
+Sends nothing at all. The 1.7 B model writes the SQL itself, on two CPU cores, from
+the same schema the cloud model would have received.
 
-It is the other end of the range. The gap between it and Full Cloud is what makes
-the two middle architectures worth building: if a 1.7 B model wrote SQL as well
-as a 120 B model, there would be nothing to protect and nothing to argue about.
+It is the other end of the range, and it is what makes the two middle architectures
+worth building: if a 1.7 B model wrote SQL as well as a 120 B one, there would be
+nothing to protect and nothing to argue about.
 
 **Modules:** `pipeline/understand.py`, `providers/local_model.py`,
 `db/connection.py`, `pipeline/answer.py`
 """)
     code(nb, 'for q in QUESTIONS:\n    ask(q, "full_local")')
 
-    # --- Comparison ---------------------------------------------------------
+    # --- Comparison ----------------------------------------------------------
     md(nb, """
 ---
 
-## 8. The comparison
+## 9. The comparison
 
-`ran` counts queries that executed, not answers that were right. Accuracy is a
-separate evaluation, in `scripts/evaluate_pipeline.py`.
-
-The column that decides is **values sent**.
+`ran` counts queries that executed, not answers that were right — accuracy is a
+separate evaluation, in `scripts/evaluate_pipeline.py`. The column that decides is
+**values sent**.
 """)
     code(nb, COMPARISON)
 
     md(nb, """
-Hybrid and Hybrid Opaque send zero values. Full Cloud sends every one it touches.
+Hybrid and Hybrid Opaque send **zero** values. Full Cloud sends every one it touches.
 Full Local sends nothing at all and pays for it in the `ran` column.
 """)
 
@@ -1263,56 +1569,12 @@ def build_run_all(nb: Notebook) -> None:
     md(nb, """
 ---
 
-## 3. Reading the question
+## 3. The four architectures
 
-All local. The entities are found, the values are resolved against the index, the
-question is masked, and every outgoing segment is checked before a socket opens.
-[Notebook 2]({{URL2}}) takes this apart stage by stage.
-""", URL2=BY_NUMBER[2].url)
-    code(nb, """
-from hybridsql.pipeline.understand import understand
-from hybridsql.pipeline.anonymize import anonymize
-from hybridsql.pipeline import generate as gen
-from hybridsql.security import egress_gate
-
-u = understand("{{Q}}")
-a = anonymize(u)
-
-print(f"  {'span':<14}{'column':<28}resolved to")
-for r in u.resolutions:
-    print(f"  {r.mention:<14}{str(r.column or '-'):<28}{r.value or '-'}")
-
-print(f"\\n  asked   {u.question}")
-print(f"  sent    {a.masked_question}")
-print(f"  kept    {a.mapping}")
-""", Q=QUESTION)
-
-    md(nb, "**The gate, on every segment.**")
-    code(nb, """
-for segment in gen.build_segments(u, a):
-    verdict = egress_gate.check_segment(segment, "run-all")
-    mark = "pass " if verdict.allowed else "BLOCK"
-    print(f"  [{mark}] {segment.origin:<9}{verdict.verified_by:<26}"
-          f"{' '.join(segment.text.split())[:38]}...")
-
-from hybridsql.security.egress_gate import LeakBlocked, Segment
-try:
-    egress_gate.require_segments(
-        [Segment("How many patients received AMOXICILLIN 500 MG PO CAPS?", "question")],
-        "check")
-    print("\\n  ALLOWED. This would be a failure.")
-except LeakBlocked:
-    print("\\n  a real drug name, submitted on purpose: refused")
-""")
-
-    md(nb, """
----
-
-## 4. All four architectures
-
-Three questions through each of the four. Free Groq allows 30 requests a minute,
-so the loop paces itself.
-""")
+Three questions through each of the four. [Notebook 2]({{URL2}}) takes the
+understanding stage apart, [notebook 3]({{URL3}}) the four designs; this one just
+runs them. Free Groq allows 30 requests a minute, so the loop paces itself.
+""", URL2=BY_NUMBER[2].url, URL3=BY_NUMBER[3].url)
     code(nb, ASK)
     code(nb, """
 for i, question in enumerate(QUESTIONS, 1):
@@ -1322,7 +1584,7 @@ for i, question in enumerate(QUESTIONS, 1):
     time.sleep(2.5)
 """)
 
-    md(nb, "**What Hybrid Opaque actually sent.**")
+    md(nb, "**What Hybrid Opaque actually sent.** Labels only, redrawn for this request.")
     code(nb, """
 opaque = next((r["opaque"] for r in results
                if r["arm"] == "hybrid_opaque" and r["opaque"].get("question")), None)
@@ -1360,7 +1622,7 @@ print(f"\\n  {written['answer']}")
     md(nb, """
 ---
 
-## 6. The live service
+## 5. The live service
 
 The same pipeline, behind an address a browser can reach.
 

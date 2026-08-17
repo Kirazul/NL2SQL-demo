@@ -324,8 +324,34 @@ def build(
 # ---------------------------------------------------------------------------------
 # 3. Lookup
 # ---------------------------------------------------------------------------------
-def _similarity(a: str, b: str) -> float:
-    """How close two strings are, ignoring case.
+SEPARATORS_RE = re.compile(r"\s*[|/;:]\s*")
+
+
+def _comparable_parts(value: str) -> list[str]:
+    """The value, plus its segments when it is a compound one.
+
+    eICU stores hierarchies in a single cell:
+    `hematology|coagulation disorders|DIC syndrome`, `notes/Progress Notes/…`,
+    `Older adult: Provide adequate time for patients…`. Compared whole, such a value
+    is long enough that any question shares a word with it, and the token scorers
+    then reward it: measured, "male patients" scored **0.76** against *"Older adult:
+    Provide adequate time for patients to process new information"* — above the
+    confidence threshold, so `patient.gender = 'Male'` lost to a care-plan sentence.
+
+    Comparing against each segment instead asks the right question — *is the mention
+    one of the things this cell names?* — and costs one `split`.
+    """
+    # Short values are already their own segment, and a search scores up to three
+    # hundred candidates: splitting every one of them tripled stage-1 latency for
+    # nothing. Only values long enough to be compound are split.
+    if len(value) <= 32:
+        return [value]
+    parts = [p for p in SEPARATORS_RE.split(value) if len(p.strip()) > 3]
+    return [value, *parts[:6]] if len(parts) > 1 else [value]
+
+
+def _similarity(mention: str, value: str) -> float:
+    """How well a **mention** matches a stored **value**. Not symmetric, on purpose.
 
     Ignoring case is not a detail here. rapidfuzz compares case-sensitively by
     default, and eICU stores values in whatever case the source hospital used —
@@ -333,16 +359,46 @@ def _similarity(a: str, b: str) -> float:
     effect was measured: `alive` against the stored `Alive` scored 0.89 instead of
     1.00, which is below the confidence threshold, so a perfect match was reported
     as an uncertain one and the question was refused.
+
+    Why the direction matters
+    -------------------------
+    Partial matching is legitimate in exactly one direction: the analyst names a
+    **part** of a longer stored value — "aspirin" for `ASPIRIN EC 81 MG PO TBEC`.
+    That is the case the whole index exists for.
+
+    The reverse is not a match at all, and letting `partial_ratio` treat it as one
+    was the single most damaging defect in this pipeline. Measured before the fix:
+
+        "10 most frequently recorded laboratory tests"  vs  "10"    ->  1.00
+        "laboratory records"                           vs  "lab"   ->  1.00
+
+    Both were masked as values with full confidence, and the cloud model was then
+    asked to filter on them. A short value found inside a long mention says nothing
+    about the mention; it only says the database contains a common short string.
+
+    So when the value is shorter than the mention, only whole-string similarity
+    counts. Nothing is lost: a mention that is genuinely longer than its value —
+    "aspirin 81 mg" for `ASPIRIN` — is recovered by `_shorter_spans`, which asks the
+    index again with the sub-spans and lets the exact match win there.
     """
-    left, right = a.lower(), b.lower()
+    left, right = mention.lower().strip(), value.lower().strip()
+    if not left or not right:
+        return 0.0
     try:
         from rapidfuzz import fuzz
-
-        return max(fuzz.token_set_ratio(left, right), fuzz.partial_ratio(left, right)) / 100.0
-    except ImportError:
+    except ImportError:  # pragma: no cover — rapidfuzz is a declared dependency
         from difflib import SequenceMatcher
 
         return SequenceMatcher(None, left, right).ratio()
+
+    best = 0.0
+    for candidate in _comparable_parts(right):
+        whole = fuzz.ratio(left, candidate) / 100.0
+        if len(candidate) < len(left):
+            best = max(best, whole)
+        else:
+            best = max(best, whole, fuzz.partial_ratio(left, candidate) / 100.0)
+    return best
 
 
 def _fts_queries(mention: str) -> list[str]:
