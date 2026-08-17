@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -894,8 +895,7 @@ for mention in ["aspirin", "asspirin", "Skilled Nursing Facility"]:
 
 from hybridsql.resources import glossary
 terms = glossary.load()
-print(f"
-  glossary: {len(terms)} business terms written by hand, e.g."
+print(f"\\n  glossary: {len(terms)} business terms written by hand, e.g."
       f" {list(terms)[0]} -> {terms[list(terms)[0]].columns[0]}")
 """)
 
@@ -1817,8 +1817,52 @@ BUILDERS = {1: build_setup, 2: build_understanding,
 # =================================================================================
 #  Write and push
 # =================================================================================
+SHELL_LINE = re.compile(r"^\s*[!%]")
+
+
+def check_syntax(nb: Notebook) -> list[str]:
+    """Compile every code cell before writing it out.
+
+    Cells are Python source held inside Python string literals, one level of
+    escaping deep. A `\\n` written where `\\\\n` was meant becomes a real newline in
+    the middle of an f-string, and the notebook ships with a `SyntaxError` that
+    nobody sees until a cell is run on Kaggle — which is exactly how it happened.
+
+    Shell lines are neutralised rather than skipped: `!pip install ...` is not
+    Python, but the rest of the cell around it is, and skipping the whole cell is
+    what let the broken one through the first time.
+    """
+    problems: list[str] = []
+    for index, cell in enumerate(nb.cells):
+        if cell["cell_type"] != "code":
+            continue
+        source = "".join(cell["source"])
+        lines: list[str] = []
+        continued = False
+        for line in source.splitlines():
+            if line.startswith("%%"):
+                continue
+            if continued:
+                continued = line.rstrip().endswith("\\")
+                lines.append("")
+            elif SHELL_LINE.match(line):
+                continued = line.rstrip().endswith("\\")
+                lines.append(re.sub(r"[!%].*", "pass", line))
+            else:
+                lines.append(line)
+        try:
+            compile("\n".join(lines), f"<{nb.slug} cell {index}>", "exec")
+        except SyntaxError as error:
+            problems.append(f"  cell {index}, line {error.lineno}: {error.msg}")
+    return problems
+
+
 def write(nb: Notebook) -> Path:
     BUILDERS[nb.number](nb)
+
+    broken = check_syntax(nb)
+    if broken:
+        raise SystemExit(f"{nb.slug} does not compile:\n" + "\n".join(broken))
 
     document = {
         "cells": nb.cells,
