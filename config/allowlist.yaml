@@ -1,0 +1,107 @@
+# =============================================================================
+#  Egress gate allowlist — the vocabulary a QUESTION may contain
+# =============================================================================
+#
+#  Scope of this file
+#  ------------------
+#  This list is applied to **the masked question only**. The other parts of the
+#  prompt — the instruction text, the DDL, the business notes — are verified by
+#  provenance instead: the gate regenerates them and compares (see
+#  `security/egress_gate.py`). That is why no scaffolding vocabulary appears here.
+#
+#  An earlier version checked the whole prompt word by word. It worked, but it
+#  forced hundreds of ordinary English words into this file ("identifies",
+#  "hierarchical", "boolean") purely so our own sentences could pass. Every new
+#  question added one more word, and each addition widened the hole. Verifying by
+#  provenance removed that whole class of entries.
+#
+#  What is NOT here, on purpose
+#  ----------------------------
+#  Schema identifiers (table and column names) and glossary vocabulary are read
+#  from the database and from `config/glossary.yaml` at load time. Copying them
+#  here by hand would drift out of sync and become a hole.
+#
+#  The rule this expresses
+#  -----------------------
+#  A content word in a question must either be **masked as a value**, or be
+#  **declared in the glossary as a concept**. If it is neither, the gate blocks —
+#  and the fix is to extend the glossary, not to widen this list.
+# =============================================================================
+
+# --- Question grammar ---------------------------------------------------------
+# A closed class: articles, prepositions, pronouns, auxiliaries, wh-words,
+# quantifiers, comparatives, and the verbs of asking. It does not grow with the
+# domain — that is what makes it legitimate to write by hand.
+grammar:
+  - a, an, the, of, for, in, on, at, to, from, by, with, without, per, into
+  - and, or, not, but, than, that, this, these, those, there, their, then
+  - is, are, was, were, be, been, being, do, does, did, has, have, had
+  - can, could, will, would, should, may, might, must
+  - what, which, who, whom, whose, when, where, why, how
+  - many, much, more, most, less, least, few, fewer, several, each, every
+  # Frequency adverbs. `once` is stored as a value somewhere in eICU, so
+  # "readmitted more than once" was refused as a leak. Unlike `alive`, which
+  # is masked because it is a value of the question's own subject, these are
+  # closed-class grammar and can never denote data.
+  - once, twice, again, still, already, ever, never, often, always
+  - any, some, all, both, either, neither, other, others, same, different
+  - only, also, just, still, ever, never, always, again
+  - i, we, you, they, it, me, us, them, my, our, your, its, his, her
+  # Verbs of asking and of clinical narration. Content-free: they describe the
+  # action, never the data.
+  - show, list, give, find, get, return, display, tell, want, need, know
+  - compare, rank, sort, group, break, split, filter, restrict, exclude, include
+  - received, receive, receiving, taken, take, taking, given, using, used
+  - having, admitted, staying, stayed, treated, recorded, reported, observed
+  - grew, underwent, developed, transferred, presented, suffered, got, went
+  - discharged, released, arrived, came, left, remained, readmitted, work
+  - prescribed, diagnosed, intubated, ventilated, allocated
+  # Quantities, comparisons and time.
+  - number, count, total, sum, average, mean, median, rate, ratio, percentage
+  - percent, proportion, share, fraction, distribution, trend, level, levels
+  - highest, lowest, largest, smallest, biggest, top, bottom, first, last
+  - maximum, minimum, longest, shortest, oldest, youngest, common, frequent
+  - frequently, rarely, higher, lower, older, younger, longer, shorter
+  - above, below, over, under, before, after, during, within, since, between
+  - greater, smaller, equal, exceeds, about, around, approximately, roughly
+  - year, years, month, months, week, weeks, day, days, hour, hours
+  - minute, minutes, second, seconds, time, times, period, duration, long
+  - old, new, recent, previous, next, current, past, today
+  # Ordinary words of a vague or off-topic question. Present so that such a
+  # question fails at comprehension — which is the honest diagnosis — rather than
+  # at the gate, which would confuse the two failure modes in the measurements.
+  - yes, no, none, empty, missing, unknown, normal, abnormal, other
+  - doing, badly, well, problems, problem, something, anything, interesting
+  - data, wrong, right, overview, summary, numbers, look, ones, price, weather
+  - please, note, example, instance, such, like, overall, respectively, non
+
+# --- SQL keywords -------------------------------------------------------------
+# The cloud model returns SQL, and the repair loop sends its own query back for
+# correction. Both directions must pass.
+sql:
+  - sql, sqlite, select, from, where, group, by, order, having, limit, offset
+  - distinct, join, inner, left, right, outer, full, cross, on, using, natural
+  - and, or, not, in, exists, between, like, glob, is, null, as
+  - count, sum, avg, min, max, total, round, abs, cast, coalesce, nullif
+  - case, when, then, else, end, union, all, intersect, except
+  - asc, desc, with, recursive, over, partition, row_number, rank, dense_rank
+  - substr, length, upper, lower, trim, replace, instr
+  - date, time, datetime, julianday, strftime, now
+  - int, integer, real, text, blob, numeric, varchar, boolean
+  - primary, foreign, key, references, table, tables, create, view, index
+  - column, columns, query, statement, parameter, parameters, bound, value, values
+
+# --- Allowed patterns ---------------------------------------------------------
+patterns:
+  # Anonymization symbols: precisely what replaces the values.
+  symbol: '^:v\d+$'
+  # Numbers. A number written by the analyst ("over 65") is part of the question,
+  # not a datum from the database.
+  number: '^[-+]?\d+([.,]\d+)?%?$'
+  # Punctuation and operators.
+  punctuation: '^[(),.;:*=<>!/+\-''"\[\]{}|?_%]+$'
+  # SQL table aliases: `FROM patient p JOIN medication m ON ...`. The cloud model
+  # produces them systematically. A one- or two-letter identifier cannot carry
+  # business data — values shorter than three characters are excluded from the
+  # index anyway.
+  alias: '^[A-Za-z]{1,2}\d{0,2}$'

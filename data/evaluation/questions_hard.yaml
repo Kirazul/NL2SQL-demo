@@ -1,0 +1,199 @@
+# =============================================================================
+#  Evaluation set — hard questions
+# =============================================================================
+#
+#  Why a second set
+#  ----------------
+#  The first set (`questions_standard.yaml`) is made of well-formed questions. A
+#  real analyst does not write like that: they name people, abbreviate, stay
+#  vague, misspell, and ask two things at once.
+#
+#  This set collects those cases. It is built to **fail** in part — that is the
+#  point. A set you score 100 % on measures nothing any more.
+#
+#  Four families
+#  -------------
+#  1. PERSON NAMES — the most serious case for privacy.
+#     eICU is de-identified: it holds no names at all. A name must therefore NEVER
+#     be resolved, and above all never cross the egress gate. The right answer is
+#     "I cannot answer, the database holds no names", not an approximate match.
+#
+#  2. VAGUE QUESTIONS — no explicit value, unclear intent. The system must
+#     recognise there is nothing to mask rather than invent a value.
+#
+#  3. SLANG AND ABBREVIATIONS — "BP", "K+", "vanco", "afib".
+#     This is how clinicians actually speak.
+#
+#  4. TYPOS AND AWKWARD PHRASING — real robustness.
+#
+#  Same format as the first set, with two extra keys:
+#     persons:      [mentions that must be classified as a person]
+#     unresolvable: [mentions that must NOT be resolved confidently]
+# =============================================================================
+
+# --- 1. PERSON NAMES ----------------------------------------------------
+- question: "Did Mr. Bensalah receive his insulin?"
+  values: {insulin: "medication.drugname|admissiondrug.drugname|infusiondrug.drugname|intakeoutput.celllabel"}
+  persons: ["Mr. Bensalah"]
+  concepts: []
+  tables: [medication]
+
+- question: "What was Sarah Johnson's last potassium result?"
+  values: {potassium: "lab.labname|medication.drugname|intakeoutput.celllabel"}
+  persons: ["Sarah Johnson"]
+  concepts: [result]
+  tables: [lab]
+
+- question: "Show me the chart for Ahmed Trabelsi"
+  values: {}
+  persons: ["Ahmed Trabelsi"]
+  concepts: [chart]
+  tables: []
+
+- question: "Was Maria Gonzalez discharged home?"
+  values: {discharged home: "patient.hospitaldischargelocation|patient.unitdischargelocation"}
+  persons: ["Maria Gonzalez"]
+  concepts: []
+  tables: [patient]
+
+- question: "Which patients did Dr. Martinez treat in the SICU?"
+  values: {SICU: "patient.unittype"}
+  persons: ["Dr. Martinez"]
+  concepts: [patients, treat]
+  tables: [patient]
+
+- question: "Compare the outcomes of John Smith and Robert Williams"
+  values: {}
+  persons: ["John Smith", "Robert Williams"]
+  concepts: [outcomes]
+  tables: []
+
+- question: "Has Fatma Ben Ali been intubated?"
+  values: {}
+  persons: ["Fatma Ben Ali"]
+  concepts: [intubated]
+  tables: [respiratorycare]
+
+# --- 2. VAGUE QUESTIONS -----------------------------------------------------
+- question: "Who is doing badly?"
+  values: {}
+  concepts: []
+  tables: []
+
+- question: "Any problems with the heart patients?"
+  values: {}
+  concepts: [patients]
+  tables: []
+
+- question: "Show me something interesting about the data"
+  values: {}
+  concepts: [data]
+  tables: []
+
+- question: "What went wrong last month?"
+  values: {}
+  concepts: []
+  tables: []
+
+- question: "Give me an overview"
+  values: {}
+  concepts: []
+  tables: []
+
+- question: "Are the numbers normal?"
+  values: {}
+  concepts: [numbers]
+  tables: []
+
+- question: "Which cases should I look at first?"
+  values: {}
+  concepts: [cases]
+  tables: []
+
+# --- 3. SLANG AND ABBREVIATIONS -------------------------------------
+# "vanco" -> "vancomycin" is a SUCCESS of the fuzzy match (rapidfuzz), not a
+# failure: the clinical abbreviation is correctly attached to the drug.
+- question: "How many patients got vanco?"
+  values: {vanco: "medication.drugname|admissiondrug.drugname|infusiondrug.drugname"}
+  concepts: [patients]
+  tables: [medication]
+
+- question: "Average K+ for septic patients"
+  values: {}
+  concepts: [patients]
+  tables: [lab]
+  unresolvable: ["K+", septic]
+
+- question: "Any patients with afib on anticoagulation?"
+  values: {}
+  concepts: [patients]
+  tables: [diagnosis]
+  unresolvable: [afib, anticoagulation]
+
+- question: "Show BP readings for ICU patients"
+  values: {}
+  concepts: [patients, icu]
+  tables: [vitalperiodic]
+  unresolvable: ["BP"]
+
+- question: "How many pts were vented?"
+  values: {}
+  concepts: []
+  tables: [respiratorycare]
+  unresolvable: [pts, vented]
+
+- question: "Count the DNR patients"
+  values: {}
+  concepts: [patients]
+  tables: []
+  unresolvable: ["DNR"]
+
+# --- 4. TYPOS AND AWKWARD PHRASING ---------------------------------------
+- question: "how many patietns recieved aspirn"
+  values: {}
+  concepts: []
+  tables: [medication]
+  unresolvable: [aspirn]
+
+# Same: the typo is caught. That is the wanted behaviour.
+- question: "patients with sepssis and renal falure"
+  values:
+    renal falure: "diagnosis.diagnosisstring|admissiondx.admitdxname|treatment.treatmentstring|note.notevalue"
+  concepts: []
+  tables: [diagnosis]
+  unresolvable: [sepssis]
+
+- question: "the ones who died, what did they have"
+  values: {}
+  concepts: [died]
+  tables: [patient]
+
+- question: "vancomycin, how many, by unit, last year"
+  values: {vancomycin: "medication.drugname|admissiondrug.drugname|infusiondrug.drugname"}
+  concepts: [unit]
+  tables: [medication, patient]
+
+- question: "I need the sepsis patients but only the ones in the MICU who also got vancomycin and died"
+  values:
+    sepsis: "diagnosis.diagnosisstring|admissiondx.admitdxname|careplangoal.cplgoalvalue"
+    MICU: "patient.unittype"
+    vancomycin: "medication.drugname|admissiondrug.drugname|infusiondrug.drugname"
+  concepts: [patients, died]
+  tables: [diagnosis, patient, medication]
+
+# --- 5. OFF TOPIC -----------------------------------------------------------
+#  The system must recognise it does not hold the data, not produce SQL.
+- question: "What is the price of aspirin?"
+  values: {aspirin: "medication.drugname|admissiondrug.drugname|allergy.allergyname"}
+  concepts: [price]
+  tables: [medication]
+
+- question: "How many nurses work in the ICU?"
+  values: {}
+  concepts: [nurses, icu]
+  tables: []
+
+- question: "What is the weather today?"
+  values: {}
+  concepts: []
+  tables: []

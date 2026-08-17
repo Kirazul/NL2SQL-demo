@@ -1,0 +1,185 @@
+# =============================================================================
+#  Business glossary — the bridge between the analyst's words and the schema
+# =============================================================================
+#
+#  What it is for
+#  --------------
+#  The value index resolves *content* ("aspirin" -> `ASPIRIN EC 81 MG…`).
+#  It cannot resolve *vocabulary*: when the analyst says "mortality", no value in
+#  the database is called "mortality". It is a column name.
+#
+#  This file does the other half: business term -> columns. It serves two things,
+#  in this order:
+#
+#    1. **Schema linking** — restrict the DDL sent to the cloud to the useful
+#       tables. Fewer tables = shorter prompt, fewer join mistakes, lower cost.
+#    2. **Resolution scope** — tell the value index which columns to search. A
+#       mention searched in 3 columns instead of 106 is faster and far more precise.
+#
+#  This file crosses the trust boundary (a summary of it goes into the prompt),
+#  so it must contain **no data**: only vocabulary and column names. Notes are in
+#  English for the same reason — they are sent to the cloud model verbatim.
+#
+#  Format
+#  ------
+#    <canonical term>:
+#      synonyms: [ ... ]    # what the analyst may write
+#      columns:  [ ... ]    # table.column, most relevant first
+#      note:     "..."      # optional, passed to the model as a hint
+#
+#  RULE THAT MUST NOT BE BROKEN
+#  ----------------------------
+#  A synonym names the CONCEPT, never a STORED VALUE.
+#
+#  "gender" is a correct synonym; "female" is not — it is the content of
+#  `patient.gender`. The distinction is not cosmetic: the pipeline uses it to
+#  decide what to mask. A mention fully covered by the glossary is treated as a
+#  concept and is therefore NOT replaced by a symbol. Listing "female" here would
+#  have let it leave in clear text.
+#  `tests/test_glossary.py` enforces this automatically.
+# =============================================================================
+
+# --- Patients and stays ------------------------------------------------------
+patient:
+  synonyms: [patients, patient, case, cases, admission, admissions, stay, stays, encounter]
+  columns: [patient.patienthealthsystemstayid, patient.patientunitstayid]
+  note: "A patient may have several stays; patientunitstayid identifies the ICU stay, not the person."
+
+age:
+  synonyms: [age, aged, older, younger, elderly]
+  columns: [patient.age]
+  note: "Stored as text, not a number: patients over 89 are recorded as '> 89' for de-identification."
+
+sex:
+  # `male`, `female`, `men`, `women` are deliberately absent: they are the values
+  # of the column, not ways of naming the concept.
+  synonyms: [gender, sex]
+  columns: [patient.gender]
+
+ethnicity:
+  synonyms: [ethnicity, race]
+  columns: [patient.ethnicity]
+
+weight:
+  synonyms: [weight, body weight, kg]
+  columns: [patient.admissionweight, patient.dischargeweight]
+
+height:
+  synonyms: [height, tall]
+  columns: [patient.admissionheight]
+
+# --- Hospital structure ------------------------------------------------------
+hospital:
+  synonyms: [hospital, hospitals, site, center, centre, facility]
+  columns: [hospital.hospitalid, hospital.region, hospital.numbedscategory, hospital.teachingstatus]
+
+teaching_status:
+  # `teachingstatus` does not contain the word "teaching" but a boolean: without
+  # this term, "teaching hospitals" went to value search and found nothing.
+  synonyms: [teaching, teaching hospital, teaching hospitals, academic, university hospital]
+  columns: [hospital.teachingstatus]
+  note: "teachingstatus is a boolean, not a label: filter on true/false, not on text."
+
+hospital_size:
+  synonyms: [bed, beds, number of beds, bed category, size, capacity]
+  columns: [hospital.numbedscategory]
+
+care_unit:
+  synonyms: [unit, ward, icu, icus, unit type, department]
+  columns: [patient.unittype, patient.unitstaytype]
+
+region:
+  synonyms: [region, regions, geography, area, geographic region]
+  columns: [hospital.region]
+
+# --- Patient outcome ---------------------------------------------------------
+mortality:
+  # `expired` and `alive` are excluded: they are the values of hospitaldischargestatus.
+  synonyms: [mortality, death, deaths, died, deceased, survival, survived, fatal]
+  columns: [patient.hospitaldischargestatus, patient.unitdischargestatus, apachepatientresult.actualhospitalmortality, apachepatientresult.actualicumortality]
+  note: "Discharge status is recorded as text, not as a boolean."
+
+length_of_stay:
+  synonyms: [length of stay, los, duration, how long, stayed]
+  columns: [apachepatientresult.actualiculos, apachepatientresult.actualhospitallos, patient.unitdischargeoffset]
+  note: "Columns ending in los are in days. Columns ending in offset are in minutes since ICU admission and can be negative."
+
+admission:
+  synonyms: [admission, admitted, admission source, arrival, came from]
+  columns: [patient.hospitaladmitsource, patient.unitadmitsource, patient.apacheadmissiondx]
+
+discharge:
+  synonyms: [discharge, discharged, released, discharge location]
+  columns: [patient.hospitaldischargelocation, patient.unitdischargelocation]
+
+# --- Severity ----------------------------------------------------------------
+severity_score:
+  synonyms: [severity, apache, apache score, severity score, acuity, sickest, risk]
+  columns: [apachepatientresult.apachescore, apachepatientresult.apacheversion, apachepatientresult.predictedhospitalmortality]
+  note: "APACHE IV and IVa coexist: filter on apacheversion to avoid counting the same stay twice."
+
+# --- Clinical ----------------------------------------------------------------
+diagnosis:
+  synonyms: [diagnosis, diagnoses, diagnosed, condition, disease, disorder, icd, icd9]
+  columns: [diagnosis.diagnosisstring, diagnosis.icd9code, admissiondx.admitdxname, patient.apacheadmissiondx]
+  # No literal example here: the note travels into the prompt, and an example
+  # taken from the data would be exactly the leak this project prevents. The
+  # egress gate caught it — that is what it is for.
+  note: "diagnosisstring is hierarchical, pipe-separated from general to specific."
+
+drug:
+  synonyms: [drug, drugs, medication, medications, medicine, prescribed, prescription, treatment drug]
+  columns: [medication.drugname, admissiondrug.drugname, infusiondrug.drugname]
+  # "home medication" avoided on purpose: `home` is a stored value of
+  # `hospitaldischargelocation`, so the word would be stopped by the egress gate.
+  note: "medication holds prescriptions during the stay, admissiondrug the pre-admission treatment, infusiondrug continuous infusions."
+
+dosage:
+  # `mg` and `route` are excluded: they are values of dosage and routeadmin.
+  synonyms: [dose, dosage, units, frequency, posology]
+  columns: [medication.dosage, medication.frequency, medication.routeadmin]
+
+allergy:
+  synonyms: [allergy, allergies, allergic, intolerance]
+  columns: [allergy.allergyname, allergy.allergytype]
+
+lab_test:
+  synonyms: [lab, labs, laboratory, lab test, lab tests, test, tests, blood test, result, results, lab result, lab results, measurement, measurements]
+  columns: [lab.labname, lab.labresult, lab.labmeasurenamesystem]
+  note: "labresult is numeric and queryable; labresulttext is its text form and should be avoided in filters."
+
+microbiology:
+  synonyms: [culture, cultures, organism, organisms, bacteria, microbiology, antibiotic sensitivity, infection, culture site, culture sites]
+  columns: [microlab.organism, microlab.culturesite, microlab.antibiotic, microlab.sensitivitylevel]
+
+procedure:
+  synonyms: [treatment, treatments, procedure, procedures, intervention, therapy]
+  columns: [treatment.treatmentstring]
+  note: "Hierarchical like diagnosisstring."
+
+medical_history:
+  synonyms: [history, past history, comorbidity, comorbidities, pre-existing, chronic]
+  columns: [pasthistory.pasthistoryvalue, pasthistory.pasthistorypath]
+
+# --- Vitals and monitoring ---------------------------------------------------
+vital_signs:
+  synonyms: [vitals, vital signs, heart rate, blood pressure, respiratory rate, spo2, temperature, saturation]
+  columns: [vitalperiodic.heartrate, vitalperiodic.respiration, vitalperiodic.sao2, vitalaperiodic.noninvasivemean, vitalperiodic.temperature]
+  note: "vitalperiodic is sampled every 5 minutes and holds 12 million rows: always filter on a stay and aggregate."
+
+ventilation:
+  synonyms: [ventilation, ventilator, ventilated, intubation, intubated, airway, respiratory support]
+  columns: [respiratorycare.airwaytype, respiratorycare.ventstartoffset, respiratorycharting.respchartvaluelabel]
+
+intake_output:
+  # `intake` and `urine` are excluded: they are values of celllabel.
+  synonyms: [output, fluid, fluids, balance, i&o]
+  columns: [intakeoutput.celllabel, intakeoutput.cellvaluenumeric, intakeoutput.cellpath]
+
+physical_exam:
+  synonyms: [physical exam, examination, gcs, glasgow, neuro]
+  columns: [physicalexam.physicalexampath, physicalexam.physicalexamvalue]
+
+nursing:
+  synonyms: [nursing, nurse, nursing chart, assessment, care plan]
+  columns: [nursecharting.nursingchartcelltypevalname, nurseassessment.celllabel, careplangeneral.cplitemvalue]

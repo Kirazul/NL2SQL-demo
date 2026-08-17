@@ -1,0 +1,9 @@
+* text=auto eol=lf
+
+*.png binary
+*.pdf binary
+*.db  binary
+*.gguf binary
+*.safetensors binary
+
+*.ipynb -diff

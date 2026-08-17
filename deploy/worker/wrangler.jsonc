@@ -1,0 +1,36 @@
+{
+  // ---------------------------------------------------------------------------
+  //  NL2SQL — the public face of the UNIMED demo.
+  //
+  //  This Worker serves the chat interface and one small piece of state: the
+  //  address the notebook is currently reachable at. It never sees a question,
+  //  an answer or a row — the browser talks to the notebook directly. That is a
+  //  deliberate choice, and the reason is in `src/index.js`.
+  // ---------------------------------------------------------------------------
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nl2sql",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-01",
+
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    // Everything that is not an API route falls back to the single page.
+    "not_found_handling": "single-page-application"
+  },
+
+  // The rendezvous. A Kaggle session gets a fresh tunnel hostname every time it
+  // starts, so the address cannot be baked into the page; the notebook publishes
+  // it here on boot and the page reads it back. This is the whole reason the
+  // demo has a stable link.
+  "kv_namespaces": [
+    {
+      "binding": "RENDEZVOUS",
+      "id": "ed359a62c671465abce00cb8391475c7"
+    }
+  ],
+
+  "observability": {
+    "enabled": true
+  }
+}

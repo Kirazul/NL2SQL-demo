@@ -1,0 +1,2714 @@
+{
+ "admissiondrug": {
+  "n": 7417,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "admissiondrugid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "drugoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "drugenteredoffset"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "drugnotetype"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "specialtytype"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "usertype"
+   },
+   {
+    "type": "VARCHAR(5)",
+    "pk": false,
+    "nn": false,
+    "name": "rxincluded"
+   },
+   {
+    "type": "VARCHAR(5)",
+    "pk": false,
+    "nn": false,
+    "name": "writtenineicu"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "drugname"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "drugdosage"
+   },
+   {
+    "type": "VARCHAR(1000)",
+    "pk": false,
+    "nn": false,
+    "name": "drugunit"
+   },
+   {
+    "type": "VARCHAR(1000)",
+    "pk": false,
+    "nn": true,
+    "name": "drugadmitfrequency"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "drughiclseqno"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "admissiondx": {
+  "n": 7578,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "admissiondxid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "admitdxenteredoffset"
+   },
+   {
+    "type": "VARCHAR(500)",
+    "pk": false,
+    "nn": true,
+    "name": "admitdxpath"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "admitdxname"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "admitdxtext"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "allergy": {
+  "n": 2475,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "allergyid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "allergyoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "allergyenteredoffset"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "allergynotetype"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "specialtytype"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "usertype"
+   },
+   {
+    "type": "VARCHAR(5)",
+    "pk": false,
+    "nn": false,
+    "name": "rxincluded"
+   },
+   {
+    "type": "VARCHAR(5)",
+    "pk": false,
+    "nn": false,
+    "name": "writtenineicu"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "drugname"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "allergytype"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "allergyname"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "drughiclseqno"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "apacheapsvar": {
+  "n": 2205,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "apacheapsvarid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "intubated"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "vent"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "dialysis"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "eyes"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "motor"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "verbal"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "meds"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "urine"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "wbc"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "temperature"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "respiratoryrate"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "sodium"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "heartrate"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "meanbp"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "ph"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "hematocrit"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "creatinine"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "albumin"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "pao2"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "pco2"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "bun"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "glucose"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "bilirubin"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "fio2"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "apachepatientresult": {
+  "n": 3676,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "apachepatientresultsid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "VARCHAR(50)",
+    "pk": false,
+    "nn": false,
+    "name": "physicianspeciality"
+   },
+   {
+    "type": "VARCHAR(50)",
+    "pk": false,
+    "nn": false,
+    "name": "physicianinterventioncategory"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "acutephysiologyscore"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "apachescore"
+   },
+   {
+    "type": "VARCHAR(5)",
+    "pk": false,
+    "nn": true,
+    "name": "apacheversion"
+   },
+   {
+    "type": "VARCHAR(50)",
+    "pk": false,
+    "nn": false,
+    "name": "predictedicumortality"
+   },
+   {
+    "type": "VARCHAR(50)",
+    "pk": false,
+    "nn": false,
+    "name": "actualicumortality"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "predictediculos"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "actualiculos"
+   },
+   {
+    "type": "VARCHAR(50)",
+    "pk": false,
+    "nn": false,
+    "name": "predictedhospitalmortality"
+   },
+   {
+    "type": "VARCHAR(50)",
+    "pk": false,
+    "nn": false,
+    "name": "actualhospitalmortality"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "predictedhospitallos"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "actualhospitallos"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "preopmi"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "preopcardiaccath"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "ptcawithin24h"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "unabridgedunitlos"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "unabridgedhosplos"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "actualventdays"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "predventdays"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "unabridgedactualventdays"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "apachepredvar": {
+  "n": 2205,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "apachepredvarid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "sicuday"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "saps3day1"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "saps3today"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "saps3yesterday"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "gender"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "teachtype"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "region"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "bedcount"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "admitsource"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "graftcount"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "meds"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "verbal"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "motor"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "eyes"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "age"
+   },
+   {
+    "type": "VARCHAR(11)",
+    "pk": false,
+    "nn": false,
+    "name": "admitdiagnosis"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "thrombolytics"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "diedinhospital"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "aids"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "hepaticfailure"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "lymphoma"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "metastaticcancer"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "leukemia"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "immunosuppression"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "cirrhosis"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "electivesurgery"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "activetx"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "readmit"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "ima"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "midur"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "ventday1"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "oobventday1"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "oobintubday1"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "diabetes"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "managementsystem"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "var03hspxlos"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "pao2"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "fio2"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "ejectfx"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "creatinine"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "dischargelocation"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "visitnumber"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "amilocation"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "day1meds"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "day1verbal"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "day1motor"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "day1eyes"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "day1pao2"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "day1fio2"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "careplancareprovider": {
+  "n": 5627,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "cplcareprovderid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "careprovidersaveoffset"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "providertype"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "specialty"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "interventioncategory"
+   },
+   {
+    "type": "VARCHAR(50)",
+    "pk": false,
+    "nn": false,
+    "name": "managingphysician"
+   },
+   {
+    "type": "VARCHAR(10)",
+    "pk": false,
+    "nn": true,
+    "name": "activeupondischarge"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "careplaneol": {
+  "n": 15,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "cpleolid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "cpleolsaveoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "cpleoldiscussionoffset"
+   },
+   {
+    "type": "VARCHAR(10)",
+    "pk": false,
+    "nn": false,
+    "name": "activeupondischarge"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "careplangeneral": {
+  "n": 33148,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "cplgeneralid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "VARCHAR(10)",
+    "pk": false,
+    "nn": true,
+    "name": "activeupondischarge"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "cplitemoffset"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "cplgroup"
+   },
+   {
+    "type": "VARCHAR(1024)",
+    "pk": false,
+    "nn": false,
+    "name": "cplitemvalue"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "careplangoal": {
+  "n": 3633,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "cplgoalid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "cplgoaloffset"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "cplgoalcategory"
+   },
+   {
+    "type": "VARCHAR(1000)",
+    "pk": false,
+    "nn": false,
+    "name": "cplgoalvalue"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "cplgoalstatus"
+   },
+   {
+    "type": "VARCHAR(10)",
+    "pk": false,
+    "nn": true,
+    "name": "activeupondischarge"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "careplaninfectiousdisease": {
+  "n": 112,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "cplinfectid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "VARCHAR(10)",
+    "pk": false,
+    "nn": true,
+    "name": "activeupondischarge"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "cplinfectdiseaseoffset"
+   },
+   {
+    "type": "VARCHAR(64)",
+    "pk": false,
+    "nn": false,
+    "name": "infectdiseasesite"
+   },
+   {
+    "type": "VARCHAR(64)",
+    "pk": false,
+    "nn": false,
+    "name": "infectdiseaseassessment"
+   },
+   {
+    "type": "VARCHAR(32)",
+    "pk": false,
+    "nn": false,
+    "name": "responsetotherapy"
+   },
+   {
+    "type": "VARCHAR(32)",
+    "pk": false,
+    "nn": false,
+    "name": "treatment"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "customlab": {
+  "n": 30,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "customlabid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "labotheroffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "labothertypeid"
+   },
+   {
+    "type": "VARCHAR(64)",
+    "pk": false,
+    "nn": false,
+    "name": "labothername"
+   },
+   {
+    "type": "VARCHAR(64)",
+    "pk": false,
+    "nn": false,
+    "name": "labotherresult"
+   },
+   {
+    "type": "VARCHAR(128)",
+    "pk": false,
+    "nn": false,
+    "name": "labothervaluetext"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "diagnosis": {
+  "n": 24978,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "diagnosisid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "VARCHAR(64)",
+    "pk": false,
+    "nn": false,
+    "name": "activeupondischarge"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "diagnosisoffset"
+   },
+   {
+    "type": "VARCHAR(200)",
+    "pk": false,
+    "nn": true,
+    "name": "diagnosisstring"
+   },
+   {
+    "type": "VARCHAR(100)",
+    "pk": false,
+    "nn": false,
+    "name": "icd9code"
+   },
+   {
+    "type": "VARCHAR(10)",
+    "pk": false,
+    "nn": true,
+    "name": "diagnosispriority"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "hospital": {
+  "n": 186,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "hospitalid"
+   },
+   {
+    "type": "VARCHAR(32)",
+    "pk": false,
+    "nn": false,
+    "name": "numbedscategory"
+   },
+   {
+    "type": "BOOLEAN",
+    "pk": false,
+    "nn": false,
+    "name": "teachingstatus"
+   },
+   {
+    "type": "VARCHAR(64)",
+    "pk": false,
+    "nn": false,
+    "name": "region"
+   }
+  ],
+  "fks": []
+ },
+ "infusiondrug": {
+  "n": 38256,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "infusiondrugid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "infusionoffset"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "drugname"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "drugrate"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "infusionrate"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "drugamount"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "volumeoffluid"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "patientweight"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "intakeoutput": {
+  "n": 100466,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "intakeoutputid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "intakeoutputoffset"
+   },
+   {
+    "type": "NUMERIC(12,4)",
+    "pk": false,
+    "nn": false,
+    "name": "intaketotal"
+   },
+   {
+    "type": "NUMERIC(12,4)",
+    "pk": false,
+    "nn": false,
+    "name": "outputtotal"
+   },
+   {
+    "type": "NUMERIC(12,4)",
+    "pk": false,
+    "nn": false,
+    "name": "dialysistotal"
+   },
+   {
+    "type": "NUMERIC(12,4)",
+    "pk": false,
+    "nn": false,
+    "name": "nettotal"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "intakeoutputentryoffset"
+   },
+   {
+    "type": "VARCHAR(500)",
+    "pk": false,
+    "nn": false,
+    "name": "cellpath"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "celllabel"
+   },
+   {
+    "type": "NUMERIC(12,4)",
+    "pk": false,
+    "nn": true,
+    "name": "cellvaluenumeric"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "cellvaluetext"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "lab": {
+  "n": 434660,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "labid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "labresultoffset"
+   },
+   {
+    "type": "NUMERIC(3,0)",
+    "pk": false,
+    "nn": true,
+    "name": "labtypeid"
+   },
+   {
+    "type": "VARCHAR(256)",
+    "pk": false,
+    "nn": false,
+    "name": "labname"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "labresult"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "labresulttext"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "labmeasurenamesystem"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "labmeasurenameinterface"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "labresultrevisedoffset"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "medication": {
+  "n": 75604,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "medicationid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "drugorderoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "drugstartoffset"
+   },
+   {
+    "type": "VARCHAR(6)",
+    "pk": false,
+    "nn": true,
+    "name": "drugivadmixture"
+   },
+   {
+    "type": "VARCHAR(6)",
+    "pk": false,
+    "nn": true,
+    "name": "drugordercancelled"
+   },
+   {
+    "type": "VARCHAR(220)",
+    "pk": false,
+    "nn": false,
+    "name": "drugname"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "drughiclseqno"
+   },
+   {
+    "type": "VARCHAR(60)",
+    "pk": false,
+    "nn": false,
+    "name": "dosage"
+   },
+   {
+    "type": "VARCHAR(120)",
+    "pk": false,
+    "nn": false,
+    "name": "routeadmin"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "frequency"
+   },
+   {
+    "type": "VARCHAR(120)",
+    "pk": false,
+    "nn": true,
+    "name": "loadingdose"
+   },
+   {
+    "type": "VARCHAR(6)",
+    "pk": false,
+    "nn": true,
+    "name": "prn"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "drugstopoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "gtc"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "microlab": {
+  "n": 342,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "microlabid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "culturetakenoffset"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "culturesite"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "organism"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "antibiotic"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "sensitivitylevel"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "note": {
+  "n": 24758,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "noteid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "noteoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "noteenteredoffset"
+   },
+   {
+    "type": "VARCHAR(50)",
+    "pk": false,
+    "nn": true,
+    "name": "notetype"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "notepath"
+   },
+   {
+    "type": "VARCHAR(150)",
+    "pk": false,
+    "nn": false,
+    "name": "notevalue"
+   },
+   {
+    "type": "VARCHAR(500)",
+    "pk": false,
+    "nn": false,
+    "name": "notetext"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "nurseassessment": {
+  "n": 91589,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "nurseassessid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "nurseassessoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "nurseassessentryoffset"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "cellattributepath"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "celllabel"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "cellattribute"
+   },
+   {
+    "type": "VARCHAR(4000)",
+    "pk": false,
+    "nn": false,
+    "name": "cellattributevalue"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "nursecare": {
+  "n": 42080,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "nursecareid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "celllabel"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "nursecareoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "nursecareentryoffset"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "cellattributepath"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "cellattribute"
+   },
+   {
+    "type": "VARCHAR(4000)",
+    "pk": false,
+    "nn": false,
+    "name": "cellattributevalue"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "nursecharting": {
+  "n": 1477163,
+  "cols": [
+   {
+    "type": "BIGINT",
+    "pk": true,
+    "nn": false,
+    "name": "nursingchartid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "nursingchartoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "nursingchartentryoffset"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "nursingchartcelltypecat"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "nursingchartcelltypevallabel"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "nursingchartcelltypevalname"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "nursingchartvalue"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "pasthistory": {
+  "n": 12109,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "pasthistoryid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "pasthistoryoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "pasthistoryenteredoffset"
+   },
+   {
+    "type": "VARCHAR(40)",
+    "pk": false,
+    "nn": false,
+    "name": "pasthistorynotetype"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "pasthistorypath"
+   },
+   {
+    "type": "VARCHAR(100)",
+    "pk": false,
+    "nn": false,
+    "name": "pasthistoryvalue"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "pasthistoryvaluetext"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "patient": {
+  "n": 2520,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "patienthealthsystemstayid"
+   },
+   {
+    "type": "VARCHAR(25)",
+    "pk": false,
+    "nn": false,
+    "name": "gender"
+   },
+   {
+    "type": "VARCHAR(10)",
+    "pk": false,
+    "nn": false,
+    "name": "age"
+   },
+   {
+    "type": "VARCHAR(50)",
+    "pk": false,
+    "nn": false,
+    "name": "ethnicity"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "hospitalid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "wardid"
+   },
+   {
+    "type": "VARCHAR(1000)",
+    "pk": false,
+    "nn": false,
+    "name": "apacheadmissiondx"
+   },
+   {
+    "type": "NUMERIC(10,2)",
+    "pk": false,
+    "nn": false,
+    "name": "admissionheight"
+   },
+   {
+    "type": "VARCHAR(8)",
+    "pk": false,
+    "nn": false,
+    "name": "hospitaladmittime24"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "hospitaladmitoffset"
+   },
+   {
+    "type": "VARCHAR(30)",
+    "pk": false,
+    "nn": false,
+    "name": "hospitaladmitsource"
+   },
+   {
+    "type": "SMALLINT",
+    "pk": false,
+    "nn": false,
+    "name": "hospitaldischargeyear"
+   },
+   {
+    "type": "VARCHAR(8)",
+    "pk": false,
+    "nn": false,
+    "name": "hospitaldischargetime24"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "hospitaldischargeoffset"
+   },
+   {
+    "type": "VARCHAR(100)",
+    "pk": false,
+    "nn": false,
+    "name": "hospitaldischargelocation"
+   },
+   {
+    "type": "VARCHAR(10)",
+    "pk": false,
+    "nn": false,
+    "name": "hospitaldischargestatus"
+   },
+   {
+    "type": "VARCHAR(50)",
+    "pk": false,
+    "nn": false,
+    "name": "unittype"
+   },
+   {
+    "type": "VARCHAR(8)",
+    "pk": false,
+    "nn": false,
+    "name": "unitadmittime24"
+   },
+   {
+    "type": "VARCHAR(100)",
+    "pk": false,
+    "nn": false,
+    "name": "unitadmitsource"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "unitvisitnumber"
+   },
+   {
+    "type": "VARCHAR(15)",
+    "pk": false,
+    "nn": false,
+    "name": "unitstaytype"
+   },
+   {
+    "type": "NUMERIC(10,2)",
+    "pk": false,
+    "nn": false,
+    "name": "admissionweight"
+   },
+   {
+    "type": "NUMERIC(10,2)",
+    "pk": false,
+    "nn": false,
+    "name": "dischargeweight"
+   },
+   {
+    "type": "VARCHAR(8)",
+    "pk": false,
+    "nn": false,
+    "name": "unitdischargetime24"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "unitdischargeoffset"
+   },
+   {
+    "type": "VARCHAR(100)",
+    "pk": false,
+    "nn": false,
+    "name": "unitdischargelocation"
+   },
+   {
+    "type": "VARCHAR(10)",
+    "pk": false,
+    "nn": false,
+    "name": "unitdischargestatus"
+   },
+   {
+    "type": "VARCHAR(10)",
+    "pk": false,
+    "nn": false,
+    "name": "uniquepid"
+   }
+  ],
+  "fks": [
+   {
+    "col": "hospitalid",
+    "vers": "hospital",
+    "cible": "hospitalid"
+   }
+  ]
+ },
+ "physicalexam": {
+  "n": 84058,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "physicalexamid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "physicalexamoffset"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": true,
+    "name": "physicalexampath"
+   },
+   {
+    "type": "VARCHAR(100)",
+    "pk": false,
+    "nn": false,
+    "name": "physicalexamvalue"
+   },
+   {
+    "type": "VARCHAR(500)",
+    "pk": false,
+    "nn": false,
+    "name": "physicalexamtext"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "respiratorycare": {
+  "n": 5436,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "respcareid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "respcarestatusoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "currenthistoryseqnum"
+   },
+   {
+    "type": "VARCHAR(30)",
+    "pk": false,
+    "nn": false,
+    "name": "airwaytype"
+   },
+   {
+    "type": "VARCHAR(10)",
+    "pk": false,
+    "nn": false,
+    "name": "airwaysize"
+   },
+   {
+    "type": "VARCHAR(32)",
+    "pk": false,
+    "nn": false,
+    "name": "airwayposition"
+   },
+   {
+    "type": "NUMERIC(5,1)",
+    "pk": false,
+    "nn": false,
+    "name": "cuffpressure"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "ventstartoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "ventendoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "priorventstartoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "priorventendoffset"
+   },
+   {
+    "type": "VARCHAR(80)",
+    "pk": false,
+    "nn": false,
+    "name": "apneaparams"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "lowexhmvlimit"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "hiexhmvlimit"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "lowexhtvlimit"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "hipeakpreslimit"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "lowpeakpreslimit"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "hirespratelimit"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "lowrespratelimit"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "sighpreslimit"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "lowironoxlimit"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "highironoxlimit"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "meanairwaypreslimit"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "peeplimit"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "cpaplimit"
+   },
+   {
+    "type": "VARCHAR(80)",
+    "pk": false,
+    "nn": false,
+    "name": "setapneainterval"
+   },
+   {
+    "type": "VARCHAR(80)",
+    "pk": false,
+    "nn": false,
+    "name": "setapneatv"
+   },
+   {
+    "type": "VARCHAR(80)",
+    "pk": false,
+    "nn": false,
+    "name": "setapneaippeephigh"
+   },
+   {
+    "type": "VARCHAR(80)",
+    "pk": false,
+    "nn": false,
+    "name": "setapnearr"
+   },
+   {
+    "type": "VARCHAR(80)",
+    "pk": false,
+    "nn": false,
+    "name": "setapneapeakflow"
+   },
+   {
+    "type": "VARCHAR(80)",
+    "pk": false,
+    "nn": false,
+    "name": "setapneainsptime"
+   },
+   {
+    "type": "VARCHAR(80)",
+    "pk": false,
+    "nn": false,
+    "name": "setapneaie"
+   },
+   {
+    "type": "VARCHAR(80)",
+    "pk": false,
+    "nn": false,
+    "name": "setapneafio2"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "respiratorycharting": {
+  "n": 176089,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "respchartid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "respchartoffset"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "respchartentryoffset"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "respcharttypecat"
+   },
+   {
+    "type": "VARCHAR(255)",
+    "pk": false,
+    "nn": false,
+    "name": "respchartvaluelabel"
+   },
+   {
+    "type": "VARCHAR(1000)",
+    "pk": false,
+    "nn": false,
+    "name": "respchartvalue"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "treatment": {
+  "n": 38290,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "treatmentid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "treatmentoffset"
+   },
+   {
+    "type": "VARCHAR(200)",
+    "pk": false,
+    "nn": false,
+    "name": "treatmentstring"
+   },
+   {
+    "type": "VARCHAR(10)",
+    "pk": false,
+    "nn": false,
+    "name": "activeupondischarge"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "vitalaperiodic": {
+  "n": 274088,
+  "cols": [
+   {
+    "type": "INT",
+    "pk": true,
+    "nn": false,
+    "name": "vitalaperiodicid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": true,
+    "name": "observationoffset"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "noninvasivesystolic"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "noninvasivediastolic"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "noninvasivemean"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "paop"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "cardiacoutput"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "cardiacinput"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "svr"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "svri"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "pvr"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "pvri"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ },
+ "vitalperiodic": {
+  "n": 1634960,
+  "cols": [
+   {
+    "type": "BIGINT",
+    "pk": true,
+    "nn": false,
+    "name": "vitalperiodicid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "patientunitstayid"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "observationoffset"
+   },
+   {
+    "type": "NUMERIC(11,4)",
+    "pk": false,
+    "nn": false,
+    "name": "temperature"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "sao2"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "heartrate"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "respiration"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "cvp"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "etco2"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "systemicsystolic"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "systemicdiastolic"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "systemicmean"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "pasystolic"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "padiastolic"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "pamean"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "st1"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "st2"
+   },
+   {
+    "type": "DOUBLE PRECISION",
+    "pk": false,
+    "nn": false,
+    "name": "st3"
+   },
+   {
+    "type": "INT",
+    "pk": false,
+    "nn": false,
+    "name": "icp"
+   }
+  ],
+  "fks": [
+   {
+    "col": "patientunitstayid",
+    "vers": "patient",
+    "cible": "patientunitstayid"
+   }
+  ]
+ }
+}
