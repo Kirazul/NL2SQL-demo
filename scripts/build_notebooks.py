@@ -231,9 +231,11 @@ def get_code():
     if done.returncode:
         detail = done.stderr.replace(token, "***") if token else done.stderr
         raise SystemExit(
-            "Could not clone the repository.\\n"
-            "  It is private, so GITHUB_TOKEN must be set under Add-ons > Secrets\\n"
-            "  and attached to this notebook.\\n\\n" + detail
+            "Could not clone the repository.\\n\\n"
+            "  It is private, so this notebook needs a GITHUB_TOKEN secret:\\n"
+            "  Add-ons > Secrets > attach GITHUB_TOKEN, then run this cell again.\\n\\n"
+            "  Kaggle grants a secret one notebook at a time. Attaching it in\\n"
+            "  another notebook does not attach it here.\\n\\n" + detail
         )
     return target
 '''
