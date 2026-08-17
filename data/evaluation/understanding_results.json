@@ -11,13 +11,13 @@
   "names_protected_pct": 0.0,
   "full_understanding_pct": 92.4,
   "correct_questions": 73,
-  "median_ms": 280.6,
-  "p95_ms": 377.9,
+  "median_ms": 348.6,
+  "p95_ms": 719.5,
   "details": [
    {
     "question": "How many patients received aspirin?",
     "correct": true,
-    "ms": 9433.6,
+    "ms": 19377.8,
     "problems": [],
     "resolutions": [
      {
@@ -32,7 +32,7 @@
    {
     "question": "How many patients were treated with vancomycin?",
     "correct": true,
-    "ms": 310.2,
+    "ms": 368.6,
     "problems": [],
     "resolutions": [
      {
@@ -47,7 +47,7 @@
    {
     "question": "List patients who received insulin during their stay",
     "correct": true,
-    "ms": 275.7,
+    "ms": 339.5,
     "problems": [],
     "resolutions": [
      {
@@ -62,7 +62,7 @@
    {
     "question": "Which patients were given heparin?",
     "correct": true,
-    "ms": 280.6,
+    "ms": 334.7,
     "problems": [],
     "resolutions": [
      {
@@ -77,7 +77,7 @@
    {
     "question": "Count patients on warfarin",
     "correct": true,
-    "ms": 275.1,
+    "ms": 326.6,
     "problems": [],
     "resolutions": [
      {
@@ -92,7 +92,7 @@
    {
     "question": "How many patients received furosemide?",
     "correct": true,
-    "ms": 285.3,
+    "ms": 336.2,
     "problems": [],
     "resolutions": [
      {
@@ -107,7 +107,7 @@
    {
     "question": "Show patients treated with propofol",
     "correct": true,
-    "ms": 270.8,
+    "ms": 510.3,
     "problems": [],
     "resolutions": [
      {
@@ -122,7 +122,7 @@
    {
     "question": "Which drugs were most often prescribed?",
     "correct": true,
-    "ms": 274.5,
+    "ms": 524.9,
     "problems": [],
     "resolutions": [
      {
@@ -137,7 +137,7 @@
    {
     "question": "How many patients were diagnosed with sepsis?",
     "correct": true,
-    "ms": 291.0,
+    "ms": 355.5,
     "problems": [],
     "resolutions": [
      {
@@ -159,7 +159,7 @@
    {
     "question": "Count patients with acute renal failure",
     "correct": true,
-    "ms": 348.6,
+    "ms": 726.1,
     "problems": [],
     "resolutions": [
      {
@@ -174,7 +174,7 @@
    {
     "question": "How many patients had pneumonia?",
     "correct": true,
-    "ms": 274.7,
+    "ms": 719.5,
     "problems": [],
     "resolutions": [
      {
@@ -189,7 +189,7 @@
    {
     "question": "List patients diagnosed with atrial fibrillation",
     "correct": true,
-    "ms": 280.9,
+    "ms": 353.4,
     "problems": [],
     "resolutions": [
      {
@@ -204,7 +204,7 @@
    {
     "question": "How many patients presented with cardiac arrest?",
     "correct": true,
-    "ms": 503.8,
+    "ms": 543.6,
     "problems": [],
     "resolutions": [
      {
@@ -219,7 +219,7 @@
    {
     "question": "Count patients with diabetes",
     "correct": true,
-    "ms": 268.7,
+    "ms": 652.5,
     "problems": [],
     "resolutions": [
      {
@@ -234,7 +234,7 @@
    {
     "question": "How many patients suffered a stroke?",
     "correct": true,
-    "ms": 319.0,
+    "ms": 1044.3,
     "problems": [],
     "resolutions": [
      {
@@ -249,7 +249,7 @@
    {
     "question": "How many cultures grew Klebsiella pneumoniae?",
     "correct": true,
-    "ms": 409.7,
+    "ms": 390.9,
     "problems": [],
     "resolutions": [
      {
@@ -271,7 +271,7 @@
    {
     "question": "Which patients had Staphylococcus aureus?",
     "correct": true,
-    "ms": 346.0,
+    "ms": 366.6,
     "problems": [],
     "resolutions": [
      {
@@ -286,7 +286,7 @@
    {
     "question": "Count cultures positive for Escherichia coli",
     "correct": true,
-    "ms": 323.2,
+    "ms": 548.1,
     "problems": [],
     "resolutions": [
      {
@@ -308,7 +308,7 @@
    {
     "question": "What is the average potassium level?",
     "correct": false,
-    "ms": 279.5,
+    "ms": 658.9,
     "problems": [
      "'potassium' -> admissiondrug.drugname (expected: lab.labname|medication.drugname|intakeoutput.celllabel)"
     ],
@@ -325,7 +325,7 @@
    {
     "question": "Show the creatinine results for patients",
     "correct": true,
-    "ms": 282.1,
+    "ms": 447.7,
     "problems": [],
     "resolutions": [
      {
@@ -340,7 +340,7 @@
    {
     "question": "What is the average glucose value?",
     "correct": false,
-    "ms": 277.3,
+    "ms": 348.1,
     "problems": [
      "not extracted: 'glucose'"
     ],
@@ -349,7 +349,7 @@
    {
     "question": "Average hemoglobin per hospital",
     "correct": false,
-    "ms": 322.4,
+    "ms": 370.3,
     "problems": [
      "'hemoglobin' confidently resolved to lab.labname (0.87) although no value matches"
     ],
@@ -373,7 +373,7 @@
    {
     "question": "How many female patients are there?",
     "correct": true,
-    "ms": 279.6,
+    "ms": 346.5,
     "problems": [],
     "resolutions": [
      {
@@ -388,7 +388,7 @@
    {
     "question": "Count male patients admitted to the ICU",
     "correct": true,
-    "ms": 287.0,
+    "ms": 348.6,
     "problems": [],
     "resolutions": [
      {
@@ -410,7 +410,7 @@
    {
     "question": "How many Caucasian patients were admitted?",
     "correct": true,
-    "ms": 303.3,
+    "ms": 351.4,
     "problems": [],
     "resolutions": [
      {
@@ -432,7 +432,7 @@
    {
     "question": "What is the mortality rate by hospital region?",
     "correct": true,
-    "ms": 293.0,
+    "ms": 354.1,
     "problems": [],
     "resolutions": [
      {
@@ -454,14 +454,14 @@
    {
     "question": "What is the average length of stay?",
     "correct": true,
-    "ms": 278.4,
+    "ms": 338.3,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "How many patients died in the hospital?",
     "correct": true,
-    "ms": 272.6,
+    "ms": 353.8,
     "problems": [],
     "resolutions": [
      {
@@ -476,14 +476,14 @@
    {
     "question": "Average ICU length of stay per unit type",
     "correct": true,
-    "ms": 284.4,
+    "ms": 349.1,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "How many patients were discharged home?",
     "correct": true,
-    "ms": 377.9,
+    "ms": 440.9,
     "problems": [],
     "resolutions": [
      {
@@ -498,7 +498,7 @@
    {
     "question": "How many hospitals are there?",
     "correct": true,
-    "ms": 275.0,
+    "ms": 365.0,
     "problems": [],
     "resolutions": [
      {
@@ -513,7 +513,7 @@
    {
     "question": "Count patients per hospital region",
     "correct": true,
-    "ms": 275.8,
+    "ms": 335.8,
     "problems": [],
     "resolutions": [
      {
@@ -528,7 +528,7 @@
    {
     "question": "How many patients stayed in a MICU?",
     "correct": true,
-    "ms": 278.1,
+    "ms": 350.0,
     "problems": [],
     "resolutions": [
      {
@@ -543,7 +543,7 @@
    {
     "question": "List teaching hospitals",
     "correct": true,
-    "ms": 267.9,
+    "ms": 327.6,
     "problems": [],
     "resolutions": [
      {
@@ -558,7 +558,7 @@
    {
     "question": "What is the average APACHE score?",
     "correct": true,
-    "ms": 279.6,
+    "ms": 336.3,
     "problems": [],
     "resolutions": [
      {
@@ -573,7 +573,7 @@
    {
     "question": "Show patients with the highest severity score",
     "correct": true,
-    "ms": 283.5,
+    "ms": 342.7,
     "problems": [],
     "resolutions": [
      {
@@ -588,7 +588,7 @@
    {
     "question": "How many patients underwent hemodialysis?",
     "correct": true,
-    "ms": 274.1,
+    "ms": 340.3,
     "problems": [],
     "resolutions": [
      {
@@ -603,7 +603,7 @@
    {
     "question": "Count patients who were intubated",
     "correct": true,
-    "ms": 277.1,
+    "ms": 383.5,
     "problems": [],
     "resolutions": [
      {
@@ -618,7 +618,7 @@
    {
     "question": "How many patients received mechanical ventilation?",
     "correct": true,
-    "ms": 289.1,
+    "ms": 377.0,
     "problems": [],
     "resolutions": [
      {
@@ -633,7 +633,7 @@
    {
     "question": "How many patients are allergic to penicillin?",
     "correct": true,
-    "ms": 291.3,
+    "ms": 342.7,
     "problems": [],
     "resolutions": [
      {
@@ -655,7 +655,7 @@
    {
     "question": "List patients with a history of hypertension",
     "correct": true,
-    "ms": 286.0,
+    "ms": 357.7,
     "problems": [],
     "resolutions": [
      {
@@ -670,7 +670,7 @@
    {
     "question": "How many patients received aspirin for sepsis?",
     "correct": true,
-    "ms": 286.4,
+    "ms": 342.1,
     "problems": [],
     "resolutions": [
      {
@@ -692,7 +692,7 @@
    {
     "question": "What is the mortality rate for patients treated with vancomycin?",
     "correct": true,
-    "ms": 293.4,
+    "ms": 351.2,
     "problems": [],
     "resolutions": [
      {
@@ -714,7 +714,7 @@
    {
     "question": "Average length of stay for patients with Klebsiella pneumoniae",
     "correct": true,
-    "ms": 286.7,
+    "ms": 348.6,
     "problems": [],
     "resolutions": [
      {
@@ -729,7 +729,7 @@
    {
     "question": "How many female patients received insulin?",
     "correct": true,
-    "ms": 284.6,
+    "ms": 346.1,
     "problems": [],
     "resolutions": [
      {
@@ -751,7 +751,7 @@
    {
     "question": "Count patients with diabetes who were prescribed metformin",
     "correct": true,
-    "ms": 296.5,
+    "ms": 346.0,
     "problems": [],
     "resolutions": [
      {
@@ -773,7 +773,7 @@
    {
     "question": "What medications did patient 141764 receive?",
     "correct": true,
-    "ms": 288.8,
+    "ms": 357.5,
     "problems": [],
     "resolutions": [
      {
@@ -802,7 +802,7 @@
    {
     "question": "List all lab results for stay 143870",
     "correct": false,
-    "ms": 287.4,
+    "ms": 342.5,
     "problems": [
      "'143870' confidently resolved to None (1.00) although no value matches"
     ],
@@ -826,7 +826,7 @@
    {
     "question": "What was the diagnosis of patient 002-1039?",
     "correct": true,
-    "ms": 297.7,
+    "ms": 342.9,
     "problems": [],
     "resolutions": [
      {
@@ -862,7 +862,7 @@
    {
     "question": "Which patients with sepsis received vancomycin and died in the ICU?",
     "correct": true,
-    "ms": 302.2,
+    "ms": 358.2,
     "problems": [],
     "resolutions": [
      {
@@ -891,7 +891,7 @@
    {
     "question": "List patients who received both aspirin and heparin",
     "correct": true,
-    "ms": 282.3,
+    "ms": 419.0,
     "problems": [],
     "resolutions": [
      {
@@ -913,7 +913,7 @@
    {
     "question": "Which patients had a Staphylococcus aureus culture and were treated with vancomycin?",
     "correct": true,
-    "ms": 295.0,
+    "ms": 624.4,
     "problems": [],
     "resolutions": [
      {
@@ -942,7 +942,7 @@
    {
     "question": "Count female patients with diabetes admitted from the Emergency Department",
     "correct": true,
-    "ms": 306.1,
+    "ms": 364.5,
     "problems": [],
     "resolutions": [
      {
@@ -971,7 +971,7 @@
    {
     "question": "Which patients in the MICU received propofol and were intubated?",
     "correct": true,
-    "ms": 372.0,
+    "ms": 351.1,
     "problems": [],
     "resolutions": [
      {
@@ -1000,7 +1000,7 @@
    {
     "question": "List patients admitted from the Operating Room who developed pneumonia",
     "correct": true,
-    "ms": 291.1,
+    "ms": 365.1,
     "problems": [],
     "resolutions": [
      {
@@ -1022,7 +1022,7 @@
    {
     "question": "Which Caucasian patients with atrial fibrillation received warfarin?",
     "correct": true,
-    "ms": 294.9,
+    "ms": 341.2,
     "problems": [],
     "resolutions": [
      {
@@ -1051,7 +1051,7 @@
    {
     "question": "How many patients were discharged to a Skilled Nursing Facility?",
     "correct": true,
-    "ms": 283.0,
+    "ms": 323.7,
     "problems": [],
     "resolutions": [
      {
@@ -1073,7 +1073,7 @@
    {
     "question": "List patients transferred to Rehabilitation after their ICU stay",
     "correct": true,
-    "ms": 291.4,
+    "ms": 315.6,
     "problems": [],
     "resolutions": [
      {
@@ -1095,7 +1095,7 @@
    {
     "question": "How many patients came from Other Hospital?",
     "correct": true,
-    "ms": 159.7,
+    "ms": 277.8,
     "problems": [],
     "resolutions": [
      {
@@ -1110,7 +1110,7 @@
    {
     "question": "Count patients admitted from the Floor to a Neuro ICU",
     "correct": true,
-    "ms": 140.8,
+    "ms": 296.2,
     "problems": [],
     "resolutions": [
      {
@@ -1139,7 +1139,7 @@
    {
     "question": "Compare mortality between teaching and non-teaching hospitals",
     "correct": true,
-    "ms": 134.7,
+    "ms": 322.1,
     "problems": [],
     "resolutions": [
      {
@@ -1161,7 +1161,7 @@
    {
     "question": "Compare length of stay between the Midwest and the South regions",
     "correct": true,
-    "ms": 129.7,
+    "ms": 358.9,
     "problems": [],
     "resolutions": [
      {
@@ -1183,7 +1183,7 @@
    {
     "question": "Is mortality higher in hospitals with fewer than 100 beds?",
     "correct": true,
-    "ms": 129.9,
+    "ms": 279.3,
     "problems": [],
     "resolutions": [
      {
@@ -1212,7 +1212,7 @@
    {
     "question": "Which unit type has the highest mortality?",
     "correct": true,
-    "ms": 116.8,
+    "ms": 286.1,
     "problems": [],
     "resolutions": [
      {
@@ -1227,7 +1227,7 @@
    {
     "question": "Which organisms were Resistant to vancomycin?",
     "correct": true,
-    "ms": 120.6,
+    "ms": 275.6,
     "problems": [],
     "resolutions": [
      {
@@ -1256,7 +1256,7 @@
    {
     "question": "List cultures Sensitive to ciprofloxacin",
     "correct": true,
-    "ms": 126.1,
+    "ms": 273.5,
     "problems": [],
     "resolutions": [
      {
@@ -1285,7 +1285,7 @@
    {
     "question": "Which culture sites grew Escherichia coli?",
     "correct": true,
-    "ms": 126.8,
+    "ms": 274.7,
     "problems": [],
     "resolutions": [
      {
@@ -1300,7 +1300,7 @@
    {
     "question": "What was the average potassium level for patients who received furosemide?",
     "correct": false,
-    "ms": 149.1,
+    "ms": 311.3,
     "problems": [
      "'potassium' -> allergy.drugname (expected: lab.labname|medication.drugname|intakeoutput.celllabel)"
     ],
@@ -1331,7 +1331,7 @@
    {
     "question": "Show creatinine results for patients who underwent hemodialysis",
     "correct": true,
-    "ms": 124.1,
+    "ms": 285.8,
     "problems": [],
     "resolutions": [
      {
@@ -1353,7 +1353,7 @@
    {
     "question": "What is the average Hgb for patients with sickle cell disease?",
     "correct": true,
-    "ms": 132.0,
+    "ms": 304.3,
     "problems": [],
     "resolutions": [
      {
@@ -1375,7 +1375,7 @@
    {
     "question": "How many patients have a Drug allergy?",
     "correct": true,
-    "ms": 128.5,
+    "ms": 278.5,
     "problems": [],
     "resolutions": [
      {
@@ -1390,7 +1390,7 @@
    {
     "question": "List patients allergic to penicillin who still received an antibiotic",
     "correct": false,
-    "ms": 206.8,
+    "ms": 399.7,
     "problems": [
      "'antibiotic' treated as a value -> allergy.allergyname"
     ],
@@ -1414,7 +1414,7 @@
    {
     "question": "Which patient had the highest APACHE score?",
     "correct": true,
-    "ms": 114.9,
+    "ms": 271.5,
     "problems": [],
     "resolutions": [
      {
@@ -1429,7 +1429,7 @@
    {
     "question": "Show the diagnoses of the patient with the longest ICU stay",
     "correct": true,
-    "ms": 116.7,
+    "ms": 287.4,
     "problems": [],
     "resolutions": [
      {
@@ -1451,7 +1451,7 @@
    {
     "question": "Which hospital has the most admissions?",
     "correct": true,
-    "ms": 109.9,
+    "ms": 363.3,
     "problems": [],
     "resolutions": [
      {
@@ -1464,7 +1464,7 @@
      {
       "mention": "admissions",
       "kind": "concept",
-      "column": "patient.patienthealthsystemstayid",
+      "column": "patient.uniquepid",
       "value": null,
       "score": 0.0
      }
@@ -1473,7 +1473,7 @@
    {
     "question": "What is the most frequently prescribed drug in the Cardiac ICU?",
     "correct": true,
-    "ms": 114.9,
+    "ms": 332.8,
     "problems": [],
     "resolutions": [
      {
@@ -1495,7 +1495,7 @@
    {
     "question": "List patients with a history of hypertension who received furosemide",
     "correct": true,
-    "ms": 116.2,
+    "ms": 300.6,
     "problems": [],
     "resolutions": [
      {
@@ -1517,7 +1517,7 @@
    {
     "question": "Which patients on home oxygen were readmitted?",
     "correct": true,
-    "ms": 118.8,
+    "ms": 283.0,
     "problems": [],
     "resolutions": [
      {
@@ -1539,7 +1539,7 @@
    {
     "question": "Count patients who received a blood transfusion in the SICU",
     "correct": true,
-    "ms": 116.2,
+    "ms": 317.2,
     "problems": [],
     "resolutions": [
      {
@@ -1572,13 +1572,13 @@
   "names_protected_pct": 100.0,
   "full_understanding_pct": 92.9,
   "correct_questions": 26,
-  "median_ms": 119.2,
-  "p95_ms": 248.4,
+  "median_ms": 283.7,
+  "p95_ms": 470.5,
   "details": [
    {
     "question": "Did Mr. Bensalah receive his insulin?",
     "correct": true,
-    "ms": 118.6,
+    "ms": 279.4,
     "problems": [],
     "resolutions": [
      {
@@ -1600,7 +1600,7 @@
    {
     "question": "What was Sarah Johnson's last potassium result?",
     "correct": true,
-    "ms": 121.0,
+    "ms": 284.3,
     "problems": [],
     "resolutions": [
      {
@@ -1622,7 +1622,7 @@
    {
     "question": "Show me the chart for Ahmed Trabelsi",
     "correct": true,
-    "ms": 116.9,
+    "ms": 274.3,
     "problems": [],
     "resolutions": [
      {
@@ -1637,7 +1637,7 @@
    {
     "question": "Was Maria Gonzalez discharged home?",
     "correct": true,
-    "ms": 107.4,
+    "ms": 272.3,
     "problems": [],
     "resolutions": [
      {
@@ -1659,7 +1659,7 @@
    {
     "question": "Which patients did Dr. Martinez treat in the SICU?",
     "correct": true,
-    "ms": 120.0,
+    "ms": 295.3,
     "problems": [],
     "resolutions": [
      {
@@ -1681,7 +1681,7 @@
    {
     "question": "Compare the outcomes of John Smith and Robert Williams",
     "correct": true,
-    "ms": 115.7,
+    "ms": 284.9,
     "problems": [],
     "resolutions": [
      {
@@ -1703,7 +1703,7 @@
    {
     "question": "Has Fatma Ben Ali been intubated?",
     "correct": true,
-    "ms": 115.7,
+    "ms": 284.8,
     "problems": [],
     "resolutions": [
      {
@@ -1725,14 +1725,14 @@
    {
     "question": "Who is doing badly?",
     "correct": true,
-    "ms": 116.8,
+    "ms": 283.7,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "Any problems with the heart patients?",
     "correct": true,
-    "ms": 126.3,
+    "ms": 284.4,
     "problems": [],
     "resolutions": [
      {
@@ -1747,35 +1747,35 @@
    {
     "question": "Show me something interesting about the data",
     "correct": true,
-    "ms": 112.7,
+    "ms": 277.8,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "What went wrong last month?",
     "correct": true,
-    "ms": 119.5,
+    "ms": 265.7,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "Give me an overview",
     "correct": true,
-    "ms": 114.0,
+    "ms": 280.7,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "Are the numbers normal?",
     "correct": true,
-    "ms": 115.8,
+    "ms": 267.7,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "Which cases should I look at first?",
     "correct": true,
-    "ms": 117.9,
+    "ms": 277.9,
     "problems": [],
     "resolutions": [
      {
@@ -1790,7 +1790,7 @@
    {
     "question": "How many patients got vanco?",
     "correct": true,
-    "ms": 114.4,
+    "ms": 283.3,
     "problems": [],
     "resolutions": [
      {
@@ -1805,7 +1805,7 @@
    {
     "question": "Average K+ for septic patients",
     "correct": false,
-    "ms": 121.1,
+    "ms": 280.6,
     "problems": [
      "'septic' confidently resolved to diagnosis.diagnosisstring (0.77) although no value matches"
     ],
@@ -1829,7 +1829,7 @@
    {
     "question": "Any patients with afib on anticoagulation?",
     "correct": true,
-    "ms": 192.6,
+    "ms": 379.3,
     "problems": [],
     "resolutions": [
      {
@@ -1851,7 +1851,7 @@
    {
     "question": "Show BP readings for ICU patients",
     "correct": true,
-    "ms": 114.3,
+    "ms": 288.8,
     "problems": [],
     "resolutions": [
      {
@@ -1873,7 +1873,7 @@
    {
     "question": "How many pts were vented?",
     "correct": true,
-    "ms": 248.4,
+    "ms": 470.5,
     "problems": [],
     "resolutions": [
      {
@@ -1895,7 +1895,7 @@
    {
     "question": "Count the DNR patients",
     "correct": true,
-    "ms": 123.2,
+    "ms": 277.0,
     "problems": [],
     "resolutions": [
      {
@@ -1910,7 +1910,7 @@
    {
     "question": "how many patietns recieved aspirn",
     "correct": true,
-    "ms": 260.4,
+    "ms": 469.6,
     "problems": [],
     "resolutions": [
      {
@@ -1932,7 +1932,7 @@
    {
     "question": "patients with sepssis and renal falure",
     "correct": false,
-    "ms": 195.1,
+    "ms": 383.7,
     "problems": [
      "'renal falure' -> pasthistory.pasthistorypath (expected: diagnosis.diagnosisstring|admissiondx.admitdxname|treatment.treatmentstring|note.notevalue)"
     ],
@@ -1956,14 +1956,14 @@
    {
     "question": "the ones who died, what did they have",
     "correct": true,
-    "ms": 117.9,
+    "ms": 283.4,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "vancomycin, how many, by unit, last year",
     "correct": true,
-    "ms": 119.2,
+    "ms": 281.7,
     "problems": [],
     "resolutions": [
      {
@@ -1978,7 +1978,7 @@
    {
     "question": "I need the sepsis patients but only the ones in the MICU who also got vancomycin and died",
     "correct": true,
-    "ms": 137.8,
+    "ms": 490.8,
     "problems": [],
     "resolutions": [
      {
@@ -2007,7 +2007,7 @@
    {
     "question": "What is the price of aspirin?",
     "correct": true,
-    "ms": 123.4,
+    "ms": 300.8,
     "problems": [],
     "resolutions": [
      {
@@ -2022,7 +2022,7 @@
    {
     "question": "How many nurses work in the ICU?",
     "correct": true,
-    "ms": 120.9,
+    "ms": 300.9,
     "problems": [],
     "resolutions": [
      {
@@ -2037,7 +2037,7 @@
    {
     "question": "What is the weather today?",
     "correct": true,
-    "ms": 111.5,
+    "ms": 279.4,
     "problems": [],
     "resolutions": []
    }
@@ -2055,13 +2055,13 @@
   "names_protected_pct": 0.0,
   "full_understanding_pct": 84.6,
   "correct_questions": 22,
-  "median_ms": 133.5,
-  "p95_ms": 279.8,
+  "median_ms": 290.7,
+  "p95_ms": 322.4,
   "details": [
    {
     "question": "How many patients received aspirin?",
     "correct": true,
-    "ms": 108.1,
+    "ms": 271.3,
     "problems": [],
     "resolutions": [
      {
@@ -2076,7 +2076,7 @@
    {
     "question": "What are the 10 most common drug names in the medication table?",
     "correct": true,
-    "ms": 124.8,
+    "ms": 298.8,
     "problems": [],
     "resolutions": [
      {
@@ -2098,7 +2098,7 @@
    {
     "question": "What are the most common medication administration routes?",
     "correct": false,
-    "ms": 118.4,
+    "ms": 294.9,
     "problems": [
      "'administration routes' -> medication.drugname (expected column: medication.routeadmin)"
     ],
@@ -2115,14 +2115,14 @@
    {
     "question": "What are the most common medication frequencies?",
     "correct": true,
-    "ms": 117.1,
+    "ms": 272.2,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "What are the 10 most frequently recorded laboratory tests?",
     "correct": true,
-    "ms": 119.6,
+    "ms": 288.9,
     "problems": [],
     "resolutions": [
      {
@@ -2144,7 +2144,7 @@
    {
     "question": "How many laboratory records are associated with each patient ICU stay?",
     "correct": true,
-    "ms": 136.2,
+    "ms": 293.9,
     "problems": [],
     "resolutions": [
      {
@@ -2157,7 +2157,7 @@
      {
       "mention": "patient",
       "kind": "concept",
-      "column": "patient.patientunitstayid",
+      "column": "patient.uniquepid",
       "value": null,
       "score": 0.0
      }
@@ -2166,7 +2166,7 @@
    {
     "question": "What are the 10 most common diagnosis names?",
     "correct": true,
-    "ms": 125.3,
+    "ms": 278.6,
     "problems": [],
     "resolutions": [
      {
@@ -2188,7 +2188,7 @@
    {
     "question": "How many diagnosis records are associated with each patient ICU stay?",
     "correct": true,
-    "ms": 133.5,
+    "ms": 290.5,
     "problems": [],
     "resolutions": [
      {
@@ -2201,7 +2201,7 @@
      {
       "mention": "patient",
       "kind": "concept",
-      "column": "patient.patientunitstayid",
+      "column": "patient.uniquepid",
       "value": null,
       "score": 0.0
      }
@@ -2210,7 +2210,7 @@
    {
     "question": "How many patients are admitted to each ICU unit type?",
     "correct": true,
-    "ms": 134.3,
+    "ms": 291.7,
     "problems": [],
     "resolutions": [
      {
@@ -2225,7 +2225,7 @@
    {
     "question": "What is the average height of patients?",
     "correct": true,
-    "ms": 122.5,
+    "ms": 275.1,
     "problems": [],
     "resolutions": [
      {
@@ -2240,7 +2240,7 @@
    {
     "question": "How many patients are male and female?",
     "correct": true,
-    "ms": 111.2,
+    "ms": 281.1,
     "problems": [],
     "resolutions": [
      {
@@ -2262,14 +2262,14 @@
    {
     "question": "How many patients belong to each ethnicity?",
     "correct": true,
-    "ms": 117.2,
+    "ms": 290.8,
     "problems": [],
     "resolutions": []
    },
    {
     "question": "How many patients are associated with each hospital?",
     "correct": true,
-    "ms": 118.6,
+    "ms": 290.7,
     "problems": [],
     "resolutions": [
      {
@@ -2291,7 +2291,7 @@
    {
     "question": "Which hospital has the most patient ICU stays?",
     "correct": true,
-    "ms": 120.7,
+    "ms": 281.6,
     "problems": [],
     "resolutions": [
      {
@@ -2313,7 +2313,7 @@
    {
     "question": "How many patients are in each hospital region?",
     "correct": true,
-    "ms": 118.7,
+    "ms": 275.6,
     "problems": [],
     "resolutions": [
      {
@@ -2328,7 +2328,7 @@
    {
     "question": "How many periodic vital-sign records are associated with each patient ICU stay?",
     "correct": false,
-    "ms": 140.1,
+    "ms": 309.2,
     "problems": [
      "'vital-sign records' treated as a value -> nursecharting.nursingchartcelltypecat",
      "'periodic vital-sign records' treated as a value -> nursecharting.nursingchartcelltypecat"
@@ -2353,7 +2353,7 @@
    {
     "question": "How many periodic vital-sign records are in the database?",
     "correct": false,
-    "ms": 125.0,
+    "ms": 303.4,
     "problems": [
      "'vital-sign records' treated as a value -> nursecharting.nursingchartcelltypecat",
      "'periodic vital-sign records' treated as a value -> nursecharting.nursingchartcelltypecat"
@@ -2371,7 +2371,7 @@
    {
     "question": "How many intake/output records are associated with each patient ICU stay?",
     "correct": true,
-    "ms": 134.2,
+    "ms": 322.4,
     "problems": [],
     "resolutions": [
      {
@@ -2393,7 +2393,7 @@
    {
     "question": "How many nursing charting records are associated with each patient ICU stay?",
     "correct": true,
-    "ms": 152.5,
+    "ms": 347.2,
     "problems": [],
     "resolutions": [
      {
@@ -2415,7 +2415,7 @@
    {
     "question": "Which patients have the largest number of nursing charting records?",
     "correct": true,
-    "ms": 142.6,
+    "ms": 277.0,
     "problems": [],
     "resolutions": [
      {
@@ -2430,7 +2430,7 @@
    {
     "question": "How many patients received aspirin and have at least one laboratory record?",
     "correct": true,
-    "ms": 151.3,
+    "ms": 294.8,
     "problems": [],
     "resolutions": [
      {
@@ -2452,7 +2452,7 @@
    {
     "question": "How many patients have both a diagnosis and a medication record?",
     "correct": true,
-    "ms": 279.8,
+    "ms": 282.3,
     "problems": [],
     "resolutions": [
      {
@@ -2474,7 +2474,7 @@
    {
     "question": "What is the average age of patients who received aspirin?",
     "correct": true,
-    "ms": 280.1,
+    "ms": 286.4,
     "problems": [],
     "resolutions": [
      {
@@ -2496,7 +2496,7 @@
    {
     "question": "For each hospital, how many unique patients received medication?",
     "correct": true,
-    "ms": 215.0,
+    "ms": 284.2,
     "problems": [],
     "resolutions": [
      {
@@ -2525,7 +2525,7 @@
    {
     "question": "Which hospitals have patients with the highest number of medication records?",
     "correct": true,
-    "ms": 192.0,
+    "ms": 291.7,
     "problems": [],
     "resolutions": [
      {
@@ -2547,7 +2547,7 @@
    {
     "question": "Give me the vital signs of patient 1234",
     "correct": false,
-    "ms": 158.6,
+    "ms": 296.6,
     "problems": [
      "'vital signs' treated as a value -> nursecharting.nursingchartcelltypecat"
     ],

@@ -94,6 +94,45 @@ EICU_COLUMNS: dict[str, str] = {
     "activeupondischarge": "True if the item was still active when the patient left.",
 }
 
+# Same name, different meaning depending on the table. Read on review: `age` and
+# `gender` are TEXT in `patient` and numeric APACHE codes in `apachepredvar`, so the
+# column name alone was giving the wrong description in the second one.
+EICU_REFS: dict[str, str] = {
+    "apachepredvar.age": "Age in years as an integer, the APACHE predictor. Not the same "
+                         "column as patient.age, which is TEXT and holds '> 89'.",
+    "apachepredvar.gender": "Sex as an APACHE numeric code, not the text of patient.gender.",
+    "apachepredvar.teachtype": "Teaching status of the hospital, as an APACHE code.",
+    "apachepredvar.region": "Region of the hospital, as an APACHE code.",
+    "apachepredvar.admitsource": "Admission source, as an APACHE code.",
+    "apachepredvar.dischargelocation": "Discharge location, as an APACHE code.",
+    "apachepredvar.admitdiagnosis": "The APACHE admission diagnosis code, as text.",
+    "apachepatientresult.predictedicumortality": "Probability of ICU death predicted by "
+                                                 "APACHE, stored as text.",
+    "apachepatientresult.predictedhospitalmortality": "Probability of hospital death "
+                                                      "predicted by APACHE, stored as text.",
+    "apachepatientresult.acutephysiologyscore": "The APS component of the APACHE score.",
+    "patient.unitvisitnumber": "Which ICU stay this is within the same hospital stay: 1 for "
+                               "the first, 2 for a readmission, and so on.",
+    "hospital.numbedscategory": "Bed count as a band, not a number.",
+    "hospital.teachingstatus": "Whether the hospital is a teaching hospital.",
+    "lab.labresulttext": "The result as written, including values a number cannot hold "
+                         "such as '<0.1'. `labresult` holds the numeric form.",
+}
+
+# Every unnamed column of these tables means the same kind of thing. Used only where
+# nothing more specific answered, so it replaces a bare distinct count, never a real
+# description.
+TABLE_DEFAULT: dict[str, str] = {
+    "apacheapsvar": "A physiological variable the APACHE score is computed from — the "
+                    "worst value recorded in the first 24 hours of the ICU stay.",
+    "apachepredvar": "A predictor variable feeding the APACHE model. Chronic conditions "
+                     "are flags; the rest are measurements or coded categories.",
+    "vitalperiodic": "A vital sign sampled automatically, typically every five minutes.",
+    "vitalaperiodic": "A haemodynamic measurement recorded intermittently rather than on "
+                      "a fixed interval.",
+    "respiratorycare": "A ventilator setting or alarm limit as configured for this patient.",
+}
+
 # Suffix conventions, applied when no explicit entry matches. Longest suffix first.
 EICU_SUFFIXES: tuple[tuple[str, str], ...] = (
     ("offset", "Minutes since ICU admission; a negative value means before admission. "
@@ -206,10 +245,24 @@ def column_facts(cx: sqlite3.Connection, table: str, column: str, rows: int) -> 
                     break
         except sqlite3.Error:
             pass
+    flag = False
+    if (distinct or 0) == 2:
+        try:
+            values = {
+                str(v).strip()
+                for (v,) in cx.execute(
+                    f'SELECT DISTINCT "{column}" FROM "{table}" WHERE "{column}" IS NOT NULL'
+                )
+            }
+            flag = values <= {"0", "1", "0.0", "1.0"}
+        except sqlite3.Error:
+            flag = False
+
     return {
         "distinct": distinct or 0,
         "empty_pct": 100 * (1 - (filled or 0) / rows) if rows else 0.0,
         "examples": examples,
+        "flag": flag,
     }
 
 
@@ -219,8 +272,17 @@ def describe(table: str, column: str, facts: dict, tier: str,
     ref = f"{table}.{column}"
     name = column.lower()
 
+    if ref in EICU_REFS:
+        return EICU_REFS[ref], "eICU"
+
     if name in EICU_COLUMNS:
         return EICU_COLUMNS[name], "eICU"
+
+    # The unit beats the business term. `patient.unitdischargeoffset` is declared in the
+    # glossary as "length of stay", which is true and useless next to the fact that it is
+    # in minutes and can be negative.
+    if name.endswith("offset"):
+        return dict(EICU_SUFFIXES)["offset"], "eICU"
 
     if ref in glossary:
         term, note = glossary[ref]
@@ -234,6 +296,11 @@ def describe(table: str, column: str, facts: dict, tier: str,
             return text, "eICU"
 
     # No source claims it. Say what it holds, measured — and nothing else.
+    # A flag is more specific than the table's general purpose, so it answers first.
+    if facts.get("flag"):
+        return "Flag: 1 when the condition holds, 0 when it does not.", "measured"
+    if table in TABLE_DEFAULT:
+        return TABLE_DEFAULT[table], "eICU"
     if facts["distinct"] <= 1:
         return "One value or empty throughout this extract.", "measured"
     if tier == "A":
