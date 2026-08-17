@@ -450,6 +450,7 @@ PIPELINE = [
  ("providers/extractor.py",   "the small model that finds those words"),
  ("resources/glossary.py",    "knows that 'drug' means the drugname column"),
  ("db/value_index.py",        "turns 'aspirin' into the exact value stored in the database"),
+ ("db/catalog.py",           "tells a value apart from a column name the analyst typed"),
  ("pipeline/anonymize.py",    "swaps every value for a symbol, :v1 and :v2"),
  ("pipeline/opaque.py",       "hides the table and column names as well"),
  ("db/schema.py",             "describes the tables to the cloud model"),
@@ -722,8 +723,8 @@ this list cannot drift away from the code.
 
 If you only read one, read `security/egress_gate.py`.
 """)
-    code(nb, FILE_MAP)
-    code(nb, """
+    code(nb, FILE_MAP.rstrip() + """
+
 print(f"  {'file':<28}{'lines':>6}   what it does")
 total = 0
 for name, purpose in PIPELINE:
@@ -761,12 +762,14 @@ about the data*: it names a drug, an age, a ward.
 So the question is taken apart **here**, on this machine, before anything is sent.
 Four steps, four different jobs:
 
-| Step | The question it answers | Tool |
-|---|---|---|
-| 1 | which **words** matter? | GLiNER2, a small local model |
-| 2 | is a word a **stored value**? | the value index |
-| 3 | is a word a **column name**? | the column catalogue |
-| 4 | can what is left **safely leave**? | the egress gate |
+| Step | The question it answers | Tool | Section |
+|---|---|---|---|
+| 1 | which **words** matter? | GLiNER2, a small local model | 4 |
+| 2 | is a word a **stored value**? | the value index | 5 |
+| 3 | is a word a **column name**? | the column catalogue | 6 |
+| 4 | so which is it? | the arbitration | 7 |
+| 5 | replace every value with a symbol | the masking stage | 8 |
+| 6 | may what is left **leave**? | the egress gate | 9 |
 
 At the end, the question has become four things and none of them is a secret: the
 tables, the column names, the values (kept here, replaced by symbols), and the
@@ -1563,6 +1566,9 @@ def build_run_all(nb: Notebook) -> None:
 ---
 
 ## 2. The cloud provider
+
+Three of the four architectures call one. Checking it here means a missing key
+shows up as one line, rather than as four empty rows in the results table.
 """)
     code(nb, PREFLIGHT)
 
@@ -1613,7 +1619,7 @@ print(f"\\n  {written['answer']}")
     md(nb, """
 ---
 
-## 5. The comparison
+## 4. The comparison
 
 `ran` counts queries that executed. The column that decides is **values sent**.
 """)
