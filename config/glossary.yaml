@@ -40,10 +40,16 @@
 # =============================================================================
 
 # --- Patients and stays ------------------------------------------------------
+# eICU has three nested identifiers and they are not interchangeable. Measured on
+# this extract: 1 841 distinct uniquepid, 2 174 patienthealthsystemstayid, 2 520
+# patientunitstayid. Counting "patients" on the wrong one overstates the answer —
+# "how many patients received aspirin" returned 84 instead of 79 — and the query
+# runs without error, so nothing downstream can notice. The note is what tells the
+# cloud model which one means a person; it is listed first for the same reason.
 patient:
   synonyms: [patients, patient, case, cases, admission, admissions, stay, stays, encounter]
-  columns: [patient.patienthealthsystemstayid, patient.patientunitstayid]
-  note: "A patient may have several stays; patientunitstayid identifies the ICU stay, not the person."
+  columns: [patient.uniquepid, patient.patienthealthsystemstayid, patient.patientunitstayid]
+  note: "Three nested ids: uniquepid is the person, patienthealthsystemstayid one hospital stay, patientunitstayid one ICU stay. COUNT DISTINCT of patients means uniquepid."
 
 age:
   synonyms: [age, aged, older, younger, elderly]
