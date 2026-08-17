@@ -35,7 +35,7 @@ flowchart LR
     S("<b>5 Write the SQL</b><br/>120B model")
   end
 
-  A("<b>Answer</b><br/><i>84 patients received aspirin.</i>")
+  A("<b>Answer</b><br/><i>79 patients received aspirin.</i>")
 
   Q --> E --> R --> M --> V
   V -.->|"the schema, and<br/><i>How many patients over :v2 received :v1?</i><br/><b>0 values</b>"| S
