@@ -1,15 +1,15 @@
 {
-  "id": "kirazul/nl2sql-3-architectures",
-  "title": "NL2SQL 3 Architectures",
-  "code_file": "nl2sql-3-architectures.ipynb",
-  "language": "python",
-  "kernel_type": "notebook",
-  "is_private": true,
-  "enable_gpu": false,
-  "enable_internet": true,
-  "dataset_sources": [],
-  "competition_sources": [],
-  "kernel_sources": [
-    "kirazul/nl2sql-1-setup"
-  ]
+ "id": "kirazul/nl2sql-3-architectures",
+ "title": "NL2SQL 3 Architectures",
+ "code_file": "nl2sql-3-architectures.ipynb",
+ "language": "python",
+ "kernel_type": "notebook",
+ "is_private": true,
+ "enable_gpu": false,
+ "enable_internet": true,
+ "dataset_sources": [],
+ "competition_sources": [],
+ "kernel_sources": [
+  "kirazul/nl2sql-1-setup"
+ ]
 }

@@ -3,51 +3,50 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "nl2sql-hybridsql"
-version = "0.1.0"
-description = "Privacy-preserving hybrid text-to-SQL"
+name = "nl2sql"
+version = "2.0.0"
+description = "Privacy-preserving hybrid text-to-SQL over eICU-CRD"
 requires-python = ">=3.11"
 
 dependencies = [
-    # --- API ---
+    # Service
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
-    "python-dotenv>=1.0",
 
-    # --- Outbound network calls (exactly one module may make them) ---
+    # Orchestration and tracing
+    "langgraph>=0.2",
+    "langsmith>=0.1",
+
+    # Outbound network calls — exactly one module makes them
     "httpx>=0.27",
 
-    # --- Entity extraction: in-process, never an API call ---
+    # Entity extraction: in-process, never an API call
     "gliner2>=0.1.0",
 
-    # --- Utilities ---
     "pyyaml>=6.0",
     "rapidfuzz>=3.10",
-    "sqlglot>=25.0",
 ]
 
 [project.optional-dependencies]
-# Diagram rendering (SVG -> PDF -> PNG, no system dependency)
-diagrams = ["svglib>=1.5", "reportlab>=4.2", "pypdfium2>=4.30"]
 # The local model, in-process
 local = ["llama-cpp-python>=0.3", "huggingface-hub>=0.26"]
-dev = ["pytest>=8.3", "ruff>=0.8"]
+dev = ["ruff>=0.8"]
 
-# The package lives under `src/`, so it has to be pointed at explicitly. Without
-# this, `uv sync` leaves the project uninstalled and `uvicorn hybridsql.api.app:app`
+[project.scripts]
+nl2sql = "nl2sql.cli:main"
+
+# The package lives under `src/`, so it has to be pointed at explicitly: without
+# this, `uv sync` leaves the project uninstalled and `uvicorn nl2sql.api:app`
 # fails with ModuleNotFoundError from the repository root.
 [tool.hatch.build.targets.wheel]
-packages = ["src/hybridsql"]
+packages = ["src/nl2sql"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-# Without this, `pytest` from the repository root cannot import the package and
-# every module fails at collection. Running it as `PYTHONPATH=src pytest` works
-# but nobody remembers to, and a test suite that needs a preamble gets skipped.
-pythonpath = ["src"]
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501", "SIM905"]  # word lists read better as one string

@@ -1,13 +1,13 @@
 {
-  "id": "kirazul/nl2sql-1-setup",
-  "title": "NL2SQL 1 Setup",
-  "code_file": "nl2sql-1-setup.ipynb",
-  "language": "python",
-  "kernel_type": "notebook",
-  "is_private": true,
-  "enable_gpu": false,
-  "enable_internet": true,
-  "dataset_sources": [],
-  "competition_sources": [],
-  "kernel_sources": []
+ "id": "kirazul/nl2sql-1-setup",
+ "title": "NL2SQL 1 Setup",
+ "code_file": "nl2sql-1-setup.ipynb",
+ "language": "python",
+ "kernel_type": "notebook",
+ "is_private": true,
+ "enable_gpu": false,
+ "enable_internet": true,
+ "dataset_sources": [],
+ "competition_sources": [],
+ "kernel_sources": []
 }

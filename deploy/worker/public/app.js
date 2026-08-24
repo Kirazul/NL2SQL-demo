@@ -47,12 +47,15 @@ const SUGGESTIONS = [
 ];
 
 const STAGES = {
-  understand: { label: "Understand", hint: "entities and their real values" },
-  anonymize: { label: "Mask", hint: "values become symbols" },
-  generate: { label: "Generate SQL", hint: "" },
-  execute: { label: "Execute", hint: "read-only SQLite" },
-  write: { label: "Write the answer", hint: "" },
+  understand: { label: "Reading the question", hint: "what the words mean here" },
+  mask: { label: "Hiding the values", hint: "real values become symbols" },
+  generate: { label: "Writing the query", hint: "the only step that can leave" },
+  execute: { label: "Running the query", hint: "read-only, on this machine" },
+  write: { label: "Writing the answer", hint: "from the rows, on this machine" },
 };
+
+// Filled from /meta, so the wording on screen is the wording in the traces.
+const STEP_HELP = {};
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, className, text) => {
@@ -64,6 +67,8 @@ const el = (tag, className, text) => {
 
 const state = {
   arm: localStorage.getItem("nl2sql-arm") || "hybrid",
+  variant: localStorage.getItem("nl2sql-variant") || "baseline",
+  variants: [],
   backend: null,
   online: false,
   busy: false,
@@ -81,6 +86,7 @@ function boot() {
   $("trace-toggle").classList.toggle("is-active", state.showTrace);
   refreshBackend();
   setInterval(refreshBackend, 30000);
+  loadMeta();
 }
 
 function renderSuggestions() {
@@ -165,10 +171,78 @@ function setArm(id) {
   document.querySelectorAll(".picker-option").forEach((o) => {
     o.setAttribute("aria-selected", String(o.dataset.arm === arm.id));
   });
+  const picker = document.querySelector(".picker-variant");
+  if (picker) picker.hidden = arm.id !== "hybrid";
+
   $("composer-note").textContent =
     arm.id === "full_cloud"
       ? "Full Cloud sends your question and the results to the provider, unmasked. That is what it measures."
       : "";
+}
+
+/* -------------------------------------------------------- variant picker -- */
+async function loadMeta() {
+  // The step wording and the list of variants both come from the pipeline, so
+  // adding one is a change in one Python file and nothing here.
+  if (!state.backend) return;
+  try {
+    const meta = await (await fetch(`${state.backend}/meta`)).json();
+    (meta.steps || []).forEach((step) => {
+      STEP_HELP[step.id] = step.explains;
+    });
+    state.variants = meta.variants || [];
+    buildVariantMenu();
+  } catch {
+    /* the picker stays on its default; nothing here is essential */
+  }
+}
+
+function buildVariantMenu() {
+  const menu = $("variant-menu");
+  if (!menu || !state.variants.length) return;
+  menu.replaceChildren();
+
+  state.variants.forEach((variant) => {
+    const option = el("button", "picker-option");
+    option.type = "button";
+    option.role = "option";
+    option.dataset.variant = variant.name;
+
+    const body = el("span");
+    body.appendChild(el("span", "picker-option-name", variant.name));
+    body.appendChild(el("span", "picker-option-desc", variant.what));
+
+    const check = el("span", "picker-check");
+    check.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>';
+
+    option.append(body, check);
+    option.addEventListener("click", () => {
+      setVariant(variant.name);
+      menu.hidden = true;
+    });
+    menu.appendChild(option);
+  });
+
+  $("variant-button").addEventListener("click", (e) => {
+    e.stopPropagation();
+    menu.hidden = !menu.hidden;
+  });
+  document.addEventListener("click", (e) => {
+    if (!menu.hidden && !menu.contains(e.target)) menu.hidden = true;
+  });
+  setVariant(state.variant);
+}
+
+function setVariant(name) {
+  const known = state.variants.find((v) => v.name === name) || state.variants[0];
+  if (!known) return;
+  state.variant = known.name;
+  localStorage.setItem("nl2sql-variant", known.name);
+  $("variant-label").textContent = known.name;
+  $("variant-button").title = known.what;
+  document.querySelectorAll(".picker-option[data-variant]").forEach((o) => {
+    o.setAttribute("aria-selected", String(o.dataset.variant === known.name));
+  });
 }
 
 /* --------------------------------------------------------------- backend -- */
@@ -178,8 +252,10 @@ async function refreshBackend() {
   try {
     const r = await fetch("/api/backend", { cache: "no-store" });
     const info = await r.json();
+    const changed = state.backend !== (info.url || null);
     state.backend = info.url || null;
     state.online = Boolean(info.online && info.url);
+    if (changed && state.online) loadMeta();
     dot.dataset.state = state.online ? "online" : "offline";
     text.textContent = state.online ? "live" : "offline";
     $("status").title = state.online
@@ -399,7 +475,7 @@ async function streamAnswer(question, trace, turn, pending) {
   const response = await fetch(`${state.backend}/ask/stream`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ question, arm: state.arm, write: true }),
+    body: JSON.stringify({ question, arm: state.arm, variant: state.variant, write: true }),
   });
   if (!response.ok || !response.body) {
     throw new Error(`the pipeline answered ${response.status}`);
@@ -408,6 +484,7 @@ async function streamAnswer(question, trace, turn, pending) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  const steps = [];
 
   while (true) {
     const { value, done } = await reader.read();
@@ -421,8 +498,10 @@ async function streamAnswer(question, trace, turn, pending) {
       const event = parseEvent(block);
       if (!event) continue;
 
-      if (event.name === "stage") {
-        trace.appendChild(renderStage(event.data));
+      if (event.name === "step") {
+        steps.push(event.data);
+      } else if (event.name === "stage") {
+        trace.appendChild(renderStage(event.data, steps.splice(0)));
         scrollDown();
       } else if (event.name === "done") {
         pending.remove();
@@ -452,7 +531,7 @@ function parseEvent(block) {
 }
 
 /* ----------------------------------------------------------- trace render -- */
-function renderStage(stage) {
+function renderStage(stage, steps = []) {
   const meta = STAGES[stage.stage] || { label: stage.stage, hint: "" };
   const wrap = el("div");
 
@@ -471,6 +550,7 @@ function renderStage(stage) {
 
   const body = el("div", "stage-body");
   body.hidden = true;
+  if (steps.length) body.appendChild(renderSteps(steps));
   fillStageBody(body, stage);
 
   head.addEventListener("click", () => {
@@ -480,11 +560,31 @@ function renderStage(stage) {
   // The masking step opens by itself. It is the one stage that proves the claim,
   // and a demo that requires the viewer to go looking for the evidence has
   // already lost them.
-  if (stage.stage === "anonymize" && !stage.failed) body.hidden = false;
+  if (stage.stage === "mask" && !stage.failed) body.hidden = false;
   if (stage.failed) body.hidden = false;
 
   wrap.append(head, body);
   return wrap;
+}
+
+function renderSteps(steps) {
+  // Every small thing the pipeline did, in the order it did them, in plain words.
+  const list = el("ol", "steps");
+  steps.forEach((step) => {
+    const item = el("li", "step");
+    item.dataset.zone = step.zone || "local";
+
+    const head = el("div", "step-head");
+    head.appendChild(el("span", "step-label", step.label));
+    head.appendChild(el("span", "step-time", step.ms != null ? formatMs(step.ms) : ""));
+    item.appendChild(head);
+
+    if (step.summary) item.appendChild(el("p", "step-summary", step.summary));
+    const help = STEP_HELP[step.id];
+    if (help) item.appendChild(el("p", "step-help", help));
+    list.appendChild(item);
+  });
+  return list;
 }
 
 function fillStageBody(body, stage) {
@@ -525,7 +625,7 @@ function fillStageBody(body, stage) {
     return;
   }
 
-  if (stage.stage === "anonymize") {
+  if (stage.stage === "mask") {
     const mapping = stage.mapping || {};
     const box = el("div", "masking");
 
@@ -728,7 +828,13 @@ function renderMetrics(result) {
     `<span><b>${formatMs(total)}</b> total</span>` +
     `<span>values sent to the provider <b>${result.egress_values ?? 0}</b></span>` +
     (result.row_count ? `<span>rows <b>${result.row_count}</b></span>` : "") +
-    (result.cloud_tokens ? `<span>tokens <b>${result.cloud_tokens}</b></span>` : "");
+    (result.cloud_tokens ? `<span>tokens <b>${result.cloud_tokens}</b></span>` : "") +
+    (result.cloud_target ? `<span>model <b>${result.cloud_target.split("/").pop()}</b></span>` : "") +
+    (result.perplexity != null
+      ? `<span title="how sure the model was — lower is more confident">confidence <b>${result.perplexity}</b></span>`
+      : "") +
+    (result.difficulty ? `<span>difficulty <b>${result.difficulty}</b></span>` : "") +
+    (result.escalated ? `<span><b>climbed</b> to a bigger model</span>` : "");
   return m;
 }
 

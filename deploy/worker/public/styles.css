@@ -804,3 +804,79 @@ table.rows td { font-variant-numeric: tabular-nums; }
   .messages, .composer-zone, .hero { padding-left: 0.875rem; padding-right: 0.875rem; }
   .bubble { max-width: 92%; }
 }
+
+
+/* ------------------------------------------------------------------ steps --
+   The fine-grained trace: every small thing the pipeline did, in plain words,
+   inside the stage it belongs to. Deliberately quiet — it sits under a stage the
+   reader chose to open, so it should read as a list, not as another panel. */
+.steps {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0 0 0 13px;
+  border-left: 2px solid var(--line);
+  display: grid;
+  gap: 9px;
+}
+
+.step-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.step-label {
+  font-size: 12.5px;
+  font-weight: 560;
+  color: var(--text);
+  letter-spacing: -0.005em;
+}
+
+.step-time {
+  font: 400 11px/1 var(--mono);
+  color: var(--muted);
+  margin-left: auto;
+  flex: none;
+}
+
+.step-summary {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.step-help {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* A step that crossed the boundary is the one worth spotting at a glance. */
+.step[data-zone="cloud"] {
+  position: relative;
+}
+.step[data-zone="cloud"]::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 5px;
+  width: 2px;
+  height: calc(100% - 4px);
+  background: var(--cloud);
+}
+
+/* The variant picker sits beside the architecture picker and stays quieter:
+   it is a refinement of one design, not a choice between designs. */
+.picker-variant .picker-trigger {
+  font: 400 12.5px/1 var(--sans);
+  color: var(--muted);
+  padding: 6px 10px;
+}
+.picker-variant .picker-trigger:hover {
+  color: var(--text);
+}
+.picker-variant .picker-menu {
+  min-width: 300px;
+}

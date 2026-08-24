@@ -1,0 +1,1066 @@
+# Benchmark question set.
+#   question  what the analyst types
+#   set       standard | analytics | hard
+#   values    mentions that must be masked, and the column they resolve to
+#   concepts  mentions that name a column rather than a value
+#   tables    tables that must reach the prompt
+#   sql       optional reference query — when present, accuracy is measured
+#             against what it returns rather than against a consensus
+
+- question: How many patients received aspirin?
+  set: standard
+  values:
+    aspirin: medication.drugname|admissiondrug.drugname|allergy.allergyname
+  concepts:
+  - patients
+  tables:
+  - medication
+  - patient
+- question: How many patients were treated with vancomycin?
+  set: standard
+  values:
+    vancomycin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname
+  concepts:
+  - patients
+  tables:
+  - medication
+  - patient
+- question: List patients who received insulin during their stay
+  set: standard
+  values:
+    insulin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname|intakeoutput.celllabel
+  concepts:
+  - patients
+  tables:
+  - medication
+  - patient
+- question: Which patients were given heparin?
+  set: standard
+  values:
+    heparin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname|intakeoutput.celllabel
+  concepts:
+  - patients
+  tables:
+  - medication
+  - patient
+- question: Count patients on warfarin
+  set: standard
+  values:
+    warfarin: medication.drugname|admissiondrug.drugname
+  concepts:
+  - patients
+  tables:
+  - medication
+  - patient
+- question: How many patients received furosemide?
+  set: standard
+  values:
+    furosemide: medication.drugname|admissiondrug.drugname|infusiondrug.drugname
+  concepts:
+  - patients
+  tables:
+  - medication
+  - patient
+- question: Show patients treated with propofol
+  set: standard
+  values:
+    propofol: medication.drugname|infusiondrug.drugname|intakeoutput.celllabel
+  concepts:
+  - patients
+  tables:
+  - medication
+  - patient
+- question: Which drugs were most often prescribed?
+  set: standard
+  concepts:
+  - drugs
+  tables:
+  - medication
+- question: How many patients were diagnosed with sepsis?
+  set: standard
+  values:
+    sepsis: diagnosis.diagnosisstring|admissiondx.admitdxname|careplangoal.cplgoalvalue
+  concepts:
+  - patients
+  - diagnosed
+  tables:
+  - diagnosis
+  - patient
+- question: Count patients with acute renal failure
+  set: standard
+  values:
+    acute renal failure: diagnosis.diagnosisstring|treatment.treatmentstring|note.notevalue
+  concepts:
+  - patients
+  tables:
+  - diagnosis
+  - patient
+- question: How many patients had pneumonia?
+  set: standard
+  values:
+    pneumonia: diagnosis.diagnosisstring|admissiondx.admitdxname|microlab.organism
+  concepts:
+  - patients
+  tables:
+  - diagnosis
+  - patient
+- question: List patients diagnosed with atrial fibrillation
+  set: standard
+  values:
+    atrial fibrillation: diagnosis.diagnosisstring|pasthistory.pasthistoryvalue|admissiondx.admitdxname
+  concepts:
+  - patients
+  - diagnosed
+  tables:
+  - diagnosis
+  - patient
+- question: How many patients presented with cardiac arrest?
+  set: standard
+  values:
+    cardiac arrest: diagnosis.diagnosisstring|admissiondx.admitdxname|treatment.treatmentstring
+  concepts:
+  - patients
+  tables:
+  - diagnosis
+  - patient
+- question: Count patients with diabetes
+  set: standard
+  values:
+    diabetes: pasthistory.pasthistoryvalue|diagnosis.diagnosisstring|admissiondx.admitdxname
+  concepts:
+  - patients
+  tables:
+  - diagnosis
+  - patient
+- question: How many patients suffered a stroke?
+  set: standard
+  values:
+    stroke: diagnosis.diagnosisstring|admissiondx.admitdxname|pasthistory.pasthistoryvalue
+  concepts:
+  - patients
+  tables:
+  - diagnosis
+  - patient
+- question: How many cultures grew Klebsiella pneumoniae?
+  set: standard
+  values:
+    Klebsiella pneumoniae: microlab.organism
+  concepts:
+  - cultures
+  tables:
+  - microlab
+- question: Which patients had Staphylococcus aureus?
+  set: standard
+  values:
+    Staphylococcus aureus: microlab.organism
+  concepts:
+  - patients
+  tables:
+  - microlab
+  - patient
+- question: Count cultures positive for Escherichia coli
+  set: standard
+  values:
+    Escherichia coli: microlab.organism
+  concepts:
+  - cultures
+  tables:
+  - microlab
+- question: What is the average potassium level?
+  set: standard
+  values:
+    potassium: lab.labname|medication.drugname|intakeoutput.celllabel
+  tables:
+  - lab
+- question: Show the creatinine results for patients
+  set: standard
+  values:
+    creatinine: lab.labname
+  concepts:
+  - patients
+  - results
+  tables:
+  - lab
+  - patient
+- question: What is the average glucose value?
+  set: standard
+  values:
+    glucose: lab.labname|intakeoutput.celllabel|medication.drugname
+  tables:
+  - lab
+- question: Average hemoglobin per hospital
+  set: standard
+  concepts:
+  - hospital
+  tables:
+  - lab
+  - hospital
+- question: How many female patients are there?
+  set: standard
+  values:
+    female: patient.gender
+  concepts:
+  - patients
+  tables:
+  - patient
+- question: Count male patients admitted to the ICU
+  set: standard
+  values:
+    male: patient.gender
+  concepts:
+  - patients
+  - icu
+  - admitted
+  tables:
+  - patient
+- question: How many Caucasian patients were admitted?
+  set: standard
+  values:
+    Caucasian: patient.ethnicity
+  concepts:
+  - patients
+  - admitted
+  tables:
+  - patient
+- question: What is the mortality rate by hospital region?
+  set: standard
+  concepts:
+  - mortality rate
+  - hospital region
+  tables:
+  - patient
+  - hospital
+- question: What is the average length of stay?
+  set: standard
+  concepts:
+  - length of stay
+  tables:
+  - apachepatientresult
+- question: How many patients died in the hospital?
+  set: standard
+  concepts:
+  - patients
+  - died
+  - hospital
+  tables:
+  - patient
+- question: Average ICU length of stay per unit type
+  set: standard
+  concepts:
+  - length of stay
+  - unit type
+  - icu
+  tables:
+  - apachepatientresult
+  - patient
+- question: How many patients were discharged home?
+  set: standard
+  values:
+    discharged home: patient.hospitaldischargelocation|patient.unitdischargelocation
+  concepts:
+  - patients
+  tables:
+  - patient
+- question: How many hospitals are there?
+  set: standard
+  concepts:
+  - hospitals
+  tables:
+  - hospital
+- question: Count patients per hospital region
+  set: standard
+  concepts:
+  - patients
+  - hospital region
+  tables:
+  - patient
+  - hospital
+- question: How many patients stayed in a MICU?
+  set: standard
+  values:
+    MICU: patient.unittype
+  concepts:
+  - patients
+  tables:
+  - patient
+- question: List teaching hospitals
+  set: standard
+  concepts:
+  - teaching hospitals
+  tables:
+  - hospital
+- question: What is the average APACHE score?
+  set: standard
+  concepts:
+  - apache score
+  tables:
+  - apachepatientresult
+- question: Show patients with the highest severity score
+  set: standard
+  concepts:
+  - patients
+  - severity score
+  tables:
+  - apachepatientresult
+  - patient
+- question: How many patients underwent hemodialysis?
+  set: standard
+  values:
+    hemodialysis: treatment.treatmentstring|pasthistory.pasthistoryvalue|admissiondx.admitdxname
+  concepts:
+  - patients
+  tables:
+  - treatment
+  - patient
+- question: Count patients who were intubated
+  set: standard
+  concepts:
+  - patients
+  - intubated
+  tables:
+  - respiratorycare
+  - patient
+- question: How many patients received mechanical ventilation?
+  set: standard
+  values:
+    mechanical ventilation: treatment.treatmentstring|respiratorycharting.respchartvaluelabel
+  concepts:
+  - patients
+  tables:
+  - treatment
+  - patient
+- question: How many patients are allergic to penicillin?
+  set: standard
+  values:
+    penicillin: allergy.allergyname|medication.drugname|admissiondrug.drugname
+  concepts:
+  - patients
+  - allergic
+  tables:
+  - allergy
+  - patient
+- question: List patients with a history of hypertension
+  set: standard
+  values:
+    hypertension: pasthistory.pasthistoryvalue|diagnosis.diagnosisstring|admissiondx.admitdxname
+  concepts:
+  - patients
+  - history
+  tables:
+  - pasthistory
+  - patient
+- question: How many patients received aspirin for sepsis?
+  set: standard
+  values:
+    aspirin: medication.drugname|admissiondrug.drugname|allergy.allergyname
+    sepsis: diagnosis.diagnosisstring|admissiondx.admitdxname|careplangoal.cplgoalvalue
+  concepts:
+  - patients
+  tables:
+  - medication
+  - diagnosis
+  - patient
+- question: What is the mortality rate for patients treated with vancomycin?
+  set: standard
+  values:
+    vancomycin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname
+  concepts:
+  - mortality rate
+  - patients
+  tables:
+  - medication
+  - patient
+- question: Average length of stay for patients with Klebsiella pneumoniae
+  set: standard
+  values:
+    Klebsiella pneumoniae: microlab.organism
+  concepts:
+  - length of stay
+  - patients
+  tables:
+  - microlab
+  - apachepatientresult
+  - patient
+- question: How many female patients received insulin?
+  set: standard
+  values:
+    female: patient.gender
+    insulin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname|intakeoutput.celllabel
+  concepts:
+  - patients
+  tables:
+  - patient
+  - medication
+- question: Count patients with diabetes who were prescribed metformin
+  set: standard
+  values:
+    diabetes: pasthistory.pasthistoryvalue|diagnosis.diagnosisstring|admissiondx.admitdxname
+    metformin: medication.drugname|admissiondrug.drugname|allergy.allergyname
+  concepts:
+  - patients
+  - prescribed
+  tables:
+  - pasthistory
+  - medication
+  - patient
+- question: What medications did patient 141764 receive?
+  set: standard
+  concepts:
+  - medications
+  - patient
+  tables:
+  - medication
+  - patient
+- question: List all lab results for stay 143870
+  set: standard
+  concepts:
+  - lab results
+  - stay
+  tables:
+  - lab
+- question: What was the diagnosis of patient 002-1039?
+  set: standard
+  concepts:
+  - diagnosis
+  - patient
+  tables:
+  - diagnosis
+  - patient
+- question: Which patients with sepsis received vancomycin and died in the ICU?
+  set: standard
+  values:
+    sepsis: diagnosis.diagnosisstring|admissiondx.admitdxname|careplangoal.cplgoalvalue
+    vancomycin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname
+  concepts:
+  - patients
+  - died
+  - icu
+  tables:
+  - diagnosis
+  - medication
+  - patient
+- question: List patients who received both aspirin and heparin
+  set: standard
+  values:
+    aspirin: medication.drugname|admissiondrug.drugname|allergy.allergyname
+    heparin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname|intakeoutput.celllabel
+  concepts:
+  - patients
+  tables:
+  - medication
+  - patient
+- question: Which patients had a Staphylococcus aureus culture and were treated with vancomycin?
+  set: standard
+  values:
+    Staphylococcus aureus: microlab.organism
+    vancomycin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname
+  concepts:
+  - patients
+  - culture
+  tables:
+  - microlab
+  - medication
+  - patient
+- question: Count female patients with diabetes admitted from the Emergency Department
+  set: standard
+  values:
+    female: patient.gender
+    diabetes: pasthistory.pasthistoryvalue|diagnosis.diagnosisstring|admissiondx.admitdxname
+    Emergency Department: patient.unitadmitsource|patient.hospitaladmitsource
+  concepts:
+  - patients
+  - admitted
+  tables:
+  - patient
+  - pasthistory
+- question: Which patients in the MICU received propofol and were intubated?
+  set: standard
+  values:
+    MICU: patient.unittype
+    propofol: medication.drugname|infusiondrug.drugname|intakeoutput.celllabel
+  concepts:
+  - patients
+  - intubated
+  tables:
+  - patient
+  - medication
+  - respiratorycare
+- question: List patients admitted from the Operating Room who developed pneumonia
+  set: standard
+  values:
+    Operating Room: patient.unitadmitsource|patient.hospitaladmitsource
+    pneumonia: diagnosis.diagnosisstring|admissiondx.admitdxname|microlab.organism
+  concepts:
+  - patients
+  - admitted
+  tables:
+  - patient
+  - diagnosis
+- question: Which Caucasian patients with atrial fibrillation received warfarin?
+  set: standard
+  values:
+    Caucasian: patient.ethnicity
+    atrial fibrillation: diagnosis.diagnosisstring|pasthistory.pasthistoryvalue|admissiondx.admitdxname
+    warfarin: medication.drugname|admissiondrug.drugname
+  concepts:
+  - patients
+  tables:
+  - patient
+  - diagnosis
+  - medication
+- question: How many patients were discharged to a Skilled Nursing Facility?
+  set: standard
+  values:
+    Skilled Nursing Facility: patient.hospitaldischargelocation|patient.unitdischargelocation
+  concepts:
+  - patients
+  - discharged
+  tables:
+  - patient
+- question: List patients transferred to Rehabilitation after their ICU stay
+  set: standard
+  values:
+    Rehabilitation: patient.hospitaldischargelocation|patient.unitdischargelocation
+  concepts:
+  - patients
+  - icu
+  - stay
+  tables:
+  - patient
+- question: How many patients came from Other Hospital?
+  set: standard
+  values:
+    Other Hospital: patient.hospitaladmitsource|patient.unitadmitsource
+  concepts:
+  - patients
+  tables:
+  - patient
+- question: Count patients admitted from the Floor to a Neuro ICU
+  set: standard
+  values:
+    Floor: patient.unitadmitsource|patient.hospitaladmitsource
+    Neuro ICU: patient.unittype
+  concepts:
+  - patients
+  - admitted
+  tables:
+  - patient
+- question: Compare mortality between teaching and non-teaching hospitals
+  set: standard
+  concepts:
+  - mortality
+  - teaching
+  - hospitals
+  tables:
+  - patient
+  - hospital
+- question: Compare length of stay between the Midwest and the South regions
+  set: standard
+  values:
+    Midwest: hospital.region
+    South: hospital.region
+  concepts:
+  - length of stay
+  - regions
+  tables:
+  - hospital
+  - apachepatientresult
+- question: Is mortality higher in hospitals with fewer than 100 beds?
+  set: standard
+  concepts:
+  - mortality
+  - hospitals
+  - beds
+  tables:
+  - patient
+  - hospital
+- question: Which unit type has the highest mortality?
+  set: standard
+  concepts:
+  - unit type
+  - mortality
+  tables:
+  - patient
+- question: Which organisms were Resistant to vancomycin?
+  set: standard
+  values:
+    Resistant: microlab.sensitivitylevel
+    vancomycin: microlab.antibiotic|medication.drugname
+  concepts:
+  - organisms
+  tables:
+  - microlab
+- question: List cultures Sensitive to ciprofloxacin
+  set: standard
+  values:
+    Sensitive: microlab.sensitivitylevel
+    ciprofloxacin: microlab.antibiotic|medication.drugname
+  concepts:
+  - cultures
+  tables:
+  - microlab
+- question: Which culture sites grew Escherichia coli?
+  set: standard
+  values:
+    Escherichia coli: microlab.organism
+  concepts:
+  - culture sites
+  tables:
+  - microlab
+- question: What was the average potassium level for patients who received furosemide?
+  set: standard
+  values:
+    potassium: lab.labname|medication.drugname|intakeoutput.celllabel
+    furosemide: medication.drugname|admissiondrug.drugname|infusiondrug.drugname
+  concepts:
+  - patients
+  tables:
+  - lab
+  - medication
+  - patient
+- question: Show creatinine results for patients who underwent hemodialysis
+  set: standard
+  values:
+    creatinine: lab.labname
+    hemodialysis: treatment.treatmentstring|pasthistory.pasthistoryvalue|admissiondx.admitdxname
+  concepts:
+  - patients
+  - results
+  tables:
+  - lab
+  - treatment
+  - patient
+- question: What is the average Hgb for patients with sickle cell disease?
+  set: standard
+  values:
+    Hgb: lab.labname
+    sickle cell disease: diagnosis.diagnosisstring|pasthistory.pasthistoryvalue
+  concepts:
+  - patients
+  tables:
+  - lab
+  - diagnosis
+  - patient
+- question: How many patients have a Drug allergy?
+  set: standard
+  concepts:
+  - patients
+  - allergy
+  tables:
+  - allergy
+  - patient
+- question: List patients allergic to penicillin who still received an antibiotic
+  set: standard
+  values:
+    penicillin: allergy.allergyname|medication.drugname|admissiondrug.drugname
+  concepts:
+  - patients
+  - allergic
+  - antibiotic
+  tables:
+  - allergy
+  - medication
+  - patient
+- question: Which patient had the highest APACHE score?
+  set: standard
+  concepts:
+  - patient
+  - apache score
+  tables:
+  - apachepatientresult
+  - patient
+- question: Show the diagnoses of the patient with the longest ICU stay
+  set: standard
+  concepts:
+  - diagnoses
+  - patient
+  - icu stay
+  tables:
+  - diagnosis
+  - apachepatientresult
+  - patient
+- question: Which hospital has the most admissions?
+  set: standard
+  concepts:
+  - hospital
+  - admissions
+  tables:
+  - hospital
+  - patient
+- question: What is the most frequently prescribed drug in the Cardiac ICU?
+  set: standard
+  values:
+    Cardiac ICU: patient.unittype
+  concepts:
+  - prescribed
+  - drug
+  tables:
+  - medication
+  - patient
+- question: List patients with a history of hypertension who received furosemide
+  set: standard
+  values:
+    hypertension: pasthistory.pasthistoryvalue|diagnosis.diagnosisstring|admissiondx.admitdxname
+    furosemide: medication.drugname|admissiondrug.drugname|infusiondrug.drugname
+  concepts:
+  - patients
+  - history
+  tables:
+  - pasthistory
+  - medication
+  - patient
+- question: Which patients on home oxygen were readmitted?
+  set: standard
+  values:
+    home oxygen: pasthistory.pasthistoryvalue|pasthistory.pasthistoryvaluetext
+  concepts:
+  - patients
+  tables:
+  - pasthistory
+  - patient
+- question: Count patients who received a blood transfusion in the SICU
+  set: standard
+  values:
+    SICU: patient.unittype
+    blood transfusion: treatment.treatmentstring|intakeoutput.celllabel
+  concepts:
+  - patients
+  tables:
+  - treatment
+  - patient
+- question: What are the 10 most common drug names in the medication table?
+  set: analytics
+  concepts:
+  - drug names
+  tables:
+  - medication
+- question: What are the most common medication administration routes?
+  set: analytics
+  concepts:
+  - administration routes
+  - medication administration routes
+  tables:
+  - medication
+- question: What are the most common medication frequencies?
+  set: analytics
+  concepts:
+  - medication frequencies
+  - frequencies
+  tables:
+  - medication
+- question: What are the 10 most frequently recorded laboratory tests?
+  set: analytics
+  concepts:
+  - laboratory tests
+  tables:
+  - lab
+- question: How many laboratory records are associated with each patient ICU stay?
+  set: analytics
+  concepts:
+  - laboratory records
+  - ICU stay
+  tables:
+  - lab
+- question: What are the 10 most common diagnosis names?
+  set: analytics
+  concepts:
+  - diagnosis names
+  tables:
+  - diagnosis
+- question: How many diagnosis records are associated with each patient ICU stay?
+  set: analytics
+  concepts:
+  - diagnosis records
+  - ICU stay
+  tables:
+  - diagnosis
+- question: How many patients are admitted to each ICU unit type?
+  set: analytics
+  concepts:
+  - ICU unit type
+  - unit type
+  tables:
+  - patient
+- question: What is the average height of patients?
+  set: analytics
+  concepts:
+  - height
+  - patients
+  tables:
+  - patient
+- question: How many patients are male and female?
+  set: analytics
+  values:
+    male: patient.gender
+    female: patient.gender
+  concepts:
+  - patients
+  tables:
+  - patient
+- question: How many patients belong to each ethnicity?
+  set: analytics
+  concepts:
+  - ethnicity
+  tables:
+  - patient
+- question: How many patients are associated with each hospital?
+  set: analytics
+  concepts:
+  - hospital
+  - patients
+  tables:
+  - patient
+- question: Which hospital has the most patient ICU stays?
+  set: analytics
+  concepts:
+  - hospital
+  - ICU stays
+  tables:
+  - patient
+- question: How many patients are in each hospital region?
+  set: analytics
+  concepts:
+  - hospital region
+  - region
+  tables:
+  - hospital
+- question: How many periodic vital-sign records are associated with each patient ICU stay?
+  set: analytics
+  concepts:
+  - vital-sign records
+  - periodic vital-sign records
+  tables:
+  - vitalperiodic
+- question: How many periodic vital-sign records are in the database?
+  set: analytics
+  concepts:
+  - vital-sign records
+  - periodic vital-sign records
+  tables:
+  - vitalperiodic
+- question: How many intake/output records are associated with each patient ICU stay?
+  set: analytics
+  concepts:
+  - intake/output records
+  tables:
+  - intakeoutput
+- question: How many nursing charting records are associated with each patient ICU stay?
+  set: analytics
+  concepts:
+  - nursing charting records
+  tables:
+  - nursecharting
+- question: Which patients have the largest number of nursing charting records?
+  set: analytics
+  concepts:
+  - nursing charting records
+  - patients
+  tables:
+  - nursecharting
+- question: How many patients received aspirin and have at least one laboratory record?
+  set: analytics
+  values:
+    aspirin: medication.drugname|admissiondrug.drugname|allergy.allergyname
+  concepts:
+  - laboratory record
+  - patients
+  tables:
+  - medication
+  - lab
+  - patient
+- question: How many patients have both a diagnosis and a medication record?
+  set: analytics
+  concepts:
+  - diagnosis
+  - medication record
+  - patients
+  tables:
+  - diagnosis
+  - medication
+  - patient
+- question: What is the average age of patients who received aspirin?
+  set: analytics
+  values:
+    aspirin: medication.drugname|admissiondrug.drugname|allergy.allergyname
+  concepts:
+  - age
+  - patients
+  tables:
+  - medication
+  - patient
+- question: For each hospital, how many unique patients received medication?
+  set: analytics
+  concepts:
+  - hospital
+  - patients
+  - medication
+  tables:
+  - patient
+  - medication
+- question: Which hospitals have patients with the highest number of medication records?
+  set: analytics
+  concepts:
+  - hospitals
+  - medication records
+  tables:
+  - patient
+  - medication
+- question: Give me the vital signs of patient 1234
+  set: analytics
+  concepts:
+  - vital signs
+  tables:
+  - patient
+- question: Did Mr. Bensalah receive his insulin?
+  set: hard
+  values:
+    insulin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname|intakeoutput.celllabel
+  tables:
+  - medication
+- question: What was Sarah Johnson's last potassium result?
+  set: hard
+  values:
+    potassium: lab.labname|medication.drugname|intakeoutput.celllabel
+  concepts:
+  - result
+  tables:
+  - lab
+- question: Show me the chart for Ahmed Trabelsi
+  set: hard
+  concepts:
+  - chart
+- question: Was Maria Gonzalez discharged home?
+  set: hard
+  values:
+    discharged home: patient.hospitaldischargelocation|patient.unitdischargelocation
+  tables:
+  - patient
+- question: Which patients did Dr. Martinez treat in the SICU?
+  set: hard
+  values:
+    SICU: patient.unittype
+  concepts:
+  - patients
+  - treat
+  tables:
+  - patient
+- question: Compare the outcomes of John Smith and Robert Williams
+  set: hard
+  concepts:
+  - outcomes
+- question: Has Fatma Ben Ali been intubated?
+  set: hard
+  concepts:
+  - intubated
+  tables:
+  - respiratorycare
+- question: Who is doing badly?
+  set: hard
+- question: Any problems with the heart patients?
+  set: hard
+  concepts:
+  - patients
+- question: Show me something interesting about the data
+  set: hard
+  concepts:
+  - data
+- question: What went wrong last month?
+  set: hard
+- question: Give me an overview
+  set: hard
+- question: Are the numbers normal?
+  set: hard
+  concepts:
+  - numbers
+- question: Which cases should I look at first?
+  set: hard
+  concepts:
+  - cases
+- question: How many patients got vanco?
+  set: hard
+  values:
+    vanco: medication.drugname|admissiondrug.drugname|infusiondrug.drugname
+  concepts:
+  - patients
+  tables:
+  - medication
+- question: Average K+ for septic patients
+  set: hard
+  concepts:
+  - patients
+  tables:
+  - lab
+- question: Any patients with afib on anticoagulation?
+  set: hard
+  concepts:
+  - patients
+  tables:
+  - diagnosis
+- question: Show BP readings for ICU patients
+  set: hard
+  concepts:
+  - patients
+  - icu
+  tables:
+  - vitalperiodic
+- question: How many pts were vented?
+  set: hard
+  tables:
+  - respiratorycare
+- question: Count the DNR patients
+  set: hard
+  concepts:
+  - patients
+- question: how many patietns recieved aspirn
+  set: hard
+  tables:
+  - medication
+- question: patients with sepssis and renal falure
+  set: hard
+  values:
+    renal falure: diagnosis.diagnosisstring|admissiondx.admitdxname|treatment.treatmentstring|note.notevalue
+  tables:
+  - diagnosis
+- question: the ones who died, what did they have
+  set: hard
+  concepts:
+  - died
+  tables:
+  - patient
+- question: vancomycin, how many, by unit, last year
+  set: hard
+  values:
+    vancomycin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname
+  concepts:
+  - unit
+  tables:
+  - medication
+  - patient
+- question: I need the sepsis patients but only the ones in the MICU who also got vancomycin and died
+  set: hard
+  values:
+    sepsis: diagnosis.diagnosisstring|admissiondx.admitdxname|careplangoal.cplgoalvalue
+    MICU: patient.unittype
+    vancomycin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname
+  concepts:
+  - patients
+  - died
+  tables:
+  - diagnosis
+  - patient
+  - medication
+- question: What is the price of aspirin?
+  set: hard
+  values:
+    aspirin: medication.drugname|admissiondrug.drugname|allergy.allergyname
+  concepts:
+  - price
+  tables:
+  - medication
+- question: How many nurses work in the ICU?
+  set: hard
+  concepts:
+  - nurses
+  - icu
+- question: What is the weather today?
+  set: hard

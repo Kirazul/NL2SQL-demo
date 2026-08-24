@@ -1,47 +1,35 @@
-# --- Secrets: never committed ---
+# Secrets
 .env
-.env.local
 *.key
-secrets/
 
-# --- Python ---
+# Python
 __pycache__/
 *.py[cod]
 .venv/
 venv/
-.pytest_cache/
 .ruff_cache/
-.mypy_cache/
 *.egg-info/
 dist/
 build/
 
-# --- Generated data (rebuilt by scripts/build_database.py) ---
-data/warehouse/*.db
-data/warehouse/*.db-wal
-data/warehouse/*.db-shm
-data/raw/
-data/cache/
-data/warehouse/*.json
+# Data: rebuilt with `python -m nl2sql.cli database` and `... index`
+data/*.db
+data/*.json
 
-# --- Local model weights (bash scripts/download_models.sh) ---
+# Local model weights
 models/
 
-# --- Raw benchmark runs ---
-runs/**/raw/
+# Run journals
 traces/*.jsonl
 
-# --- Front ---
+# Front end
 node_modules/
-.next/
-out/
 
-# --- OS / IDE ---
+# OS / IDE
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 
-# Rebuildable scalability fixtures (scripts/demo_scalability.py)
-data/warehouse/_scalability/
-data/warehouse/scalability.json
+# The long write-up, kept local
+EXPLANATION.md

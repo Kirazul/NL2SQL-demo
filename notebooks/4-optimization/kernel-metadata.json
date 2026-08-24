@@ -1,7 +1,7 @@
 {
- "id": "kirazul/nl2sql-2-understanding",
- "title": "NL2SQL 2 Understanding",
- "code_file": "nl2sql-2-understanding.ipynb",
+ "id": "kirazul/nl2sql-4-optimization",
+ "title": "NL2SQL 4 Optimization",
+ "code_file": "nl2sql-4-optimization.ipynb",
  "language": "python",
  "kernel_type": "notebook",
  "is_private": true,

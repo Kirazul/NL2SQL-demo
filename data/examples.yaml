@@ -1,0 +1,58 @@
+# Worked examples shown to the model by the `fewshot` variant.
+#
+# Deliberately NOT drawn from data/questions.yaml: an example taken from the
+# benchmark set would be handing the model the answer to a question it is about
+# to be scored on. These are written by hand, cover one query shape each, and are
+# checked against the value denylist when they load — a pair carrying a stored
+# value is dropped rather than shown to a provider.
+#
+# Values appear only as :v1, :v2, exactly as the real prompt sends them.
+
+- question: "How many patients are in the database?"
+  sql: "SELECT COUNT(DISTINCT uniquepid) AS patient_count FROM patient"
+
+- question: "How many patients received :v1?"
+  sql: >-
+    SELECT COUNT(DISTINCT p.uniquepid) AS patient_count
+    FROM medication m JOIN patient p ON m.patientunitstayid = p.patientunitstayid
+    WHERE m.drugname = :v1
+
+- question: "How many patients are there per :v1?"
+  sql: >-
+    SELECT p.ethnicity AS ethnicity, COUNT(DISTINCT p.uniquepid) AS patient_count
+    FROM patient p GROUP BY p.ethnicity ORDER BY patient_count DESC
+
+- question: "What share of stays ended with a discharge status of :v1?"
+  sql: >-
+    SELECT CAST(SUM(CASE WHEN p.hospitaldischargestatus = :v1 THEN 1 ELSE 0 END) AS REAL)
+    / COUNT(*) AS share FROM patient p
+
+- question: "What are the 10 most frequently recorded laboratory tests?"
+  sql: >-
+    SELECT l.labname AS lab_name, COUNT(*) AS record_count
+    FROM lab l GROUP BY l.labname ORDER BY record_count DESC LIMIT 10
+
+- question: "How many patients per hospital region?"
+  sql: >-
+    SELECT h.region AS region, COUNT(DISTINCT p.uniquepid) AS patient_count
+    FROM patient p JOIN hospital h ON p.hospitalid = h.hospitalid
+    GROUP BY h.region ORDER BY patient_count DESC
+
+- question: "What is the average length of stay in the unit?"
+  sql: >-
+    SELECT AVG(p.unitdischargeoffset) / 1440.0 AS average_days FROM patient p
+
+- question: "How many patients over :v1 were admitted?"
+  sql: >-
+    SELECT COUNT(DISTINCT p.uniquepid) AS patient_count
+    FROM patient p WHERE CAST(p.age AS INTEGER) > :v1
+
+- question: "Which diagnoses are the most common?"
+  sql: >-
+    SELECT d.diagnosisstring AS diagnosis, COUNT(*) AS occurrences
+    FROM diagnosis d GROUP BY d.diagnosisstring ORDER BY occurrences DESC LIMIT 10
+
+- question: "How many laboratory records are there for each patient on average?"
+  sql: >-
+    SELECT CAST(COUNT(*) AS REAL) / COUNT(DISTINCT l.patientunitstayid) AS records_per_stay
+    FROM lab l
