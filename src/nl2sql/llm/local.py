@@ -199,7 +199,7 @@ def _chat(messages: list[dict[str, str]], max_tokens: int, stop: list[str]) -> t
 def write_answer(question: str, columns: list[str], rows: list[tuple]) -> Written:
     """Turn a query result into a sentence. No network call."""
     start = time.perf_counter()
-    with track("model", zone="local", rows=len(rows)) as step:
+    with track("model", zone="local", label="Asking the model here for a sentence", rows=len(rows)) as step:
         text, tokens = _chat(
             build_messages(question, columns, rows),
             MAX_ANSWER_TOKENS,
@@ -236,7 +236,12 @@ def generate_sql(question: str, ddl: str, notes: list[str] | None = None) -> Wri
     ]
     from nl2sql.llm.cloud import extract_sql
 
-    with track("model", zone="local", characters=sum(len(m["content"]) for m in messages)) as step:
+    with track(
+        "model",
+        zone="local",
+        label="Asking the model here to write the SQL",
+        characters=sum(len(m["content"]) for m in messages),
+    ) as step:
         text, tokens = _chat(messages, MAX_SQL_TOKENS, ["<|im_end|>", "\n\nQuestion:", ";"])
         written = Written(
             extract_sql(_strip_thinking(text)),

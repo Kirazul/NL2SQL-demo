@@ -77,10 +77,18 @@ BY_ID: dict[str, StepKind] = {s.id: s for s in STEPS}
 
 
 @contextmanager
-def track(step_id: str, zone: Zone | None = None, **inputs: Any) -> Iterator[Recorder]:
-    """Open one named step. Unknown ids fail loudly rather than tracing a typo."""
+def track(
+    step_id: str, zone: Zone | None = None, label: str | None = None, **inputs: Any
+) -> Iterator[Recorder]:
+    """Open one named step. Unknown ids fail loudly rather than tracing a typo.
+
+    `label` overrides the registry wording for the one case where the same kind of
+    step does two different jobs: a model call that writes SQL and a model call
+    that writes the answer are both `model`, and calling the second one "asking a
+    model to write the SQL" on screen would simply be wrong.
+    """
     step = BY_ID[step_id]
-    with trace.span(step.id, step.label, zone or step.zone, step.kind, **inputs) as recorder:
+    with trace.span(step.id, label or step.label, zone or step.zone, step.kind, **inputs) as recorder:
         yield recorder
 
 
