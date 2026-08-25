@@ -164,7 +164,16 @@ from pathlib import Path
 ROOT = Path("/kaggle/working/nl2sql")
 if not ROOT.exists():
     from kaggle_secrets import UserSecretsClient
-    token = UserSecretsClient().get_secret("GITHUB_TOKEN")
+    try:
+        token = UserSecretsClient().get_secret("GITHUB_TOKEN")
+    except Exception as e:
+        # Kaggle answers 400 here when the label is not attached to this notebook,
+        # and the client reports that as a connection error sixty frames deep.
+        raise SystemExit(
+            f"GITHUB_TOKEN could not be read ({{type(e).__name__}}: {{e}}). "
+            "Open this notebook on Kaggle and check Add-ons -> Secrets: the secret "
+            "must exist and be attached here. Internet must be on as well."
+        ) from e
     url = "{REPO}".replace("https://", f"https://{{token}}@")
     subprocess.run(["git", "clone", "--depth", "1", url, str(ROOT)], check=True)
     # git writes the clone URL into .git/config, token and all, and Kaggle saves
