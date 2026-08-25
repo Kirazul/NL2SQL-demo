@@ -1,12 +1,4 @@
-"""The REST service — the only door into the trust boundary.
-
-Everything served here runs on the protected side; the one thing that leaves does
-so from `llm/cloud.py`, behind the gate. Responses are built from `state.public()`
-because a browser is a client, not an insider.
-
-`/ask/stream` emits one event per traced step: the interesting claim is about what
-happens between the question and the answer, so the pipeline shows its work.
-"""
+"""The REST service — the only door into the trust boundary."""
 
 from __future__ import annotations
 
@@ -82,11 +74,7 @@ def health() -> dict[str, Any]:
 
 @app.get("/meta")
 def meta() -> dict[str, Any]:
-    """What the interface needs to describe the system without hardcoding it.
-
-    The step labels come from `core/steps.py`, so the wording on screen and the wording
-    in the traces cannot drift apart.
-    """
+    """What the interface needs to describe the system without hardcoding it."""
     return {
         "arms": list(ARMS),
         "variants": variant_catalogue(),
@@ -135,11 +123,7 @@ async def ask(body: Ask) -> dict[str, Any]:
 
 @app.post("/compare")
 async def compare(body: Ask) -> dict[str, Any]:
-    """The same question through all four architectures — the benchmark, live.
-
-    Sequential on purpose: run concurrently they would contend for the same two cores
-    and the same llama.cpp instance, and latency is one of the things being measured.
-    """
+    """The same question through all four architectures — the benchmark, live."""
     def _all() -> dict[str, Any]:
         out = {}
         for arm in ARMS:

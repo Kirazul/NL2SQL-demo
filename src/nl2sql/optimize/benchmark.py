@@ -1,13 +1,4 @@
-"""Run every variant over the same questions and say which one is best.
-
-Accuracy is measured against a hand-written reference query where one exists, and
-otherwise against the result at least two variants agreed on. Executable rate is a
-floor, not a measure of correctness; perplexity is the only signal needing no
-answer key.
-
-Cost and latency sit beside them because the point is not the most accurate
-variant but the best trade.
-"""
+"""Run every variant over the same questions and say which one is best."""
 
 from __future__ import annotations
 
@@ -138,11 +129,7 @@ def score_against_reference(results: list[Result], reference: dict[str, str]) ->
 
 
 def consensus_reference(results: list[Result]) -> dict[str, str]:
-    """For questions with no hand-written query: what most variants agreed on.
-
-    A single variant's answer is never taken as the reference — that would score every
-    other variant against one arbitrary opinion.
-    """
+    """For questions with no hand-written query: what most variants agreed on."""
     by_question: dict[str, list[str]] = {}
     for result in results:
         if result.success and result.result_hash not in ("", "empty"):
@@ -229,11 +216,7 @@ def summarise(variant: str, results: list[Result]) -> Summary:
 
 
 def rank(summaries: list[Summary]) -> list[tuple[str, float]]:
-    """Order by accuracy first, then by what it cost to get it.
-
-    Cost is a tie-breaker, not a term traded against accuracy: how much accuracy a euro
-    is worth is the reader's call, which is why the full table is printed too.
-    """
+    """Order by accuracy first, then by what it cost to get it."""
     return [
         (s.variant, s.accuracy)
         for s in sorted(summaries, key=lambda s: (-s.accuracy, s.tokens_per_question, s.ms_median))

@@ -1,12 +1,4 @@
-"""The local model — inside the trust boundary.
-
-The only component that ever sees query *results*. If answer writing went out to
-an API the rest of the architecture would be pointless: we would have protected
-the question in order to export the answer.
-
-Qwen3-1.7B Q4_K_M on CPU. Not a brilliant model, which is the point — the SQL was
-written by a large one and the numbers come from the database.
-"""
+"""The local model — inside the trust boundary."""
 
 from __future__ import annotations
 
@@ -119,22 +111,14 @@ def state() -> dict[str, Any]:
 
 
 def _strip_thinking(text: str) -> str:
-    """Remove reasoning traces, closed or not.
-
-    When the token budget runs out inside the block no `</think>` is emitted, the pair
-    never matches, and the model's scratchpad gets rendered to the analyst as if it were
-    """
+    """Remove reasoning traces, closed or not."""
     cleaned = THINKING_RE.sub("", text or "")
     opened = cleaned.lower().find("<think>")
     return (cleaned[:opened] if opened != -1 else cleaned).strip()
 
 
 def _first_block(text: str, max_sentences: int = 3) -> str:
-    """Keep the answer, drop what the model tacked on afterwards.
-
-    Qwen3-1.7B writes a correct sentence and then contradicts itself: "1234 patients
-    received aspirin." followed by a bare "1234" and "No matching record was found." The
-    """
+    """Keep the answer, drop what the model tacked on afterwards."""
     text = (text or "").strip()
     if not text:
         return ""

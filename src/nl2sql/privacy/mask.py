@@ -1,12 +1,4 @@
-"""Stage 2a — replace real values with symbols before any network call.
-
-"received aspirin?" becomes "received :v1?", and the mapping stays here. Symbols
-restart at 1 per question, so two questions about the same drug do not look alike.
-
-`:v1` is SQLite's own bound-parameter syntax, so the model returns directly
-executable SQL and the value never meets the query text in one string — injection
-is impossible by construction rather than by filtering.
-"""
+"""Stage 2a — replace real values with symbols before any network call."""
 
 from __future__ import annotations
 
@@ -19,11 +11,7 @@ MIN_USEFUL_SUGGESTION = 0.65
 
 
 class UnresolvableValue(RuntimeError):
-    """A value in the question matches nothing in the database, or matches too weakly.
-
-    It used to be left unmasked and passed on, and the model did what a language model
-    always does with an impossible constraint: it produced something — `WHERE
-    """
+    """A value in the question matches nothing in the database, or matches too weakly."""
 
     def __init__(self, unknown: list[tuple[str, tuple[str, ...]]]) -> None:
         self.unknown = unknown
@@ -76,11 +64,7 @@ class Masked:
         }
 
     def declare(self, rename: dict[str, str] | None = None) -> str:
-        """Describe the symbols to the model without revealing the values.
-
-        The model needs the column to place the `WHERE`; it never needs the value.
-        `rename` maps a real column to its pseudonym for the opaque arm.
-        """
+        """Describe the symbols to the model without revealing the values."""
         if not self.mapping:
             return "  (none)"
         lines = []

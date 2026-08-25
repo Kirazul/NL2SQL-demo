@@ -1,10 +1,4 @@
-"""Validate the SQL a remote model wrote, before it reaches the engine.
-
-The connection is already read-only; this sits upstream for a readable message
-instead of an opaque SQLite error, for defence in depth, and to refuse multiple
-statements. It does not check that the query *answers the question* — a safe query
-can still be wrong.
-"""
+"""Validate the SQL a remote model wrote, before it reaches the engine."""
 
 from __future__ import annotations
 
@@ -43,11 +37,7 @@ class Verdict:
 
 
 def unknown_columns(sql: str) -> list[str]:
-    """Column names the query invents.
-
-    SQLite catches them too, but only at execution, after the request has failed. Here
-    it becomes a repair.
-    """
+    """Column names the query invents."""
     from nl2sql.db.schema import read_schema
 
     try:

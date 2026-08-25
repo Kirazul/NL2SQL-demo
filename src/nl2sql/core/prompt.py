@@ -1,10 +1,4 @@
-"""Prompt assembly — one place, four arms, five variants.
-
-Everything a model is ever shown is built here, split into segments whose origin
-the egress gate can verify. Keeping it in one module is what makes the benchmark
-compare *architectures* rather than prompt-writing: every arm receives the same
-instruction text, character for character, except the one rule that has to differ.
-"""
+"""Prompt assembly — one place, four arms, five variants."""
 
 from __future__ import annotations
 
@@ -154,11 +148,7 @@ def hybrid(
 
 
 def opaque(understanding: Understanding, masked: Masked, seed: int | None = None) -> Prompt:
-    """Pseudonymised schema *and* question: no business word of any kind leaves.
-
-    The dictionary is drawn per request and travels with the prompt — rebuilding it
-    later would describe labels that were never sent.
-    """
+    """Pseudonymised schema *and* question: no business word of any kind leaves."""
     tables = relevant_tables(understanding)
     pseudonyms = opq.build(tables, seed=seed)
     question, notes = opq.rewrite_question(masked.question, pseudonyms)

@@ -1,14 +1,4 @@
-"""The cloud client — the system's only network egress.
-
-Nothing leaves without passing the egress gate: `call()` runs it before a socket
-is opened, so bypassing it means editing this file.
-
-Models are a **ladder** — small, medium, large — and callers ask for a rung, not a
-provider. Within a rung, a 429 waits and retries, a 5xx or 404 moves on. Only the
-small rung reports confidence: Groq refuses `logprobs` on every model it serves
-and OpenRouter returns them, so the rung whose confidence decides whether to climb
-is the OpenRouter one.
-"""
+"""The cloud client — the system's only network egress."""
 
 from __future__ import annotations
 
@@ -70,11 +60,7 @@ class Response:
 
     @property
     def perplexity(self) -> float | None:
-        """exp(-mean log p) over the generated tokens: how sure the model was.
-
-        `None` when the provider did not return log probabilities, in which case the local
-        scorer in `llm.local` answers instead.
-        """
+        """exp(-mean log p) over the generated tokens: how sure the model was."""
         if not self.logprobs:
             return None
         return round(math.exp(-sum(self.logprobs) / len(self.logprobs)), 4)
@@ -107,11 +93,7 @@ def chain(size: Size = "large") -> list[Target]:
 
 
 def extract_sql(text: str) -> str:
-    """Pull the SQL out of a model response, or return nothing.
-
-    Returning nothing matters as much as returning SQL: matching "with" anywhere in a
-    sentence once handed `with that.` to SQLite.
-    """
+    """Pull the SQL out of a model response, or return nothing."""
     text = THINKING_RE.sub("", text or "").strip()
     block = CODE_BLOCK_RE.search(text)
     if block:
@@ -150,12 +132,7 @@ def call(
     context: str = "sql-generation",
     unprotected: bool = False,
 ) -> Response:
-    """Send a conversation to the first available provider.
-
-    `unprotected` disables the gate for one caller only: the Full Cloud arm, whose
-    definition is that the question leaves unmasked. Refused under strict mode, and
-    journalled so the report accounts for it instead of hiding it.
-    """
+    """Send a conversation to the first available provider."""
     import httpx
 
     if unprotected:

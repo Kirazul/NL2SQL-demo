@@ -1,27 +1,4 @@
-"""Five ways of running the hybrid arm, so the benchmark can say which is best.
-
-Each variant changes exactly one thing, and they share one code path — a variant
-is a handful of flags, not a fork of the pipeline. That is what makes the
-comparison mean something: if two variants differed in code as well as in
-configuration, the benchmark would not know which difference produced the result.
-
-    baseline   the pipeline as it stands. The reference.
-    lean       prompt size    — only the columns the question reaches are described.
-    fewshot    prompt content — three similar solved questions are shown as examples.
-    cascade    model choice   — climbs a ladder of models, starting at the rung the
-                                question looks like it needs and stopping as soon
-                                as one answers confidently (see `perplexity`).
-    consensus  sampling       — three cheap answers, executed; the majority result
-                                wins, and perplexity breaks a tie.
-
-**Perplexity** is how surprised a model was by its own output — low means
-confident. It is the only quality signal that needs no answer key, so `cascade`
-climbs on it and `consensus` breaks ties with it.
-
-Groq refuses `logprobs` on every model it serves; OpenRouter returns them. Hence
-an OpenRouter model on the bottom rung: the rung whose confidence decides whether
-to climb has to be able to report it. Without one, the validator decides instead.
-"""
+"""Five ways of running the hybrid arm, so the benchmark can say which is best."""
 
 from __future__ import annotations
 
@@ -163,11 +140,7 @@ def _decode(raw: str, pseudonyms: Any) -> tuple[str, list[str]]:
 
 
 def _single(state: State, built: pr.Prompt, variant: Variant, opaque_arm: bool) -> dict[str, Any]:
-    """One call, then one targeted repair if the query was rejected.
-
-    Not five candidates: free Groq caps at 30 requests a minute, and a model told *why*
-    it was wrong corrects better than an extra sample.
-    """
+    """One call, then one targeted repair if the query was rejected."""
     expected = set(state["masked"].mapping)
     totals = _Totals()
     history: list[str] = []
@@ -238,11 +211,7 @@ def _cascade(state: State, built: pr.Prompt, variant: Variant) -> dict[str, Any]
 
 
 def starting_rung(score: float) -> cloud.Size:
-    """Which model a question of this difficulty is worth asking first.
-
-    Generous towards the small model: a wasted cheap call costs a fraction of a cent,
-    starting too high costs the point of the exercise.
-    """
+    """Which model a question of this difficulty is worth asking first."""
     if score < 0.35:
         return "small"
     return "medium" if score < 0.70 else "large"
@@ -388,11 +357,7 @@ def _with_examples(built: pr.Prompt, question: str, k: int) -> pr.Prompt:
 #  How hard is this question?
 # ---------------------------------------------------------------------------------
 def difficulty(understanding: Understanding) -> float:
-    """A 0-to-1 score from what stage 1 already worked out. No model, no guessing.
-
-    Each term is a real cost driver: tables mean joins, values mean filters, and a rate
-    or a ranking needs an aggregate the model has to get right.
-    """
+    """A 0-to-1 score from what stage 1 already worked out. No model, no guessing."""
     question = understanding.question.lower()
     tables = len(understanding.tables)
     values = len(understanding.values)

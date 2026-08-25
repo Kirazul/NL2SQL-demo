@@ -1,9 +1,4 @@
-"""Stage 1 — Understand. Entirely local, no network call.
-
-Extract the mentions, scope them with the glossary, then resolve each to a stored
-value. Scoping runs first: it is what lets "aspirin" be searched in three drug
-columns rather than a hundred. `for_the_cloud()` is the only view that may leave.
-"""
+"""Stage 1 — Understand. Entirely local, no network call."""
 
 from __future__ import annotations
 
@@ -134,13 +129,7 @@ def _looks_like_a_name(mention: str) -> bool:
 
 
 def classify(mention: str, entity_type: str = "") -> Kind:
-    """Tell a value to look up from a concept or a quantity.
-
-    Without it the index always finds something: "mortality rate" resolved to
-    `'Low mortality risk'` at 0.79, above the threshold, so nothing flagged it.
-    Runs on significant words: none left means a quantity, all covered by the
-    glossary means a concept, anything else is a value.
-    """
+    """Tell a value to look up from a concept or a quantity."""
     from nl2sql.db.values import is_exact_value
     from nl2sql.privacy.gate import generic_vocabulary
 
@@ -179,11 +168,7 @@ def _concept_column(mention: str) -> str | None:
 
 
 def _scope(entity: ner.Entity, default: list[str]) -> list[str]:
-    """Columns to search this mention in, most likely first.
-
-    Type and glossary columns are combined, not ranked: GLiNER2 calls "discharged home"
-    a procedure, and trusting that alone never consulted the discharge columns.
-    """
+    """Columns to search this mention in, most likely first."""
     terms = glossary.load()
     columns: list[str] = []
     for name in TYPE_TO_TERMS.get(entity.type, ()):
@@ -331,11 +316,7 @@ def _resolve(entity: ner.Entity, scope: list[str], step: object) -> Resolution:
 
 
 def _numbers(question: str, masked_spans: list[tuple[int, int]]) -> list[Resolution]:
-    """Every number in the question, so none leaves in clear text.
-
-    Leaving them alone is right about `age > 65` and wrong about `hospitalid = 56`, and
-    the two cannot be told apart from the question.
-    """
+    """Every number in the question, so none leaves in clear text."""
     out: list[Resolution] = []
     for match in NUMBER_RE.finditer(question):
         if any(s <= match.start() and match.end() <= e for s, e in masked_spans):
@@ -349,10 +330,7 @@ def _numbers(question: str, masked_spans: list[tuple[int, int]]) -> list[Resolut
 def _missed_values(
     question: str, existing: list[Resolution], scope: list[str]
 ) -> list[Resolution]:
-    """Stored values the extractor missed — masked here rather than refused later.
-
-    GLiNER2 missed `alive` in "discharged alive" and the gate then refused the question.
-    """
+    """Stored values the extractor missed — masked here rather than refused later."""
     from nl2sql.privacy.gate import find_known_values
 
     already = " ".join(r.mention.lower() for r in existing if r.to_mask)

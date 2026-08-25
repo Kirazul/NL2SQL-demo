@@ -1,11 +1,4 @@
 """Value index — turn "aspirin" into the exact stored `ASPIRIN EC 81 MG PO TBEC`.
-
-Two tiers, both bounded by the number of columns rather than the number of rows:
-
-    A  vocabulary   few distinct values: pre-indexed into FTS5.
-    B  on demand    too many to store: resolved with a bounded LIKE at question time.
-
-Columns that are neither — identifiers, free text, constants — are not registered.
 """
 
 from __future__ import annotations
@@ -127,11 +120,7 @@ def _classify(
 
 
 def classify(limit: int = VOCABULARY_LIMIT) -> list[ColumnTier]:
-    """Apply the policy to every textual column.
-
-    `limit` is a parameter so the classification can be replayed as if the
-    database were much larger, which is how tier B is exercised on eICU.
-    """
+    """Apply the policy to every textual column."""
     from nl2sql.db.schema import read_schema, text_columns
 
     schema = read_schema()

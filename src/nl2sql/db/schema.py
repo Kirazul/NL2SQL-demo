@@ -1,10 +1,4 @@
-"""The schema, as introspected and as shown to a model.
-
-The only structural element that crosses the boundary. It carries no data, and
-has to be complete enough for correct joins yet short enough not to inflate the
-prompt. The keys are the part that matters: a declared FOREIGN KEY tells the
-model how tables relate instead of leaving it to guess, at no extra token.
-"""
+"""The schema, as introspected and as shown to a model."""
 
 from __future__ import annotations
 
@@ -88,12 +82,7 @@ def key_columns() -> frozenset[str]:
 
 
 def ddl(tables: set[str] | None = None, columns: dict[str, list[str]] | None = None) -> str:
-    """The DDL sent to a model: names, types, row counts, keys.
-
-    `tables` restricts which tables appear; `columns` restricts which columns of
-    each, which is the lever the lean variant pulls. Keys are never dropped by
-    that restriction — a table with its join columns removed cannot be joined.
-    """
+    """The DDL sent to a model: names, types, row counts, keys."""
     schema = read_schema()
     names = sorted(tables) if tables else sorted(schema)
     keys = key_columns()

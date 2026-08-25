@@ -1,12 +1,4 @@
-"""Command line: get the data in place, ask a question, serve, benchmark.
-
-    python -m nl2sql.cli database          build data/eicu.db
-    python -m nl2sql.cli index             build the value index
-    python -m nl2sql.cli check             glossary and gate self-check
-    python -m nl2sql.cli ask "..."         one question, with its trace
-    python -m nl2sql.cli serve             the REST API
-    python -m nl2sql.cli bench             run every variant and rank them
-"""
+"""Command line: get the data in place, ask a question, serve, benchmark."""
 
 from __future__ import annotations
 

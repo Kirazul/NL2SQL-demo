@@ -1,12 +1,4 @@
-"""Schema pseudonymisation — hiding the structure as well as the data.
-
-The hybrid arm sends the schema in clear, and 31 table names describe the business
-even when no row does. Here every identifier becomes `t3` / `c7`, redrawn per
-request, and the question's business words go with them.
-
-This works *here* because the semantic work already happened locally: the prompt
-can state `:v1 is a value of c7`, leaving a mechanical join-assembly task.
-"""
+"""Schema pseudonymisation — hiding the structure as well as the data."""
 
 from __future__ import annotations
 
@@ -122,10 +114,6 @@ def restore(sql: str, pseudonyms: Pseudonyms) -> str:
 
 
 def invented(sql: str, pseudonyms: Pseudonyms) -> list[str]:
-    """Labels the model made up. `FROM t9` when only t1..t4 exist is a hallucination.
-
-    Caught here it becomes a clean rejection the repair loop can act on; passed through,
-    `restore` would leave `t9` untouched and SQLite would report something unhelpful.
-    """
+    """Labels the model made up. `FROM t9` when only t1..t4 exist is a hallucination."""
     issued = set(pseudonyms.tables.values()) | set(pseudonyms.columns.values())
     return sorted(set(LABEL_RE.findall(sql)) - issued)

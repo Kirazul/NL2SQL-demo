@@ -1,12 +1,4 @@
-"""Tracing engine — LangSmith upstream, a JSON journal on local disk.
-
-This file knows about LangSmith and nothing else does. *What* the spans are
-called is decided in `core/steps.py`.
-
-Everything is traced, values included — defensible here and only here, because
-eICU-CRD is public and de-identified. Every span still declares a `zone`, so the
-hook exists the day this runs on real data.
-"""
+"""Tracing engine — LangSmith upstream, a JSON journal on local disk."""
 
 from __future__ import annotations
 
@@ -172,11 +164,7 @@ def steps_so_far() -> list[dict[str, Any]]:
 
 @contextmanager
 def record(question: str, arm: str = "hybrid", variant: str = "baseline") -> Iterator[Run]:
-    """Open a run; append it to the local sink when the block exits, whatever happened.
-
-    Full fidelity, always: this file never leaves the machine, and a benchmark that only
-    writes down its successes measures nothing.
-    """
+    """Open a run; append it to the local sink when the block exits, whatever happened."""
     if not _configured:
         configure()
     run = Run(question, arm, variant, datetime.now(UTC).isoformat())

@@ -1,10 +1,4 @@
-"""The egress gate — the only point through which text can reach the cloud.
-
-Each part of an outgoing prompt is verified by a rule matching where it came from
-(see VERIFIERS); only the question is checked word by word. Checking the whole
-prompt that way needed ~350 hand-written English words just so our own sentences
-would pass.
-"""
+"""The egress gate — the only point through which text can reach the cloud."""
 
 from __future__ import annotations
 
@@ -112,10 +106,7 @@ def carries_information(value: str) -> bool:
 
 
 class BloomFilter:
-    """Membership test whose error is one-sided: it over-blocks, never under-blocks.
-
-    3M tokens in ~3.6 MB at 1% false positives, against ~300 MB for a Python set.
-    """
+    """Membership test whose error is one-sided: it over-blocks, never under-blocks."""
 
     def __init__(self, expected: int, error_rate: float = 0.01) -> None:
         expected = max(expected, 1)
@@ -254,11 +245,7 @@ def register_constant(text: str) -> str:
 
 
 def register_template(text: str) -> str:
-    """Declare an authored sentence whose only variable parts are labels or numbers.
-
-    Without it the opaque arm's own prose was refused on the word "related", which
-    happens to be stored in the database.
-    """
+    """Declare an authored sentence whose only variable parts are labels or numbers."""
     _TEMPLATES.add(_fingerprint(" ".join(_SLOT.sub("\x00", text or "").split())))
     return text
 
@@ -332,12 +319,7 @@ VERIFIERS: dict[str, tuple] = {
 #  The word check
 # ---------------------------------------------------------------------------------
 def find_known_values(text: str, max_ngram: int | None = None) -> list[str]:
-    """Database values appearing in `text`, longest first.
-
-    Word n-grams, not substrings — "ICU" must not fire inside "medicus". Single
-    structural words are exempt (blocking "patient" would stop `FROM patient`);
-    the exemption stops at one word, hence longest-first.
-    """
+    """Database values appearing in `text`, longest first."""
     values = known_values()
     if not values:
         return []

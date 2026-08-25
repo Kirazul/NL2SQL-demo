@@ -1,10 +1,4 @@
-"""GLiNER2 — spot the business mentions in a question. Local, in-process.
-
-The first brick of the trust boundary: it separates a value ("aspirin") from
-structure ("how many"). An LLM would do it better but would have to *receive the
-question*, which is the thing being avoided. Zero-shot, so changing domain means
-changing `ENTITY_TYPES` and nothing else.
-"""
+"""GLiNER2 — spot the business mentions in a question. Local, in-process."""
 
 from __future__ import annotations
 

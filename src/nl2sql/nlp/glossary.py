@@ -1,9 +1,4 @@
-"""Business vocabulary to columns.
-
-The value index resolves *content* ("aspirin"); it can do nothing for
-"mortality", which is a column name. This answers that half, and so carries no
-data — only vocabulary and column names — which is why it may cross the boundary.
-"""
+"""Business vocabulary to columns."""
 
 from __future__ import annotations
 
@@ -79,10 +74,7 @@ def _directory() -> list[tuple[tuple[str, ...], Term]]:
 
 
 def recognize(question: str) -> list[Match]:
-    """Business terms present in the question, matched on word n-grams.
-
-    Not on substrings: "stay" would otherwise fire inside "understayed".
-    """
+    """Business terms present in the question, matched on word n-grams."""
     words = WORD_RE.findall(normalize(question))
     if not words:
         return []

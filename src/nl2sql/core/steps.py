@@ -1,14 +1,4 @@
-"""The steps every pipeline is made of — named once, in plain language.
-
-Each arm and each variant is a different route through the *same* list of steps,
-so naming them here lets two traces be compared line by line and gives the
-interface its wording.
-
-    with track("lookup", mention="aspirin") as t:
-        t.say("found ASPIRIN EC 81 MG PO TBEC in medication.drugname", score=1.0)
-
-`say()` writes one sentence for the interface and keeps the detail for LangSmith.
-"""
+"""The steps every pipeline is made of — named once, in plain language."""
 
 from __future__ import annotations
 
@@ -74,11 +64,7 @@ BY_ID: dict[str, StepKind] = {s.id: s for s in STEPS}
 def track(
     step_id: str, zone: Zone | None = None, label: str | None = None, **inputs: Any
 ) -> Iterator[Recorder]:
-    """Open one named step. Unknown ids fail loudly rather than tracing a typo.
-
-    `label` overrides the wording where one step kind does two jobs — a model call
-    writing SQL and one writing the answer are both `model`.
-    """
+    """Open one named step. Unknown ids fail loudly rather than tracing a typo."""
     step = BY_ID[step_id]
     with trace.span(step.id, label or step.label, zone or step.zone, step.kind, **inputs) as recorder:
         yield recorder

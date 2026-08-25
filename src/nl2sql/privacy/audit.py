@@ -1,9 +1,4 @@
-"""Egress journal — the evidence behind the claim that nothing leaked.
-
-A local file, never transmitted. It records the masked text that was sent and the
-tokens that were refused; it never records the symbol-to-value mapping, which is
-the system's only secret.
-"""
+"""Egress journal — the evidence behind the claim that nothing leaked."""
 
 from __future__ import annotations
 
@@ -50,11 +45,7 @@ def record(verdict: Verdict, text: str) -> None:
 
 
 def record_bypass(context: str, characters: int) -> None:
-    """A send that deliberately skipped the gate — only the Full Cloud baseline.
-
-    Journalled rather than excluded, so the report can state how many characters left
-    unprotected instead of quietly leaving the arm out of the totals.
-    """
+    """A send that deliberately skipped the gate — only the Full Cloud baseline."""
     _append({
         "timestamp": _now(), "context": context, "allowed": True, "bypassed": True,
         "token_count": 0, "fingerprint": "", "refused_tokens": [], "length": characters,

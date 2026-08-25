@@ -1,9 +1,4 @@
-"""The graph's nodes — thin wrappers over modules that already exist.
-
-The orchestrator decides what runs next and nothing else. No node builds a
-prompt, calls a provider or touches the database itself; if one grew logic of its
-own, the measurements would stop describing the code that runs.
-"""
+"""The graph's nodes — thin wrappers over modules that already exist."""
 
 from __future__ import annotations
 
@@ -259,11 +254,7 @@ def generate_full_local_node(state: State) -> dict[str, Any]:
 # ---------------------------------------------------------------------------------
 @trace.node("execute", zone="local")
 def execute_node(state: State) -> dict[str, Any]:
-    """Run the SELECT against read-only SQLite.
-
-    The hybrid arms bind `:v1` to the real value here, through SQLite's parameter API:
-    the query text and the value never meet in one string, on the way out or on the way
-    """
+    """Run the SELECT against read-only SQLite."""
     started = time.perf_counter()
     masked = state.get("masked")
     params = masked.parameters() if masked is not None else None
@@ -345,11 +336,7 @@ def write_local_node(state: State) -> dict[str, Any]:
 
 @trace.node("write_cloud", zone="cloud")
 def write_cloud_node(state: State) -> dict[str, Any]:
-    """Full Cloud only: the provider writes the answer, so it sees the rows.
-
-    This is where the baseline's real cost shows up. The SQL step leaks the question;
-    this one leaks the result.
-    """
+    """Full Cloud only: the provider writes the answer, so it sees the rows."""
     started = time.perf_counter()
     columns, rows = state["columns"], state["rows"]
     cells = sum(1 for row in rows for value in row if value is not None)

@@ -1,11 +1,4 @@
-"""The state that travels through the graph.
-
-One shape for every arm and variant, so an empty column is empty for a reason you
-can point at rather than because two arms measured different things.
-
-`masked.mapping` and `rows` must never be serialised outward. The API returns
-`public()`, never the state.
-"""
+"""The state that travels through the graph."""
 
 from __future__ import annotations
 
@@ -97,11 +90,7 @@ def is_refusal(state: State) -> bool:
 
 
 def public(state: State) -> dict[str, Any]:
-    """The view allowed to cross a network boundary — the API's response body.
-
-    Built by listing what goes *in*, never by removing what stays out: a denylist over a
-    dataclass grows a hole the first time somebody adds a field.
-    """
+    """The view allowed to cross a network boundary — the API's response body."""
     keys = (
         "question", "arm", "variant", "answer", "sql", "masked_question", "columns",
         "row_count", "failed_stage", "failure_reason", "suggestions", "symbol_count",

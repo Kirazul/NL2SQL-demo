@@ -1,11 +1,4 @@
-"""The four architectures, assembled as LangGraph state machines.
-
-The arms differ by *which nodes they contain*, not by their code, so they share
-every node they have in common and `mermaid()` renders the graph that actually
-ran. LangGraph is a scheduler here and nothing more — no LLM wrapper, no
-retriever, no agent loop — which keeps "exactly one module opens a socket"
-checkable by reading one file.
-"""
+"""The four architectures, assembled as LangGraph state machines."""
 
 from __future__ import annotations
 

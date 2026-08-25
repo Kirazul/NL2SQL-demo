@@ -1,15 +1,4 @@
-"""The column catalogue — decide which **column** a mention names.
-
-The value index always finds something, because a fuzzy search over thirty
-thousand values never comes back empty: asked about "the 10 most common diagnosis
-names" it answered `pasthistory.pasthistoryvalue = 'clinical diagnosis'`.
-
-This answers the other question so `understand` can make the two compete. Matching
-is on character trigrams over `table column`, because real column names are
-concatenated words (`labname`, `routeadmin`) that no word-level comparison can see
-inside without a dictionary of the domain. A real value scores low against every
-column, which is what makes the arbitration possible.
-"""
+"""The column catalogue — decide which **column** a mention names."""
 
 from __future__ import annotations
 
@@ -50,11 +39,7 @@ class ColumnMatch:
 
 @lru_cache(maxsize=1)
 def cards() -> tuple[ColumnCard, ...]:
-    """One card per linkable column.
-
-    Identifiers and `*offset` columns repeat their table's name, so they win every
-    table-level match while never being what was meant.
-    """
+    """One card per linkable column."""
     from nl2sql.db.schema import compact_type, read_schema
     from nl2sql.db.values import is_identifier, query_index
 
