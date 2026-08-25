@@ -14,8 +14,10 @@ are unreadable. Here they have one source file and are rebuilt from it.
     4  Optimization    five variants of the hybrid arm, benchmarked and ranked
     5  Run             the whole pipeline, then the live service
 
-Notebook 1 is the only one that downloads anything. The others read its saved
-output through `/kaggle/input` and stop with instructions if it is absent.
+Notebook 1 is the only one that builds anything. The others install the package,
+then read notebook 1's saved output through `/kaggle/input` — the database, the
+index and the weights are opened where they are mounted rather than copied — and
+stop with instructions if that output is not attached.
 """
 
 from __future__ import annotations
@@ -66,11 +68,14 @@ class Notebook:
     def code(self, text: str) -> None:
         # Compile before writing. A notebook whose third cell has a syntax error
         # only says so after two minutes of installs, on a machine that is not this
-        # one — and the fix is a rebuild, so the cost is paid twice.
+        # one — and the fix is a rebuild, so the cost is paid twice. A shell line
+        # is not Python; blanking it would empty the block it sits in and invent a
+        # syntax error the notebook does not have, so it becomes `pass` instead.
         checkable = "\n".join(
-            line
+            line[: len(line) - len(line.lstrip())] + "pass"
+            if line.lstrip().startswith(("!", "%"))
+            else line
             for line in text.splitlines()
-            if not line.lstrip().startswith(("!", "%"))
         )
         try:
             compile(checkable, f"{self.slug} cell {len(self.cells)}", "exec")
@@ -162,29 +167,69 @@ if not ROOT.exists():
     token = UserSecretsClient().get_secret("GITHUB_TOKEN")
     url = "{REPO}".replace("https://", f"https://{{token}}@")
     subprocess.run(["git", "clone", "--depth", "1", url, str(ROOT)], check=True)
+    # git writes the clone URL into .git/config, token and all, and Kaggle saves
+    # .git with the notebook output. Put the plain address back immediately.
+    subprocess.run(["git", "-C", str(ROOT), "remote", "set-url", "origin", "{REPO}"], check=True)
 
 sys.path.insert(0, str(ROOT / "src"))
 os.chdir(ROOT)
 print("code:", ROOT)
 '''
 
+INSTALL = '''
+# pip writes to site-packages, which is not part of notebook 1's saved output, so
+# every session installs again. Nearly all of it is already in the Kaggle image.
+!pip install -q -e . 2>&1 | tail -2
+print("dependencies ready")
+'''
+
+LOCAL_RUNTIME = '''
+# Only the pages that run a model on this machine need llama-cpp-python, and
+# building it costs several minutes. Notebook 1 kept the wheel it built, so
+# installing from that is a copy.
+WHEELS = Path("/kaggle/input/nl2sql-1-setup/wheels")
+if WHEELS.exists():
+    !pip install -q --find-links {WHEELS} llama-cpp-python 2>&1 | tail -2
+else:
+    print("no wheel in notebook 1's output - building from source, a few minutes")
+    !pip install -q llama-cpp-python 2>&1 | tail -2
+
+try:
+    import llama_cpp
+    print("local model runtime: llama-cpp-python", llama_cpp.__version__)
+except ImportError as e:
+    print("llama-cpp-python is unavailable:", e)
+    print("Full Local will fail, and the answer writer will show a plain table instead.")
+'''
+
 REUSE_SETUP = '''
-# Notebook 1 saved the database, the index and the model weights. Reuse them
-# instead of rebuilding: this cell is why notebooks 2-5 start in seconds.
-import shutil
-from pathlib import Path
+# Notebook 1 built the database, the index and the model weights and saved them
+# with its output. Kaggle mounts that output read-only under /kaggle/input, and
+# every one of the three is opened read-only here too - so point the settings at
+# the mount rather than copying two gigabytes into the working directory.
+#
+# The clone above already contains a `data/` directory, which is why copying into
+# it used to be skipped and the database appeared to be missing.
+found = sorted(Path("/kaggle/input").glob("*/nl2sql/data/eicu.db"))
+if not found:
+    raise SystemExit(
+        "Notebook 1's output is not attached to this notebook. Open the sidebar, "
+        "Input -> Add Input -> Your Work -> NL2SQL 1 Setup, then run this cell "
+        "again. If notebook 1 has never been saved, run and save it first."
+    )
+SETUP = found[0].parents[1]
 
-SETUP = Path("/kaggle/input/nl2sql-1-setup")
-if not SETUP.exists():
-    raise SystemExit("Run notebook 1 (Setup) first, then add it as an input to this one.")
+# Set before nl2sql is imported anywhere: settings() is read once and cached. A
+# subprocess started later - the API server in notebook 5 - inherits these too.
+os.environ["DB_PATH"] = str(SETUP / "data" / "eicu.db")
+os.environ["INDEX_PATH"] = str(SETUP / "data" / "index.db")
+os.environ["GLINER_MODEL"] = str(SETUP / "models" / "gliner2-base-v1")
+weights = sorted(SETUP.glob("models/*/*.gguf"))
+if weights:
+    os.environ["LOCAL_GGUF_PATH"] = str(weights[0])
 
-for name in ("data", "models"):
-    source, target = SETUP / name, ROOT / name
-    if source.exists() and not target.exists():
-        shutil.copytree(source, target)
-
-print("database:", (ROOT / "data" / "eicu.db").exists())
-print("index:   ", (ROOT / "data" / "index.db").exists())
+for name in ("DB_PATH", "INDEX_PATH", "GLINER_MODEL", "LOCAL_GGUF_PATH"):
+    print(f"  {name:<16} {os.environ.get(name, 'missing - the steps that need it will say so')}")
 '''
 
 SECRETS = '''
@@ -213,7 +258,20 @@ def setup(nb: Notebook) -> None:
     nb.code(BOOTSTRAP)
     nb.code('''
 !pip install -q -e . 2>&1 | tail -2
-!pip install -q llama-cpp-python huggingface-hub 2>&1 | tail -2
+!pip install -q huggingface-hub 2>&1 | tail -2
+
+# Installing llama-cpp-python on this image took six and a half minutes, nearly
+# all of it compiling. Build the wheel once and keep it with this notebook's
+# output; notebooks 3 and 5 then install it in seconds.
+!pip wheel -q --no-deps llama-cpp-python -w /kaggle/working/wheels 2>&1 | tail -2
+!pip install -q --find-links /kaggle/working/wheels llama-cpp-python 2>&1 | tail -2
+
+try:
+    import llama_cpp
+    print("llama-cpp-python", llama_cpp.__version__)
+except ImportError as e:
+    print("llama-cpp-python did not install:", e)
+    print("The database and the index below are unaffected; the local model is not.")
 ''')
 
     nb.step(2, "Models", "Two, both small enough to run on CPU. Downloaded once and saved with the output.")
@@ -259,6 +317,7 @@ def understanding(nb: Notebook) -> None:
         'end the question is ready to be sent with every real value removed.</div>'
     )
     nb.code(BOOTSTRAP)
+    nb.code(INSTALL)
     nb.code(REUSE_SETUP)
     nb.code(SECRETS)
 
@@ -399,6 +458,8 @@ def architectures(nb: Notebook) -> None:
         'not between four separate programs.</div>'
     )
     nb.code(BOOTSTRAP)
+    nb.code(INSTALL)
+    nb.code(LOCAL_RUNTIME)
     nb.code(REUSE_SETUP)
     nb.code(SECRETS)
 
@@ -489,6 +550,7 @@ def optimization(nb: Notebook) -> None:
         'each changing one thing, measured on the same questions and ranked.</div>'
     )
     nb.code(BOOTSTRAP)
+    nb.code(INSTALL)
     nb.code(REUSE_SETUP)
     nb.code(SECRETS)
 
@@ -555,11 +617,14 @@ from nl2sql.optimize.benchmark import compare
 report = compare(limit=25)     # raise or remove for the full set
 ''')
     nb.code('''
-header = list(report["table"][0])
-print(" | ".join(f"{h:>16}" for h in header))
-print("-" * (19 * len(header)))
-for row in report["table"]:
-    print(" | ".join(f"{str(row[h]):>16}" for h in header))
+if not report["table"]:
+    print("no variant produced a row - check the provider keys printed above")
+else:
+    header = list(report["table"][0])
+    print(" | ".join(f"{h:>16}" for h in header))
+    print("-" * (19 * len(header)))
+    for row in report["table"]:
+        print(" | ".join(f"{str(row[h]):>16}" for h in header))
 ''')
 
     nb.step(6, "The ranking")
@@ -595,6 +660,8 @@ def run_and_serve(nb: Notebook) -> None:
         'a public address so it can be used from a browser.</div>'
     )
     nb.code(BOOTSTRAP)
+    nb.code(INSTALL)
+    nb.code(LOCAL_RUNTIME)
     nb.code(REUSE_SETUP)
     nb.code(SECRETS)
 
@@ -627,14 +694,30 @@ print(audit.report())
     nb.code('''
 import subprocess, time
 
+import httpx
+
+# Keep the log: a server that dies on import says why here, and nowhere else.
+log = open(ROOT / "uvicorn.log", "w")
 server = subprocess.Popen(
     [sys.executable, "-m", "uvicorn", "nl2sql.api:app", "--host", "0.0.0.0", "--port", "7860"],
-    cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    cwd=ROOT, stdout=log, stderr=subprocess.STDOUT,
 )
-time.sleep(20)
 
-import httpx
-print(httpx.get("http://127.0.0.1:7860/health", timeout=30).json())
+# Ask until it answers rather than sleeping a guessed number of seconds: loading
+# the local weights is what takes the time, and it varies.
+health = None
+for _ in range(60):
+    if server.poll() is not None:
+        raise SystemExit("the server exited:\\n" + (ROOT / "uvicorn.log").read_text()[-2000:])
+    try:
+        health = httpx.get("http://127.0.0.1:7860/health", timeout=5).json()
+        break
+    except Exception:
+        time.sleep(2)
+
+if health is None:
+    raise SystemExit("the server did not answer:\\n" + (ROOT / "uvicorn.log").read_text()[-2000:])
+print(health)
 ''')
 
     nb.step(5, "A public address", "A tunnel, because a Kaggle session is not reachable from "

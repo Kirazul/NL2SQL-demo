@@ -17,7 +17,7 @@ class QueryTimeout(RuntimeError):
 
 
 class DatabaseNotFound(FileNotFoundError):
-    """`data/eicu.db` is missing — run `python -m nl2sql.cli build`."""
+    """`data/eicu.db` is missing — run `python -m nl2sql.cli database`."""
 
 
 @contextmanager
@@ -26,7 +26,7 @@ def connect(path: Path | None = None, timeout_s: float | None = None) -> Iterato
     cfg = settings()
     path = Path(path or cfg.db_path)
     if not path.exists():
-        raise DatabaseNotFound(f"{path} is missing. Run: python -m nl2sql.cli build")
+        raise DatabaseNotFound(f"{path} is missing. Run: python -m nl2sql.cli database")
 
     cx = sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True, check_same_thread=False)
     cx.row_factory = sqlite3.Row
