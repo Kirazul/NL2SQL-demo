@@ -1,9 +1,8 @@
 """The graph's nodes — thin wrappers over modules that already exist.
 
-That is the whole point of putting LangGraph on top: the orchestrator decides
-what runs next and nothing else. No node builds a prompt, calls a provider or
-touches the database itself. If one ever grew logic of its own, the measurements
-would stop describing the code that runs.
+The orchestrator decides what runs next and nothing else. No node builds a
+prompt, calls a provider or touches the database itself; if one grew logic of its
+own, the measurements would stop describing the code that runs.
 """
 
 from __future__ import annotations
@@ -47,12 +46,7 @@ def _steps() -> dict[str, Any]:
 # ---------------------------------------------------------------------------------
 @trace.node("understand", zone="local")
 def understand_node(state: State) -> dict[str, Any]:
-    """Entities, their kind, and the exact stored values behind them.
-
-    Runs in every arm, Full Cloud included: that arm does not need it to answer,
-    but it does need the same table selection, or the arms would differ in prompt
-    size as well as in privacy and the benchmark would move two variables at once.
-    """
+    """Entities, their kind, and the exact stored values behind them."""
     started = time.perf_counter()
     try:
         u = understand(state["question"])
@@ -181,11 +175,7 @@ def generate_opaque_node(state: State) -> dict[str, Any]:
 
 @trace.node("generate_full_cloud", zone="cloud")
 def generate_full_cloud_node(state: State) -> dict[str, Any]:
-    """The unprotected baseline: the question leaves exactly as it was typed.
-
-    This is the arm the project argues against, and it has to run for the argument
-    to have a number attached. The bypass is explicit and journalled.
-    """
+    """The unprotected baseline: the question leaves exactly as it was typed."""
     started = time.perf_counter()
     u = state["understanding"]
 
@@ -271,9 +261,8 @@ def generate_full_local_node(state: State) -> dict[str, Any]:
 def execute_node(state: State) -> dict[str, Any]:
     """Run the SELECT against read-only SQLite.
 
-    The hybrid arms bind `:v1` to the real value here, through SQLite's parameter
-    API: the query text and the value never meet in one string, on the way out or
-    on the way back.
+    The hybrid arms bind `:v1` to the real value here, through SQLite's parameter API:
+    the query text and the value never meet in one string, on the way out or on the way
     """
     started = time.perf_counter()
     masked = state.get("masked")
@@ -324,13 +313,7 @@ def _plain(columns: list[str], rows: list[tuple], max_rows: int = 5) -> str:
 
 @trace.node("write_local", zone="local")
 def write_local_node(state: State) -> dict[str, Any]:
-    """The local model turns rows into a sentence.
-
-    This node is why the architecture holds: it is the only place the real rows
-    meet a language model, and that model is in this process. A writer failure
-    degrades to a plain table rather than failing the run — the data is already
-    correct by now, only its phrasing is missing.
-    """
+    """The local model turns rows into a sentence."""
     started = time.perf_counter()
     with track("write", zone="local", rows=state.get("row_count", 0)) as step:
         if not state.get("write", True):
@@ -364,9 +347,8 @@ def write_local_node(state: State) -> dict[str, Any]:
 def write_cloud_node(state: State) -> dict[str, Any]:
     """Full Cloud only: the provider writes the answer, so it sees the rows.
 
-    This is where the baseline's real cost shows up. The SQL step leaks the
-    question; this one leaks the result. Counting those cells is what turns "the
-    cloud sees your data" into a column in a table.
+    This is where the baseline's real cost shows up. The SQL step leaks the question;
+    this one leaks the result.
     """
     started = time.perf_counter()
     columns, rows = state["columns"], state["rows"]

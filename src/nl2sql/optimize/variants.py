@@ -14,17 +14,13 @@ configuration, the benchmark would not know which difference produced the result
     consensus  sampling       — three cheap answers, executed; the majority result
                                 wins, and perplexity breaks a tie.
 
-**Perplexity** is how surprised a model was by its own output: low means it was
-confident, high means it was guessing. It is the only quality signal available
-without knowing the right answer in advance, which is why `cascade` uses it to
-decide whether to climb and `consensus` uses it to break ties.
+**Perplexity** is how surprised a model was by its own output — low means
+confident. It is the only quality signal that needs no answer key, so `cascade`
+climbs on it and `consensus` breaks ties with it.
 
-It is not free everywhere, and the report should say so: Groq refuses `logprobs`
-on every model it serves, OpenRouter returns them. So the ladder is arranged with
-an OpenRouter model on the bottom rung — the rung whose confidence decides whether
-to climb is the one that has to be able to report it. Where a rung answers without
-a perplexity, the decision falls back to what the validator says, which is a
-weaker signal but never a wrong one.
+Groq refuses `logprobs` on every model it serves; OpenRouter returns them. Hence
+an OpenRouter model on the bottom rung: the rung whose confidence decides whether
+to climb has to be able to report it. Without one, the validator decides instead.
 """
 
 from __future__ import annotations
@@ -169,9 +165,8 @@ def _decode(raw: str, pseudonyms: Any) -> tuple[str, list[str]]:
 def _single(state: State, built: pr.Prompt, variant: Variant, opaque_arm: bool) -> dict[str, Any]:
     """One call, then one targeted repair if the query was rejected.
 
-    Not five candidates: free Groq caps at 30 requests a minute, and a model told
-    *why* it was wrong corrects better than an extra sample. Measured across 107
-    questions: 0 repairs were needed.
+    Not five candidates: free Groq caps at 30 requests a minute, and a model told *why*
+    it was wrong corrects better than an extra sample.
     """
     expected = set(state["masked"].mapping)
     totals = _Totals()
@@ -197,15 +192,7 @@ def _single(state: State, built: pr.Prompt, variant: Variant, opaque_arm: bool) 
 
 
 def _cascade(state: State, built: pr.Prompt, variant: Variant) -> dict[str, Any]:
-    """Climb the ladder: start where the question looks like it belongs, stop when
-    a rung answers confidently.
-
-    Two things keep this from burning calls. The starting rung comes from the
-    difficulty score, so a question with four joins and a ratio does not waste a
-    call on the smallest model first. And a rung that answers is only accepted if
-    the validator passed *and* its perplexity says it was not guessing — those are
-    the two ways an answer can be wrong, and both are checked before stopping.
-    """
+    """Climb the ladder, stopping at the first rung that answers confidently."""
     expected = set(state["masked"].mapping)
     totals = _Totals()
     history: list[str] = []
@@ -253,9 +240,8 @@ def _cascade(state: State, built: pr.Prompt, variant: Variant) -> dict[str, Any]
 def starting_rung(score: float) -> cloud.Size:
     """Which model a question of this difficulty is worth asking first.
 
-    The thresholds are deliberately generous towards the small model: a wasted
-    cheap call costs a fraction of a cent, while starting too high costs the whole
-    point of the exercise.
+    Generous towards the small model: a wasted cheap call costs a fraction of a cent,
+    starting too high costs the point of the exercise.
     """
     if score < 0.35:
         return "small"
@@ -263,12 +249,7 @@ def starting_rung(score: float) -> cloud.Size:
 
 
 def _consensus(state: State, built: pr.Prompt, variant: Variant) -> dict[str, Any]:
-    """Several cheap answers; keep the one whose *result* the others agree with.
-
-    Voting on the executed result rather than on the SQL text is what makes this
-    work: two differently written queries returning the same number agree, and a
-    text comparison would call them different. Perplexity breaks a tie.
-    """
+    """Several cheap answers; keep the one whose *result* the others agree with."""
     from nl2sql.optimize.benchmark import fingerprint_result
 
     expected = set(state["masked"].mapping)
@@ -355,14 +336,7 @@ def _result(built: pr.Prompt, attempt: Attempt, history: list[str], totals: _Tot
 # ---------------------------------------------------------------------------------
 @lru_cache(maxsize=1)
 def example_bank() -> tuple[tuple[str, str], ...]:
-    """Solved (masked question, SQL) pairs from `data/examples.yaml`.
-
-    Every pair is checked against the value denylist when it is loaded, and one
-    carrying a stored value is dropped rather than shown to a provider — an
-    example is prompt text like any other, and it goes out on every request that
-    uses it. Each surviving pair is registered as a constant, so the gate lets it
-    through on its fingerprint instead of word by word.
-    """
+    """Solved (masked question, SQL) pairs from `data/examples.yaml`."""
     import yaml
 
     path = DATA / "examples.yaml"
@@ -414,11 +388,10 @@ def _with_examples(built: pr.Prompt, question: str, k: int) -> pr.Prompt:
 #  How hard is this question?
 # ---------------------------------------------------------------------------------
 def difficulty(understanding: Understanding) -> float:
-    """A 0-to-1 score, from what stage 1 already worked out. No model, no guessing.
+    """A 0-to-1 score from what stage 1 already worked out. No model, no guessing.
 
-    Everything here is a real cost driver for the query that has to be written:
-    more tables means more joins, more values means more filters, and a question
-    asking for a rate or a ranking needs an aggregate the model must get right.
+    Each term is a real cost driver: tables mean joins, values mean filters, and a rate
+    or a ranking needs an aggregate the model has to get right.
     """
     question = understanding.question.lower()
     tables = len(understanding.tables)

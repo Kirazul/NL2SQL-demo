@@ -1,11 +1,9 @@
 """GLiNER2 — spot the business mentions in a question. Local, in-process.
 
-The first brick of the trust boundary: it separates what is a value ("aspirin")
-from what is structure ("how many"). An LLM would do the job too, but it would
-have to receive the question — which is exactly what we are avoiding. GLiNER2 is
-a 208M-parameter encoder that runs on CPU with no network call at inference, and
-it is zero-shot, so changing domain means changing `ENTITY_TYPES` and nothing
-else.
+The first brick of the trust boundary: it separates a value ("aspirin") from
+structure ("how many"). An LLM would do it better but would have to *receive the
+question*, which is the thing being avoided. Zero-shot, so changing domain means
+changing `ENTITY_TYPES` and nothing else.
 """
 
 from __future__ import annotations
@@ -173,12 +171,7 @@ def _flatten(raw: dict[str, Any], question: str) -> list[Entity]:
 
 
 def _deduplicate(entities: list[Entity]) -> list[Entity]:
-    """One span per stretch of text, the most informative one.
-
-    GLiNER2 returns "sepsis" as both diagnosis and condition, and "creatinine"
-    alongside "creatinine results". Masking both would substitute inside already
-    substituted text and leave the offsets meaningless.
-    """
+    """One span per stretch of text, the most informative one."""
     def overlap(a: Entity, b: Entity) -> bool:
         return a.start >= 0 and b.start >= 0 and a.start < b.end and b.start < a.end
 

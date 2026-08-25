@@ -1,15 +1,10 @@
 """The four architectures, assembled as LangGraph state machines.
 
-Why an orchestrator at all, when straight-line Python already worked: the arms
-differ by *which nodes they contain*, not by their code. Written as functions
-they would be four near-copies drifting apart; written as graphs they share every
-node they have in common, so a fix to `execute` is a fix in all four. And
-`mermaid()` renders the graph that actually ran — a diagram maintained by hand is
-out of date the day after it is drawn.
-
-LangGraph is a scheduler here and nothing more. No LangChain LLM wrapper, no
-retriever, no agent loop: the providers stay in `llm/`, which is what keeps
-"exactly one module opens a socket" checkable by reading one file.
+The arms differ by *which nodes they contain*, not by their code, so they share
+every node they have in common and `mermaid()` renders the graph that actually
+ran. LangGraph is a scheduler here and nothing more — no LLM wrapper, no
+retriever, no agent loop — which keeps "exactly one module opens a socket"
+checkable by reading one file.
 """
 
 from __future__ import annotations
@@ -55,13 +50,7 @@ LAYOUT: dict[Arm, list[tuple[str, Any]]] = {
 
 
 def _completed(state: State) -> str:
-    """Continue, or stop because a stage failed or refused.
-
-    One predicate reused on every edge rather than an error edge per node. A
-    refusal travels the same path as a technical failure and is told apart at the
-    end by `is_refusal`: the control flow is identical even though the two mean
-    opposite things about the system's health.
-    """
+    """Continue, or stop because a stage failed or refused."""
     return "stop" if state.get("failed_stage") else "continue"
 
 

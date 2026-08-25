@@ -1,14 +1,11 @@
 """Schema pseudonymisation — hiding the structure as well as the data.
 
-The hybrid arm masks values and sends the schema in clear, because a model cannot
-write SQL without knowing a table called `medication` exists. That is a real
-disclosure: 31 table names and 391 column names describe the business even when
-no row does. Here every identifier becomes `t3` / `c7`, redrawn at random per
+The hybrid arm sends the schema in clear, and 31 table names describe the business
+even when no row does. Here every identifier becomes `t3` / `c7`, redrawn per
 request, and the question's business words go with them.
 
-This can work only because the semantic work already happened locally: the prompt
-can state `:v1 is a value of c7` outright, leaving the provider a mechanical
-join-assembly task rather than "work out which column means what".
+This works *here* because the semantic work already happened locally: the prompt
+can state `:v1 is a value of c7`, leaving a mechanical join-assembly task.
 """
 
 from __future__ import annotations
@@ -43,12 +40,7 @@ class Pseudonyms:
 
 
 def build(tables: set[str], seed: int | None = None) -> Pseudonyms:
-    """Draw a fresh dictionary and render the opaque DDL.
-
-    A column name keeps one alias across tables on purpose: `patientunitstayid`
-    appears in 28 tables, and that repetition is the only thing telling the model
-    those tables join at all.
-    """
+    """Draw a fresh dictionary and render the opaque DDL."""
     schema = sch.read_schema()
     chosen = sorted(t for t in tables if t in schema)
     rng = random.Random(seed)
@@ -92,14 +84,7 @@ def build(tables: set[str], seed: int | None = None) -> Pseudonyms:
 
 
 def rewrite_question(question: str, pseudonyms: Pseudonyms) -> tuple[str, list[str]]:
-    """Replace the question's business words with their pseudonyms.
-
-    Masking values is not enough to hide the subject: "how many patients received
-    :v1" still says *patients*. The glossary already maps such words to columns,
-    so the same mapping run through the request's dictionary turns them into
-    labels. Words the glossary does not know stay — they are English, not schema,
-    and removing them would leave nothing to write SQL from.
-    """
+    """Replace the question's business words with their pseudonyms."""
     from nl2sql.nlp import glossary
     from nl2sql.privacy import gate
 
@@ -139,9 +124,8 @@ def restore(sql: str, pseudonyms: Pseudonyms) -> str:
 def invented(sql: str, pseudonyms: Pseudonyms) -> list[str]:
     """Labels the model made up. `FROM t9` when only t1..t4 exist is a hallucination.
 
-    Caught here it becomes a clean rejection the repair loop can act on; passed
-    through, `restore` would leave `t9` untouched and SQLite would report
-    something unhelpful.
+    Caught here it becomes a clean rejection the repair loop can act on; passed through,
+    `restore` would leave `t9` untouched and SQLite would report something unhelpful.
     """
     issued = set(pseudonyms.tables.values()) | set(pseudonyms.columns.values())
     return sorted(set(LABEL_RE.findall(sql)) - issued)

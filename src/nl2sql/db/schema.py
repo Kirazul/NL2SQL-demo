@@ -1,13 +1,9 @@
 """The schema, as introspected and as shown to a model.
 
-This is the only structural element that crosses the trust boundary. It carries
-no data — table names, column names, types and keys — and it has to reconcile two
-opposing requirements: complete enough for the model to write correct joins, short
-enough not to inflate the prompt.
-
-The keys are the part that matters. A DDL declaring
-`FOREIGN KEY (patientunitstayid) REFERENCES patient` tells the model how to relate
-tables instead of leaving it to guess, and it costs no extra token to say so.
+The only structural element that crosses the boundary. It carries no data, and
+has to be complete enough for correct joins yet short enough not to inflate the
+prompt. The keys are the part that matters: a declared FOREIGN KEY tells the
+model how tables relate instead of leaving it to guess, at no extra token.
 """
 
 from __future__ import annotations

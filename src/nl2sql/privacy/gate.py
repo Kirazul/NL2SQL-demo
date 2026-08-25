@@ -1,20 +1,9 @@
 """The egress gate — the only point through which text can reach the cloud.
 
-Verification is by **provenance**, not by vocabulary. An outgoing prompt is
-assembled from parts whose origin we know, and each part is verified by its own
-rule:
-
-    authored   fingerprint of a literal registered at import time
-    schema     every identifier in it is a real table or column name
-    params     every line is a `:vN = a value of table.column` declaration
-    opaque     every identifier in it is a label we issued (t3, c7)
-    glossary   the text is one of the notes declared in the glossary
-    question   the only untrusted part — checked word by word, fail-closed
-
-An earlier version ran the word check over the whole prompt. It worked, and it
-forced ~350 ordinary English words into an allowlist purely so our own sentences
-could pass. Removing it took the residual leak rate from 1.82% to 1.12% and the
-hand-written word count to zero.
+Each part of an outgoing prompt is verified by a rule matching where it came from
+(see VERIFIERS); only the question is checked word by word. Checking the whole
+prompt that way needed ~350 hand-written English words just so our own sentences
+would pass.
 """
 
 from __future__ import annotations
@@ -72,11 +61,7 @@ class LeakBlocked(PermissionError):
 
 @dataclass(frozen=True)
 class Segment:
-    """One part of an outgoing message, with the origin it claims.
-
-    The claim is verified, never trusted: a segment that fails its own rule falls
-    back to the word-by-word check.
-    """
+    """One part of an outgoing message. The claimed origin is verified, not trusted."""
 
     text: str
     origin: Origin = "question"
@@ -114,23 +99,12 @@ def _values(distinct: bool = False) -> list[str]:
 
 @lru_cache(maxsize=1)
 def known_values() -> frozenset[str]:
-    """Every indexed value, normalised. An exhaustive denylist, not a heuristic.
-
-    PII detectors estimate; we own the database, so for indexed columns this is
-    exact. MaskSQL measures 61.4% masking recall on this task — that gap is what
-    owning the inventory removes.
-    """
+    """Every indexed value, normalised: an exact denylist, not a detector's guess."""
     return frozenset(" ".join(str(v).lower().split()) for v in _values(distinct=True) if v)
 
 
 def carries_information(value: str) -> bool:
-    """Could disclosing this string teach a provider anything about the data?
-
-    `id`, `mg`, `0`, `56` are all stored values somewhere in eICU — and in every
-    other database, which is why blocking them narrows nothing down while making
-    ordinary sentences unwritable. Three characters and at least one letter keeps
-    the short abbreviations that really are values (`hgb`, `chf`, `dvt`).
-    """
+    """Could disclosing this string teach a provider anything?"""
     text = (value or "").strip()
     if len(text) < 3 or text.lower() in NUMERALS:
         return False
@@ -138,11 +112,9 @@ def carries_information(value: str) -> bool:
 
 
 class BloomFilter:
-    """Compact membership test whose error is one-sided and in the safe direction.
+    """Membership test whose error is one-sided: it over-blocks, never under-blocks.
 
-    It may claim a word is present when it is not — the gate over-blocks — and can
-    never claim absence for a word that is present. Three million tokens fit in
-    ~3.6 MB at a 1% false-positive rate; a Python set of the same would be ~300 MB.
+    3M tokens in ~3.6 MB at 1% false positives, against ~300 MB for a Python set.
     """
 
     def __init__(self, expected: int, error_rate: float = 0.01) -> None:
@@ -174,14 +146,7 @@ BLOOM_THRESHOLD = 200_000
 
 @lru_cache(maxsize=1)
 def value_tokens() -> object:
-    """Words appearing inside a **short** stored value, as an O(1) membership test.
-
-    Harvesting the words of every value made the gate unusable: eICU stores
-    hierarchical free text, so `associated`, `unique` and `necrotizing` counted as
-    data and ordinary questions were refused. Long values stay protected because
-    `find_known_values` matches them whole. Tier-B columns contribute their word
-    vocabulary, harvested at index time.
-    """
+    """Words inside **short** stored values, as an O(1) test."""
     from nl2sql.db.values import query_index
 
     tokens: set[str] = set()
@@ -243,14 +208,7 @@ def schema_identifiers() -> frozenset[str]:
 
 @lru_cache(maxsize=1)
 def glossary_concepts() -> frozenset[str]:
-    """Words the glossary declares as concept names.
-
-    "icu", "mortality" and "drug" all exist as stored values somewhere, so
-    `value_tokens` covers them — yet they are also how an analyst names a column.
-    The glossary is the declaration of what counts as a concept, so it is the
-    authority. A synonym that is a value of its own column is forbidden by the
-    glossary's own validation.
-    """
+    """Words the glossary declares as concept names."""
     from nl2sql.nlp.glossary import load
 
     words: set[str] = set()
@@ -296,11 +254,10 @@ def register_constant(text: str) -> str:
 
 
 def register_template(text: str) -> str:
-    """Declare a sentence we author whose only variable parts are labels or numbers.
+    """Declare an authored sentence whose only variable parts are labels or numbers.
 
-    A per-request sentence cannot be fingerprinted exactly, and without this the
-    opaque arm's own prose fell to the word check and was refused on the word
-    "related" — which happens to be stored in the database.
+    Without it the opaque arm's own prose was refused on the word "related", which
+    happens to be stored in the database.
     """
     _TEMPLATES.add(_fingerprint(" ".join(_SLOT.sub("\x00", text or "").split())))
     return text
@@ -377,12 +334,9 @@ VERIFIERS: dict[str, tuple] = {
 def find_known_values(text: str, max_ngram: int | None = None) -> list[str]:
     """Database values appearing in `text`, longest first.
 
-    Word n-grams, not substrings: a substring search fires on "ICU" inside
-    "medicus" and misses "Skilled Nursing Facility", which only exists as a
-    phrase. A single word that is declared structure or plain grammar is exempt —
-    "patient" is a stored value somewhere, and blocking it would stop the model
-    writing `FROM patient`. The exemption stops at one word, which is why the scan
-    runs longest first.
+    Word n-grams, not substrings — "ICU" must not fire inside "medicus". Single
+    structural words are exempt (blocking "patient" would stop `FROM patient`);
+    the exemption stops at one word, hence longest-first.
     """
     values = known_values()
     if not values:
@@ -407,13 +361,7 @@ def find_known_values(text: str, max_ngram: int | None = None) -> list[str]:
 
 
 def check(text: str, context: str = "") -> Verdict:
-    """Check text of unknown origin. Never raises.
-
-    Two layers, in this order: the exhaustive value denylist first — it is a
-    guarantee rather than a guess, and it catches values that are also ordinary
-    vocabulary — then the grammar allowlist as a fail-closed backstop for what the
-    denylist cannot know.
-    """
+    """Check text of unknown origin. Never raises."""
     tokens = TOKEN_RE.findall(text or "")
     leaked = find_known_values(text)
     if leaked:
@@ -515,12 +463,7 @@ def require(text: str, context: str = "") -> str:
 
 
 def sweep_response(text: str, context: str = "cloud-response") -> list[str]:
-    """Check what the model returned for stored values.
-
-    Not a leak — it never left our side — but a literal written where a bound
-    parameter was given means the query answers a different question. The SQL
-    validator refuses it; this names the values for the audit trail.
-    """
+    """Check what the model returned for stored values."""
     from nl2sql.privacy import audit
 
     found = find_known_values(text)

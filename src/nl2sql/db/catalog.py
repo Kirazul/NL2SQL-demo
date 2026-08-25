@@ -1,17 +1,14 @@
 """The column catalogue — decide which **column** a mention names.
 
-The value index answers "which stored value is this?" and always finds
-something, because a fuzzy search over thirty thousand values never comes back
-empty. Asked about "the 10 most common diagnosis names" it answered
-`pasthistory.pasthistoryvalue = 'clinical diagnosis'`, and the question came back
-filtered on a value nobody asked for.
+The value index always finds something, because a fuzzy search over thirty
+thousand values never comes back empty: asked about "the 10 most common diagnosis
+names" it answered `pasthistory.pasthistoryvalue = 'clinical diagnosis'`.
 
-This module answers the other question, so that `understand` can make the two
-compete. Matching is on character trigrams over `table column`: real column names
-are concatenated words with no separator (`labname`, `routeadmin`), which no
-word-level comparison can see inside without a dictionary of the very domain we
-are trying to stay independent of. A real value scores low against every column,
-which is what makes the arbitration possible.
+This answers the other question so `understand` can make the two compete. Matching
+is on character trigrams over `table column`, because real column names are
+concatenated words (`labname`, `routeadmin`) that no word-level comparison can see
+inside without a dictionary of the domain. A real value scores low against every
+column, which is what makes the arbitration possible.
 """
 
 from __future__ import annotations
@@ -55,10 +52,8 @@ class ColumnMatch:
 def cards() -> tuple[ColumnCard, ...]:
     """One card per linkable column.
 
-    Identifiers and `*offset` columns are dropped: they repeat their table's name,
-    so they win every table-level match while never being what the analyst meant.
-    Text columns the index rejected (free text, near-unique, constant) are dropped
-    too. A column the glossary explicitly declares is always kept.
+    Identifiers and `*offset` columns repeat their table's name, so they win every
+    table-level match while never being what was meant.
     """
     from nl2sql.db.schema import compact_type, read_schema
     from nl2sql.db.values import is_identifier, query_index
@@ -98,14 +93,7 @@ def cards() -> tuple[ColumnCard, ...]:
 
 @lru_cache(maxsize=1)
 def head_words() -> frozenset[str]:
-    """Words that name a *column* by construction, derived from the schema itself.
-
-    "diagnosis names" is not a diagnosis: it is the *name* column of the diagnosis
-    table. What separates "name" from "aspirin" is distribution, not meaning —
-    designers put the structural word last, so `name`, `value`, `text`, `type`
-    recur as the ending of many column names while no value's word does. Only
-    maximal suffixes are kept, otherwise `name`, `ame` and `me` would all qualify.
-    """
+    """Words that name a *column* by construction, derived from the schema."""
     from nl2sql.db.schema import read_schema
 
     schema = read_schema()
@@ -137,11 +125,7 @@ def _singular(word: str) -> str:
 
 
 def names_a_column(mention: str) -> str | None:
-    """The column-shaped head word of a mention, if it has one.
-
-    Only the last word is examined: "name" in the middle of a phrase does not make
-    the phrase a column reference.
-    """
+    """The column-shaped head word of a mention, if it has one."""
     words = WORD_RE.findall(mention.lower())
     if len(words) < 2:
         return None

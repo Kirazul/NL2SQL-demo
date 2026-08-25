@@ -1,18 +1,13 @@
 """The cloud client — the system's only network egress.
 
 Nothing leaves without passing the egress gate: `call()` runs it before a socket
-is opened, so bypassing the check means editing this file, which shows up in
-review.
+is opened, so bypassing it means editing this file.
 
-Models are arranged as a **ladder** — small, medium, large — and a caller asks for
-a rung rather than for a provider. Within a rung, failure moves to the fallback:
-a 429 waits and retries the same target (free Groq caps at 30 requests a minute),
-a 5xx or a 404 moves on at once.
-
-Only the small rung reports how sure it was. Groq refuses `logprobs` on every
-model it serves; OpenRouter returns them. That is why the cheapest rung is the
-OpenRouter one — it is the rung whose confidence decides whether to climb, so it
-is the rung that has to be able to say.
+Models are a **ladder** — small, medium, large — and callers ask for a rung, not a
+provider. Within a rung, a 429 waits and retries, a 5xx or 404 moves on. Only the
+small rung reports confidence: Groq refuses `logprobs` on every model it serves
+and OpenRouter returns them, so the rung whose confidence decides whether to climb
+is the OpenRouter one.
 """
 
 from __future__ import annotations
@@ -77,8 +72,8 @@ class Response:
     def perplexity(self) -> float | None:
         """exp(-mean log p) over the generated tokens: how sure the model was.
 
-        `None` when the provider did not return log probabilities, in which case
-        the local scorer in `llm.local` answers instead.
+        `None` when the provider did not return log probabilities, in which case the local
+        scorer in `llm.local` answers instead.
         """
         if not self.logprobs:
             return None
@@ -99,12 +94,7 @@ def _target(spec: str) -> Target | None:
 
 
 def chain(size: Size = "large") -> list[Target]:
-    """The targets to try for one rung: the rung itself, then the fallback.
-
-    A rung whose key is not configured falls through to the next one up rather
-    than failing — a machine with only a Groq key still runs every variant, it
-    simply starts one rung higher and reports no perplexity.
-    """
+    """The targets to try for one rung: the rung itself, then the fallback."""
     cfg = settings()
     wanted = {"small": cfg.model_small, "medium": cfg.model_medium, "large": cfg.model_large}
     order = LADDER[LADDER.index(size):]
@@ -119,11 +109,8 @@ def chain(size: Size = "large") -> list[Target]:
 def extract_sql(text: str) -> str:
     """Pull the SQL out of a model response, or return nothing.
 
-    Returning nothing matters as much as returning SQL: on an out-of-scope
-    question the model answers in prose, and matching "with" anywhere in a
-    sentence once handed `with that.` to SQLite, so a comprehension problem was
-    reported as an execution defect. Hence: the keyword must open a line, and the
-    result must contain a SELECT.
+    Returning nothing matters as much as returning SQL: matching "with" anywhere in a
+    sentence once handed `with that.` to SQLite.
     """
     text = THINKING_RE.sub("", text or "").strip()
     block = CODE_BLOCK_RE.search(text)
@@ -165,10 +152,9 @@ def call(
 ) -> Response:
     """Send a conversation to the first available provider.
 
-    `unprotected` disables the gate, and exists for exactly one caller: the Full
-    Cloud arm, whose definition is that the question leaves unmasked. It is
-    refused under `PRIVACY_MODE=strict`, and every use is logged and journalled so
-    the report accounts for it instead of hiding it.
+    `unprotected` disables the gate for one caller only: the Full Cloud arm, whose
+    definition is that the question leaves unmasked. Refused under strict mode, and
+    journalled so the report accounts for it instead of hiding it.
     """
     import httpx
 

@@ -1,11 +1,8 @@
 """Business vocabulary to columns.
 
-The value index resolves *content* ("aspirin"). It can do nothing for
-"mortality", which is not a value but a column. This reads `resources/glossary.yaml`
-and answers the second question: which columns and tables a question is about.
-
-No data passes through here — only vocabulary and column names — so the glossary
-is designed to cross the trust boundary.
+The value index resolves *content* ("aspirin"); it can do nothing for
+"mortality", which is a column name. This answers that half, and so carries no
+data — only vocabulary and column names — which is why it may cross the boundary.
 """
 
 from __future__ import annotations

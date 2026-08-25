@@ -52,8 +52,8 @@ def record(verdict: Verdict, text: str) -> None:
 def record_bypass(context: str, characters: int) -> None:
     """A send that deliberately skipped the gate — only the Full Cloud baseline.
 
-    Journalled rather than excluded, so the report can state how many characters
-    left unprotected instead of quietly leaving the arm out of the totals.
+    Journalled rather than excluded, so the report can state how many characters left
+    unprotected instead of quietly leaving the arm out of the totals.
     """
     _append({
         "timestamp": _now(), "context": context, "allowed": True, "bypassed": True,

@@ -1,13 +1,11 @@
 """Stage 2a — replace real values with symbols before any network call.
 
-"how many patients received aspirin?" becomes "how many patients received :v1?",
-and `:v1 -> 'ASPIRIN EC 81 MG PO TBEC'` stays here. The symbols are numbered in
-order of appearance and restart at 1 on every question, so two requests about the
-same drug do not look alike to the provider.
+"received aspirin?" becomes "received :v1?", and the mapping stays here. Symbols
+restart at 1 per question, so two questions about the same drug do not look alike.
 
 `:v1` is SQLite's own bound-parameter syntax, so the model returns directly
-executable SQL and the value is never concatenated into a string — injection is
-impossible by construction rather than by filtering.
+executable SQL and the value never meets the query text in one string — injection
+is impossible by construction rather than by filtering.
 """
 
 from __future__ import annotations
@@ -23,12 +21,8 @@ MIN_USEFUL_SUGGESTION = 0.65
 class UnresolvableValue(RuntimeError):
     """A value in the question matches nothing in the database, or matches too weakly.
 
-    It used to be left unmasked and passed on, and the model did what a language
-    model always does with an impossible constraint: it produced something —
-    `WHERE apacheadmissiondx = 'asparatan'`, `WHERE 1=0`. Both ran, both returned
-    0, and the answer writer reported that as a fact. A zero meaning "no such
-    patient" and a zero meaning "I did not understand you" are indistinguishable
-    to the reader, so the request is refused with the near matches attached.
+    It used to be left unmasked and passed on, and the model did what a language model
+    always does with an impossible constraint: it produced something — `WHERE
     """
 
     def __init__(self, unknown: list[tuple[str, tuple[str, ...]]]) -> None:
@@ -75,11 +69,7 @@ class Masked:
         return len(self.mapping)
 
     def parameters(self) -> dict[str, str | int | float]:
-        """Bound parameters for SQLite. A masked number is bound as a number.
-
-        Type affinity would usually rescue `hospitalid = '56'`, but not inside an
-        `IN` list or a `CAST`, and the analyst wrote a number.
-        """
+        """Bound parameters for SQLite. A masked number is bound as a number."""
         return {
             symbol.lstrip(":"): (value if symbol in self.columns else _as_number(value))
             for symbol, value in self.mapping.items()

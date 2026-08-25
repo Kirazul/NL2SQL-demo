@@ -1,12 +1,11 @@
 """The local model — inside the trust boundary.
 
-This is the only component that ever sees query *results*, that is, real data. If
-answer writing went out to an API the rest of the architecture would be pointless:
-we would have protected the question in order to export the answer.
+The only component that ever sees query *results*. If answer writing went out to
+an API the rest of the architecture would be pointless: we would have protected
+the question in order to export the answer.
 
-Qwen3-1.7B in Q4_K_M, about 1.1 GB, on CPU. It is not a brilliant model and that
-is the point: the SQL was authored by a much larger one and the numbers come from
-the database, so writing is all that is left to do here.
+Qwen3-1.7B Q4_K_M on CPU. Not a brilliant model, which is the point — the SQL was
+written by a large one and the numbers come from the database.
 """
 
 from __future__ import annotations
@@ -122,9 +121,8 @@ def state() -> dict[str, Any]:
 def _strip_thinking(text: str) -> str:
     """Remove reasoning traces, closed or not.
 
-    When the token budget runs out inside the block no `</think>` is emitted, the
-    pair never matches, and the model's scratchpad gets rendered to the analyst as
-    if it were the answer. There is no answer hiding behind it.
+    When the token budget runs out inside the block no `</think>` is emitted, the pair
+    never matches, and the model's scratchpad gets rendered to the analyst as if it were
     """
     cleaned = THINKING_RE.sub("", text or "")
     opened = cleaned.lower().find("<think>")
@@ -134,9 +132,8 @@ def _strip_thinking(text: str) -> str:
 def _first_block(text: str, max_sentences: int = 3) -> str:
     """Keep the answer, drop what the model tacked on afterwards.
 
-    Qwen3-1.7B writes a correct sentence and then contradicts itself: "1234
-    patients received aspirin." followed by a bare "1234" and "No matching record
-    was found." The prompt asked for one to three sentences; this enforces it.
+    Qwen3-1.7B writes a correct sentence and then contradicts itself: "1234 patients
+    received aspirin." followed by a bare "1234" and "No matching record was found." The
     """
     text = (text or "").strip()
     if not text:
@@ -149,12 +146,7 @@ def _first_block(text: str, max_sentences: int = 3) -> str:
 
 
 def render_table(columns: list[str], rows: list[tuple]) -> str:
-    """Results in a form a small model reads without error.
-
-    A single number is the commonest case and the one it most often mishandles:
-    shown as a one-cell table it read the header as the answer and replied "no
-    matching record" for a result of 4. Stated as a fact, it gets it right.
-    """
+    """Results in a form a small model reads without error."""
     if not columns:
         return "(no column)"
     if not rows:
@@ -170,11 +162,7 @@ def render_table(columns: list[str], rows: list[tuple]) -> str:
 
 
 def build_messages(question: str, columns: list[str], rows: list[tuple]) -> list[dict[str, str]]:
-    """The answer-writing conversation.
-
-    Sent as a chat, not a raw completion: with a prompt ending in "Answer:" Qwen3
-    never emits its end-of-turn token and repeated itself for 19 seconds.
-    """
+    """The answer-writing conversation."""
     return [
         {"role": "system", "content": f"{SYSTEM_PROMPT}\n\n{NO_THINK}"},
         {
@@ -221,11 +209,7 @@ def write_answer(question: str, columns: list[str], rows: list[tuple]) -> Writte
 
 
 def generate_sql(question: str, ddl: str, notes: list[str] | None = None) -> Written:
-    """The Full Local arm: the 1.7B model writes the SQL itself, nothing leaves.
-
-    Expect it to be poor. That is the finding, not a failure of the experiment:
-    the size of the gap is what justifies renting a large model for this one step.
-    """
+    """The Full Local arm: the 1.7B model writes the SQL itself, nothing leaves."""
     from nl2sql.core.prompt import INSTRUCTIONS_LITERAL
 
     start = time.perf_counter()
@@ -260,12 +244,7 @@ def generate_sql(question: str, ddl: str, notes: list[str] | None = None) -> Wri
 
 
 def perplexity(text: str, prompt: str = "") -> float | None:
-    """Score a candidate under the local model: exp(-mean log p) over its tokens.
-
-    This is the fallback for providers that return no log probabilities, and it is
-    a fair scorer for ranking candidates against each other because every
-    candidate is judged by the same model on the same prompt. Lower is better.
-    """
+    """Score a candidate under the local model: exp(-mean log p) over its tokens."""
     try:
         client = load()
     except Exception as e:  # noqa: BLE001 — no local model: no local score

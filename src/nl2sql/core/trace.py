@@ -1,18 +1,11 @@
 """Tracing engine — LangSmith upstream, a JSON journal on local disk.
 
-This file knows about LangSmith and nothing else does. It provides three things
-and stops there:
+This file knows about LangSmith and nothing else does. *What* the spans are
+called is decided in `core/steps.py`.
 
-    configure()  wire the SDK from settings, once, idempotently
-    span()       open one child span, in both destinations at the same time
-    record()     open a run, and append it to `traces/runs.jsonl` when it ends
-
-*What* the spans are called is not decided here — see `core/steps.py`.
-
-Everything is traced, values included. That is defensible here and only here:
-eICU-CRD is public and de-identified. Every span still declares a `zone`, so a
-reader can tell at a glance which ones crossed the boundary, and so the hook
-exists the day this runs on real data.
+Everything is traced, values included — defensible here and only here, because
+eICU-CRD is public and de-identified. Every span still declares a `zone`, so the
+hook exists the day this runs on real data.
 """
 
 from __future__ import annotations
@@ -51,12 +44,7 @@ except ImportError:  # pragma: no cover
 #  Configuration
 # ---------------------------------------------------------------------------------
 def _key_accepted(cfg: Any) -> bool:
-    """One cheap call to find out whether the key works. Cached for the process.
-
-    A rejected key does not fail quietly: the SDK retries in a background thread
-    and prints a stack trace per span, which buries a notebook's actual output
-    under ingest errors.
-    """
+    """One cheap call to find out whether the key works. Cached for the process."""
     if _key_check["done"]:
         return bool(_key_check["ok"])
     _key_check["done"] = True
@@ -88,13 +76,7 @@ def _why_off(cfg: Any) -> str:
 
 
 def configure() -> dict[str, Any]:
-    """Wire LangSmith from settings. Idempotent, safe to call at import time.
-
-    The SDK reads its configuration from environment variables when a traced
-    function first runs, not when the decorator is applied. Setting them here
-    rather than expecting an export is what makes a notebook reproducible from a
-    clean kernel.
-    """
+    """Wire LangSmith from settings. Idempotent, safe at import time."""
     global _configured
     cfg = settings()
     enabled = bool(cfg.langsmith_tracing and cfg.langsmith_api_key and AVAILABLE)
@@ -192,8 +174,8 @@ def steps_so_far() -> list[dict[str, Any]]:
 def record(question: str, arm: str = "hybrid", variant: str = "baseline") -> Iterator[Run]:
     """Open a run; append it to the local sink when the block exits, whatever happened.
 
-    Full fidelity, always: this file never leaves the machine, and a benchmark
-    that only writes down its successes measures nothing.
+    Full fidelity, always: this file never leaves the machine, and a benchmark that only
+    writes down its successes measures nothing.
     """
     if not _configured:
         configure()
@@ -237,12 +219,7 @@ def span(
     kind: str = "chain",
     **inputs: Any,
 ) -> Iterator[Recorder]:
-    """Open one child span in LangSmith and one entry in the journal, together.
-
-    Callers name a step from the registry rather than inventing a label here —
-    see `core/steps.py`. Failures are recorded and re-raised: a step that blew up
-    is exactly the one somebody will come looking for.
-    """
+    """Open one child span in LangSmith and one entry in the journal, together."""
     step = Step(id=step_id, label=label, zone=zone)
     run = _current.get()
     if run is not None:

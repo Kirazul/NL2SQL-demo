@@ -1,19 +1,12 @@
 """Run every variant over the same questions and say which one is best.
 
-Scoring, in the order of how much a number is worth trusting:
+Accuracy is measured against a hand-written reference query where one exists, and
+otherwise against the result at least two variants agreed on. Executable rate is a
+floor, not a measure of correctness; perplexity is the only signal needing no
+answer key.
 
-    correct      the query returns the same rows as a reference query written by
-                 hand. Only available for questions annotated with one.
-    agreement    for the rest: the result most variants arrived at is taken as the
-                 reference, and each variant is scored against it. Not proof, but
-                 four independent pipelines agreeing on a number is evidence.
-    executable   the query ran at all. A floor, not a measure of correctness.
-    perplexity   how sure the model was of what it wrote. Lower is better, and it
-                 is the only signal here that needs no answer key at all.
-
-Cost and latency are measured alongside, because the point of the exercise is not
-the most accurate variant but the best trade — the report has to be able to say
-"this one is 2 points worse and four times cheaper".
+Cost and latency sit beside them because the point is not the most accurate
+variant but the best trade.
 """
 
 from __future__ import annotations
@@ -43,12 +36,7 @@ PRICE_PER_MTOK = {
 
 
 def fingerprint_result(sql: str, parameters: dict[str, Any] | None = None) -> str:
-    """A hash of what a query returns, so two queries can be compared by result.
-
-    Row order is deliberately ignored: `ORDER BY` differences are not disagreement
-    about the answer, and a query with no ORDER BY has no defined order anyway.
-    An error is its own fingerprint, so failures never accidentally agree.
-    """
+    """A hash of what a query returns, so two queries can be compared by result."""
     try:
         columns, rows = execute(sql, parameters, max_rows=500)
     except Exception as e:  # noqa: BLE001
@@ -152,8 +140,8 @@ def score_against_reference(results: list[Result], reference: dict[str, str]) ->
 def consensus_reference(results: list[Result]) -> dict[str, str]:
     """For questions with no hand-written query: what most variants agreed on.
 
-    A single variant's answer is never taken as the reference — that would score
-    every other variant against one arbitrary opinion. At least two must agree.
+    A single variant's answer is never taken as the reference — that would score every
+    other variant against one arbitrary opinion.
     """
     by_question: dict[str, list[str]] = {}
     for result in results:
@@ -241,13 +229,10 @@ def summarise(variant: str, results: list[Result]) -> Summary:
 
 
 def rank(summaries: list[Summary]) -> list[tuple[str, float]]:
-    """Order the variants by accuracy first, then by what they cost to get it.
+    """Order by accuracy first, then by what it cost to get it.
 
-    Cost is a tie-breaker rather than a term to be traded against accuracy: a
-    weighted sum would let a cheap variant buy its way past a more accurate one,
-    and the decision of how much accuracy a euro is worth belongs to the reader,
-    not to this function. The full table is printed beside the ranking for exactly
-    that reason.
+    Cost is a tie-breaker, not a term traded against accuracy: how much accuracy a euro
+    is worth is the reader's call, which is why the full table is printed too.
     """
     return [
         (s.variant, s.accuracy)
@@ -301,12 +286,7 @@ def compare(
 
 
 def calibrate(results: list[Result] | None = None) -> dict[str, Any]:
-    """Where to put the escalation threshold, from measured perplexities.
-
-    `cascade` escalates when the small model's perplexity says it was guessing.
-    The threshold is not a preference: it is the point that best separates the
-    answers that turned out right from the ones that turned out wrong.
-    """
+    """Where to put the escalation threshold, from measured perplexities."""
     source = results or [Result(**r) for r in json.loads(
         (DATA / "benchmark.json").read_text(encoding="utf-8")
     )["results"]]

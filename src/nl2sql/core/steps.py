@@ -1,19 +1,13 @@
 """The steps every pipeline is made of — named once, in plain language.
 
-Each of the four arms and each of the five hybrid variants is a different route
-through the *same* list of steps. Naming them here rather than at each call site
-buys three things: the traces of two variants can be compared line by line, the
-interface never has to invent wording, and adding a step is one entry in one
-table instead of a label written three different ways in three files.
-
-    from nl2sql.core.steps import track
+Each arm and each variant is a different route through the *same* list of steps,
+so naming them here lets two traces be compared line by line and gives the
+interface its wording.
 
     with track("lookup", mention="aspirin") as t:
-        ...
         t.say("found ASPIRIN EC 81 MG PO TBEC in medication.drugname", score=1.0)
 
-`say()` writes one sentence for the interface and keeps the structured detail for
-LangSmith. `core/trace.py` does the plumbing; nothing else imports langsmith.
+`say()` writes one sentence for the interface and keeps the detail for LangSmith.
 """
 
 from __future__ import annotations
@@ -82,10 +76,8 @@ def track(
 ) -> Iterator[Recorder]:
     """Open one named step. Unknown ids fail loudly rather than tracing a typo.
 
-    `label` overrides the registry wording for the one case where the same kind of
-    step does two different jobs: a model call that writes SQL and a model call
-    that writes the answer are both `model`, and calling the second one "asking a
-    model to write the SQL" on screen would simply be wrong.
+    `label` overrides the wording where one step kind does two jobs — a model call
+    writing SQL and one writing the answer are both `model`.
     """
     step = BY_ID[step_id]
     with trace.span(step.id, label or step.label, zone or step.zone, step.kind, **inputs) as recorder:

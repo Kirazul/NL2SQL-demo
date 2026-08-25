@@ -1,9 +1,9 @@
 """Command line: get the data in place, ask a question, serve, benchmark.
 
-    python -m nl2sql.cli database          put eicu.db in data/, as published
+    python -m nl2sql.cli database          build data/eicu.db
     python -m nl2sql.cli index             build the value index
     python -m nl2sql.cli check             glossary and gate self-check
-    python -m nl2sql.cli ask "..."         one question through one arm
+    python -m nl2sql.cli ask "..."         one question, with its trace
     python -m nl2sql.cli serve             the REST API
     python -m nl2sql.cli bench             run every variant and rank them
 """
@@ -47,13 +47,7 @@ def _fetch(destination: Path, source: str | None) -> None:
 
 
 def _relationships(cx) -> tuple[dict[str, str], dict[str, list[tuple[str, str]]]]:
-    """Read each table's key and the columns that point at another table's key.
-
-    A key is found by behaviour rather than by name: the first identifier column
-    holding exactly as many distinct values as there are rows. A column repeating
-    another table's key is a reference to it. Both are properties of the data, so
-    they stay right when the extract is refreshed.
-    """
+    """Read each table's key and the columns that point at another table's key."""
     tables = [r[0] for r in cx.execute(
         "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
     )]

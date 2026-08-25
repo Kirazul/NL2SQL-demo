@@ -1,12 +1,9 @@
 """Validate the SQL a remote model wrote, before it reaches the engine.
 
-The database is already open read-only, which would block a DELETE at engine
-level. This layer sits upstream for three reasons: a readable message instead of
-an opaque SQLite error, defence in depth if the connection mode is ever changed,
-and refusing multiple statements, which SQLite would happily run.
-
-It does not check that the query *answers the question*. A safe query can still
-be wrong; that is what execution and evaluation are for.
+The connection is already read-only; this sits upstream for a readable message
+instead of an opaque SQLite error, for defence in depth, and to refuse multiple
+statements. It does not check that the query *answers the question* — a safe query
+can still be wrong.
 """
 
 from __future__ import annotations
@@ -48,11 +45,8 @@ class Verdict:
 def unknown_columns(sql: str) -> list[str]:
     """Column names the query invents.
 
-    SQLite catches them too, but only at execution and only after the request has
-    already failed. Catching them here turns a dead end into a repair the model
-    can act on. Deliberately conservative: only qualified names and bare names
-    inside an aggregate are checked, because a lone identifier cannot be told from
-    an alias without parsing SQL properly. Under-reporting is the right direction.
+    SQLite catches them too, but only at execution, after the request has failed. Here
+    it becomes a repair.
     """
     from nl2sql.db.schema import read_schema
 

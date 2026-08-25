@@ -1,13 +1,11 @@
 """Value index — turn "aspirin" into the exact stored `ASPIRIN EC 81 MG PO TBEC`.
 
-Two tiers, and the cost of both is bounded by the number of columns rather than
-by the number of rows:
+Two tiers, both bounded by the number of columns rather than the number of rows:
 
     A  vocabulary   few distinct values: pre-indexed into FTS5.
-    B  on demand    too many to store: resolved at question time with a bounded
-                    LIKE against the database itself.
+    B  on demand    too many to store: resolved with a bounded LIKE at question time.
 
-Columns that are neither (identifiers, free text, constants) are not registered.
+Columns that are neither — identifiers, free text, constants — are not registered.
 """
 
 from __future__ import annotations
@@ -68,11 +66,7 @@ class FoundValue:
 #  Classification
 # --------------------------------------------------------------------------------
 def is_identifier(column: str, table_names: frozenset[str]) -> bool:
-    """Recognised by shape, not by the last two letters: `volumeoffluid` is not a key.
-
-    Lower-cased first: six tables of the published export are written entirely in
-    upper case, and `PATIENTUNITSTAYID` is as much a key as `patientunitstayid`.
-    """
+    """Recognised by shape, not by the last two letters: `volumeoffluid` is not a key."""
     column = column.lower()
     if IDENTIFIER_RE.match(column):
         return True
@@ -232,11 +226,7 @@ def _open(path: Path) -> sqlite3.Connection:
 
 
 def _parts(value: str) -> list[str]:
-    """eICU packs hierarchies into one cell; compare against each segment too.
-
-    Whole-string comparison against `hematology|coagulation disorders|DIC syndrome`
-    rewards any question that happens to share a word with it.
-    """
+    """eICU packs hierarchies into one cell; compare against each segment too."""
     if len(value) <= 32:
         return [value]
     parts = [p for p in SEPARATORS_RE.split(value) if len(p.strip()) > 3]
@@ -244,14 +234,7 @@ def _parts(value: str) -> list[str]:
 
 
 def similarity(mention: str, value: str) -> float:
-    """How well a mention matches a stored value. Deliberately not symmetric.
-
-    Partial matching is legitimate in one direction only — the analyst names part
-    of a longer value ("aspirin" for `ASPIRIN EC 81 MG PO TBEC`). The reverse is
-    not a match: a short value found inside a long mention only says the database
-    holds a common short string, and treating it as one scored "10" against
-    "10 most frequently recorded laboratory tests" at 1.00.
-    """
+    """How well a mention matches a stored value. Deliberately not symmetric."""
     left, right = mention.lower().strip(), value.lower().strip()
     if not left or not right:
         return 0.0
@@ -354,13 +337,7 @@ def _vocabulary(path_str: str) -> tuple[tuple[str, str], ...]:
 
 
 def _fuzzy(path: Path, mention: str, columns: list[str] | None, threshold: float) -> list[FoundValue]:
-    """Last resort for a misspelling: full scan of the indexed vocabulary.
-
-    Full-text retrieval matches whole tokens, so `asspirin` retrieves nothing and
-    never gets scored at all. The bar is higher here because everything becomes a
-    candidate, and the scorer is whole-string `ratio` — `WRatio` blends in partial
-    matching and returned `tan` at 0.90 for a word that is not a drug.
-    """
+    """Last resort for a misspelling: full scan of the indexed vocabulary."""
     from rapidfuzz import fuzz, process
 
     vocabulary = _vocabulary(str(path))

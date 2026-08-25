@@ -1,12 +1,9 @@
 """The state that travels through the graph.
 
-One shape for every arm and every variant. That is a constraint rather than a
-convenience: if each arm carried its own fields, the benchmark would be comparing
-different measurements. Here an empty column is empty for a reason you can point
-at — Full Local has no `cloud_target` because it never called one.
+One shape for every arm and variant, so an empty column is empty for a reason you
+can point at rather than because two arms measured different things.
 
-Two things in here must never be serialised outward: `masked.mapping`, which is
-the system's only secret, and `rows`, which is the data itself. The API returns
+`masked.mapping` and `rows` must never be serialised outward. The API returns
 `public()`, never the state.
 """
 
@@ -102,8 +99,8 @@ def is_refusal(state: State) -> bool:
 def public(state: State) -> dict[str, Any]:
     """The view allowed to cross a network boundary — the API's response body.
 
-    Built by listing what goes *in*, never by removing what stays out: a denylist
-    over a dataclass grows a hole the first time somebody adds a field.
+    Built by listing what goes *in*, never by removing what stays out: a denylist over a
+    dataclass grows a hole the first time somebody adds a field.
     """
     keys = (
         "question", "arm", "variant", "answer", "sql", "masked_question", "columns",

@@ -111,11 +111,7 @@ def relevant_tables(understanding: Understanding) -> set[str]:
 
 
 def lean_columns(understanding: Understanding, tables: set[str]) -> dict[str, list[str]]:
-    """Only the columns the question actually reaches, plus the join keys.
-
-    This is the lever the `lean` variant pulls: eICU's wide tables carry 30-plus
-    columns each and the question names two of them.
-    """
+    """Only the columns the question actually reaches, plus the join keys."""
     wanted: dict[str, list[str]] = {t: [] for t in tables}
     for ref in understanding.columns:
         table, _, column = ref.partition(".")
@@ -160,8 +156,8 @@ def hybrid(
 def opaque(understanding: Understanding, masked: Masked, seed: int | None = None) -> Prompt:
     """Pseudonymised schema *and* question: no business word of any kind leaves.
 
-    The dictionary is drawn per request and travels with the prompt — rebuilding
-    it later would describe labels that were never sent.
+    The dictionary is drawn per request and travels with the prompt — rebuilding it
+    later would describe labels that were never sent.
     """
     tables = relevant_tables(understanding)
     pseudonyms = opq.build(tables, seed=seed)
@@ -212,12 +208,7 @@ def clear(understanding: Understanding, question: str) -> Prompt:
 
 
 def repair(prompt: Prompt, sql: str, reason: str, opaque_arm: bool = False) -> Prompt:
-    """Hand the model its own query back with the reason it was rejected.
-
-    More effective than sampling again, because the model is told *why*. Its own
-    SQL did not come from us, so it re-enters as an untrusted segment and gets the
-    full word check — a literal it invented must not slip out on the return trip.
-    """
+    """Hand the model its own query back with the reason it was rejected."""
     complaint = f"That query was rejected: {reason}."
     instruction = f"{complaint}\n{REPAIR_TAIL}"
     origin = "opaque" if opaque_arm else "question"

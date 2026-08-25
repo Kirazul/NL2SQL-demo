@@ -1,12 +1,8 @@
 """Stage 1 — Understand. Entirely local, no network call.
 
-Extract the mentions, scope them with the glossary, then resolve each one to a
-real stored value. Scoping happens *before* resolution: it is what lets "aspirin"
-be searched in three drug columns rather than in a hundred.
-
-On output, `Understanding` holds two very different kinds of thing — real values,
-which never cross the boundary, and column names, which do. `for_the_cloud()`
-returns only the second kind.
+Extract the mentions, scope them with the glossary, then resolve each to a stored
+value. Scoping runs first: it is what lets "aspirin" be searched in three drug
+columns rather than a hundred. `for_the_cloud()` is the only view that may leave.
 """
 
 from __future__ import annotations
@@ -73,12 +69,7 @@ class Resolution:
 
     @property
     def to_mask(self) -> bool:
-        """Values and numbers become symbols; concepts do not — they name columns.
-
-        Only the deterministic numeric pass counts as a quantity. The classifier's
-        own "quantity" bucket means "no significant word left", which also catches
-        the verb `admitted`, and masking that bound `:v1` to an empty string.
-        """
+        """Values and numbers become symbols; concepts name columns and do not."""
         if self.kind == "quantity":
             return self.type == "number"
         return self.kind == "value" and self.confident
@@ -128,13 +119,7 @@ class Understanding:
 
 
 def _looks_like_a_name(mention: str) -> bool:
-    """Does the mention have the shape of a proper noun?
-
-    The extractor's `person` label is generous — it returned `person` for `me`,
-    `peeps` and `mny patiens` — and refusing is the heaviest thing this pipeline
-    does. The test is syntactic and needs no list of names: a title, or an initial
-    capital on a word that is not ordinary vocabulary.
-    """
+    """Does the mention have the shape of a proper noun?"""
     from nl2sql.privacy.gate import generic_vocabulary
 
     text = mention.strip()
@@ -151,14 +136,10 @@ def _looks_like_a_name(mention: str) -> bool:
 def classify(mention: str, entity_type: str = "") -> Kind:
     """Tell a value to look up from a concept or a quantity.
 
-    Without this the index resolves whatever it is given and always finds
-    something: "mortality rate" became `'Low mortality risk'` at 0.79, "over 65"
-    became the stored string `'65'` at 1.00. Both clear the confidence threshold,
-    so nothing downstream flags them.
-
-    Classification runs on significant words — three letters or more, not closed
-    class. No significant word left means a quantity; all of them covered by the
-    glossary means a concept; anything else is a value.
+    Without it the index always finds something: "mortality rate" resolved to
+    `'Low mortality risk'` at 0.79, above the threshold, so nothing flagged it.
+    Runs on significant words: none left means a quantity, all covered by the
+    glossary means a concept, anything else is a value.
     """
     from nl2sql.db.values import is_exact_value
     from nl2sql.privacy.gate import generic_vocabulary
@@ -188,12 +169,7 @@ def classify(mention: str, entity_type: str = "") -> Kind:
 
 
 def _concept_column(mention: str) -> str | None:
-    """The column a concept designates, for prompt scoping.
-
-    The glossary knows which columns are business-relevant; the catalogue knows
-    which of them the analyst actually named. Taking the glossary's first column
-    alone scoped "hospital region" to `hospital.hospitalid`.
-    """
+    """The column a concept designates, for prompt scoping."""
     columns = glossary.columns_for(mention)
     if columns:
         scores = {m.ref: m.score for m in catalog.link(mention, limit=len(catalog.cards()))}
@@ -205,10 +181,8 @@ def _concept_column(mention: str) -> str | None:
 def _scope(entity: ner.Entity, default: list[str]) -> list[str]:
     """Columns to search this mention in, most likely first.
 
-    The entity type and the question's glossary columns are combined, not ranked
-    one above the other: GLiNER2 labels "discharged home" a *procedure*, and
-    keeping only the type sent the search to `treatment.treatmentstring` while the
-    discharge columns were never consulted.
+    Type and glossary columns are combined, not ranked: GLiNER2 calls "discharged home"
+    a procedure, and trusting that alone never consulted the discharge columns.
     """
     terms = glossary.load()
     columns: list[str] = []
@@ -221,12 +195,7 @@ def _scope(entity: ner.Entity, default: list[str]) -> list[str]:
 
 
 def _shorter_spans(mention: str) -> list[str]:
-    """Sub-spans, longest first, for when the whole span resolves to nothing.
-
-    An extractor routinely takes a word too many — "hemoglobin lab test" where
-    only `hemoglobin` is stored. Rather than trimming with stop words, the
-    candidates are enumerated and the index decides.
-    """
+    """Sub-spans, longest first, for when the whole span resolves to nothing."""
     from nl2sql.privacy.gate import generic_vocabulary
 
     words = mention.split()
@@ -362,16 +331,10 @@ def _resolve(entity: ner.Entity, scope: list[str], step: object) -> Resolution:
 
 
 def _numbers(question: str, masked_spans: list[tuple[int, int]]) -> list[Resolution]:
-    """Every number in the question, so none of them leaves in clear text.
+    """Every number in the question, so none leaves in clear text.
 
-    A number is a syntactic class and can be found exactly, with no model. They
-    used to be left alone as analyst-supplied thresholds, which is right about
-    `age > 65` and wrong about `hospitalid = 56` — and the two cannot be told
-    apart from the question. The model never needs a number's value to write a
-    comparison, so masking all of them costs nothing.
-
-    A number inside an entity that is itself being masked is skipped, so
-    "AMOXICILLIN 500 MG" is replaced once rather than twice.
+    Leaving them alone is right about `age > 65` and wrong about `hospitalid = 56`, and
+    the two cannot be told apart from the question.
     """
     out: list[Resolution] = []
     for match in NUMBER_RE.finditer(question):
@@ -386,15 +349,9 @@ def _numbers(question: str, masked_spans: list[tuple[int, int]]) -> list[Resolut
 def _missed_values(
     question: str, existing: list[Resolution], scope: list[str]
 ) -> list[Resolution]:
-    """Stored values the extractor did not spot — masked here rather than refused later.
+    """Stored values the extractor missed — masked here rather than refused later.
 
-    GLiNER2 looks for semantic entities and missed `alive` in "discharged alive";
-    the egress gate, which knows every stored value exactly, then refused the
-    question. Both are right about the facts. Masking is the better fix, so the
-    gate's own detector is reused here: whatever the gate would refuse, mask.
-
-    Exact matches only — there is no extractor evidence here, so this pass may
-    recognise but never guess.
+    GLiNER2 missed `alive` in "discharged alive" and the gate then refused the question.
     """
     from nl2sql.privacy.gate import find_known_values
 

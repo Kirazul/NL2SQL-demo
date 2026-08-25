@@ -1,13 +1,10 @@
-"""The REST API — the only door into the trust boundary.
+"""The REST service — the only door into the trust boundary.
 
-Everything served here runs on the protected side: the database, the value index,
-the entity extractor, the answer writer. The one thing that leaves is the
-SQL-generation call, and it leaves from `llm/cloud.py`, behind the gate. A browser
-talking to this API is a client, not an insider, which is why every response is
-built from `state.public()`.
+Everything served here runs on the protected side; the one thing that leaves does
+so from `llm/cloud.py`, behind the gate. Responses are built from `state.public()`
+because a browser is a client, not an insider.
 
-`/ask/stream` emits one event per traced step. A demo that returns a single JSON
-blob after nine seconds proves nothing — the interesting claim is about what
+`/ask/stream` emits one event per traced step: the interesting claim is about what
 happens between the question and the answer, so the pipeline shows its work.
 """
 
@@ -87,8 +84,8 @@ def health() -> dict[str, Any]:
 def meta() -> dict[str, Any]:
     """What the interface needs to describe the system without hardcoding it.
 
-    The step labels come from `core/steps.py`, so the wording on screen and the
-    wording in the traces cannot drift apart.
+    The step labels come from `core/steps.py`, so the wording on screen and the wording
+    in the traces cannot drift apart.
     """
     return {
         "arms": list(ARMS),
@@ -132,12 +129,7 @@ def _run(body: Ask) -> dict[str, Any]:
 
 @app.post("/ask")
 async def ask(body: Ask) -> dict[str, Any]:
-    """One question, one answer.
-
-    On a worker thread: the pipeline is synchronous and CPU-bound — llama.cpp
-    holds the GIL for seconds at a time — and blocking the event loop would stall
-    every other request, `/health` included.
-    """
+    """One question, one answer."""
     return await asyncio.to_thread(_run, body)
 
 
@@ -145,9 +137,8 @@ async def ask(body: Ask) -> dict[str, Any]:
 async def compare(body: Ask) -> dict[str, Any]:
     """The same question through all four architectures — the benchmark, live.
 
-    Sequential on purpose: run concurrently they would contend for the same two
-    cores and the same llama.cpp instance, and latency is one of the things being
-    measured.
+    Sequential on purpose: run concurrently they would contend for the same two cores
+    and the same llama.cpp instance, and latency is one of the things being measured.
     """
     def _all() -> dict[str, Any]:
         out = {}
@@ -190,12 +181,7 @@ def _event(name: str, payload: dict[str, Any]) -> str:
 
 
 def _stage_view(node: str, update: dict[str, Any], merged: dict[str, Any]) -> dict[str, Any]:
-    """What the interface is shown when a stage completes.
-
-    The `:v1 -> 'aspirin'` mapping is included. That is not a leak: this response
-    goes to the analyst who typed the question and already knows the value, and
-    showing the substitution side by side is the whole point of the demonstration.
-    """
+    """What the interface is shown when a stage completes."""
     view: dict[str, Any] = {"stage": node, "ms": update.get("ms", {}).get(node)}
 
     if node == "understand":
