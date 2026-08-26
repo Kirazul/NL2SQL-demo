@@ -186,8 +186,36 @@ def clone_from_github() -> str:
     return "a fresh clone"
 
 
+def find_in_mounts(relative: str, max_depth: int = 7) -> "list[Path]":
+    """Every path under /kaggle/input, so nothing has to guess how deep it is.
+
+    Kaggle has mounted a notebook's output at /kaggle/input/<slug>/ and at
+    /kaggle/input/notebooks/<owner>/<slug>/, and the repository sits a further
+    level inside that. Each guess at the shape reported a perfectly good output
+    as a missing database, so walk for it. Bounded, and never down into the two
+    directories that hold the weights and the git objects, because an attached
+    output is gigabytes.
+    """
+    root = Path("/kaggle/input")
+    if not root.is_dir():
+        return []
+    hits = []
+    for dirpath, dirnames, _ in os.walk(root):
+        here = Path(dirpath)
+        if len(here.relative_to(root).parts) >= max_depth:
+            dirnames[:] = []
+            continue
+        dirnames[:] = [d for d in dirnames if d not in {{".git", "models", "wheels"}}]
+        candidate = here / relative
+        if candidate.exists():
+            hits.append(candidate)
+    return sorted(hits)
+
+
 def copy_from_setup() -> str:
-    marker = next(iter(sorted(Path("/kaggle/input").glob("*/nl2sql/pyproject.toml"))), None)
+    # Any pyproject.toml would match, so take the one with the package beside it.
+    marker = next((m for m in find_in_mounts("pyproject.toml")
+                   if (m.parent / "src" / "nl2sql").is_dir()), None)
     if marker is None:
         return ""
     # Everything except data/ and models/: those are the two gigabytes that get
@@ -239,11 +267,8 @@ LOCAL_RUNTIME = '''
 # building it costs several minutes. Notebook 1 keeps the wheel it built with its
 # output, so installing from that is a copy. Runs after the cell above, so a mount
 # that turned out to be unusable stops the notebook before the compile, not after.
-wheelhouse = next(
-    (w.parent for m in MOUNTS for pattern in ("wheels/*.whl", "*/wheels/*.whl")
-     for w in m.glob(pattern)),
-    None,
-)
+wheelhouse = next((d for d in find_in_mounts("wheels")
+                   if any(d.glob("llama_cpp_python-*.whl"))), None)
 if wheelhouse:
     !pip install -q --find-links {wheelhouse} llama-cpp-python 2>&1 | tail -2
 else:
@@ -264,27 +289,31 @@ REUSE_SETUP = '''
 # every one of the three is opened read-only here too - so point the settings at
 # the mount rather than copying two gigabytes into the working directory.
 #
-# How deep inside the mount they sit depends on what notebook 1's working
-# directory held when it was saved. Matching one guessed shape reported a good
-# output as a missing database, so search the plausible depths instead, and when
-# nothing turns up print what is actually mounted rather than assert a cause.
-MOUNTS = sorted(p for p in Path("/kaggle/input").glob("*") if p.is_dir())
-found = [
-    hit
-    for m in MOUNTS
-    for pattern in ("data/eicu.db", "*/data/eicu.db", "*/*/data/eicu.db")
-    for hit in sorted(m.glob(pattern))
-]
+# Where inside the mount they sit is not fixed - Kaggle has used
+# /kaggle/input/<slug>/ and /kaggle/input/notebooks/<owner>/<slug>/ - so this
+# walks for the database rather than matching a guessed shape. find_in_mounts
+# comes from the first cell.
+found = find_in_mounts("data/eicu.db")
 if not found:
-    print("mounted under /kaggle/input:" if MOUNTS else "nothing is mounted under /kaggle/input")
-    for m in MOUNTS:
-        print(" ", m.name + "/", " ".join(sorted(c.name for c in m.iterdir())[:8]))
+    # Printing the tree beats asserting a cause: the last two guesses at what
+    # was wrong here were both wrong, and both would have been settled by this.
+    print("nothing matched. What is actually under /kaggle/input:")
+    root = Path("/kaggle/input")
+    listed = 0
+    for dirpath, dirnames, filenames in os.walk(root):
+        depth = len(Path(dirpath).relative_to(root).parts)
+        if depth > 3 or listed > 40:
+            dirnames[:] = []
+            continue
+        print("   " * depth, Path(dirpath).name + "/", " ".join(sorted(filenames)[:6]))
+        listed += 1
     raise SystemExit(
-        "No eicu.db under any of them. Notebook 1's saved output is what carries it: "
-        "open the sidebar, Input -> Add Input -> Your Work -> NL2SQL 1 Setup, and check "
-        "the version it pins is one that ran to the end."
+        "No data/eicu.db anywhere under /kaggle/input. Notebook 1's saved output is "
+        "what carries it: check Input -> Add Input -> Your Work -> NL2SQL 1 Setup, and "
+        "that the version pinned there is one that ran to the end."
     )
 SETUP = found[0].parents[1]
+print("setup output:", SETUP)
 
 # Name a missing piece here rather than several cells later, from inside whichever
 # library opens it first.
