@@ -156,33 +156,65 @@ class Notebook:
 #  Shared cells
 # =================================================================================
 BOOTSTRAP = f'''
-# The code comes from GitHub. The repository is private, so this needs a
+# The code comes from GitHub. The repository is private, so a fresh clone needs a
 # GITHUB_TOKEN secret (Add-ons -> Secrets).
-import os, subprocess, sys
+#
+# A version created through the API cannot read that secret - Kaggle answers 400
+# no matter how the box is ticked in the editor, and the attachment cannot be
+# declared in kernel-metadata.json either (Kaggle/kaggle-cli#582). Notebook 1's
+# output carries the whole repository, so fall back to that copy. Only notebook 1
+# has no input to fall back to, and only notebook 1 has to be saved from the
+# browser rather than pushed.
+import os, shutil, subprocess, sys
 from pathlib import Path
 
 ROOT = Path("/kaggle/working/nl2sql")
-if not ROOT.exists():
+
+
+def clone_from_github() -> str:
     from kaggle_secrets import UserSecretsClient
-    try:
-        token = UserSecretsClient().get_secret("GITHUB_TOKEN")
-    except Exception as e:
-        # Kaggle answers 400 here when the label is not attached to this notebook,
-        # and the client reports that as a connection error sixty frames deep.
-        raise SystemExit(
-            f"GITHUB_TOKEN could not be read ({{type(e).__name__}}: {{e}}). "
-            "Open this notebook on Kaggle and check Add-ons -> Secrets: the secret "
-            "must exist and be attached here. Internet must be on as well."
-        ) from e
+    token = UserSecretsClient().get_secret("GITHUB_TOKEN")
     url = "{REPO}".replace("https://", f"https://{{token}}@")
     subprocess.run(["git", "clone", "--depth", "1", url, str(ROOT)], check=True)
     # git writes the clone URL into .git/config, token and all, and Kaggle saves
     # .git with the notebook output. Put the plain address back immediately.
     subprocess.run(["git", "-C", str(ROOT), "remote", "set-url", "origin", "{REPO}"], check=True)
+    return "a fresh clone"
+
+
+def copy_from_setup() -> str:
+    marker = next(iter(sorted(Path("/kaggle/input").glob("*/nl2sql/pyproject.toml"))), None)
+    if marker is None:
+        return ""
+    # Everything except data/ and models/: those are the two gigabytes that get
+    # read where they are mounted and are never worth copying.
+    shutil.copytree(marker.parent, ROOT,
+                    ignore=shutil.ignore_patterns("data", "models", ".git"))
+    # The mount is read-only and copytree keeps the modes, but `pip install -e .`
+    # writes an egg-info back into the tree.
+    subprocess.run(["chmod", "-R", "u+w", str(ROOT)], check=True)
+    return f"the copy in {{marker.parent}}"
+
+
+if ROOT.exists():
+    source = "the working directory"
+else:
+    try:
+        source = clone_from_github()
+    except Exception as e:
+        source = copy_from_setup()
+        if not source:
+            raise SystemExit(
+                f"Nothing to run from. GITHUB_TOKEN could not be read "
+                f"({{type(e).__name__}}: {{e}}) and notebook 1's output is not attached "
+                "either. Check Add-ons -> Secrets, or add Input -> Your Work -> "
+                "NL2SQL 1 Setup."
+            ) from e
+        print("GITHUB_TOKEN unreadable, falling back to notebook 1's output:", e)
 
 sys.path.insert(0, str(ROOT / "src"))
 os.chdir(ROOT)
-print("code:", ROOT)
+print("code:", ROOT, "from", source)
 '''
 
 INSTALL = '''
