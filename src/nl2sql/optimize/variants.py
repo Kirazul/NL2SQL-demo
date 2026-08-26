@@ -338,6 +338,15 @@ def _with_examples(built: pr.Prompt, question: str, k: int) -> pr.Prompt:
     if not bank:
         return built
 
+    # Never show the question its own answer. `examples.yaml` and the benchmark set
+    # in `questions.yaml` are written by hand and already share one entry, so on a
+    # full-set run this variant would have been handed the SQL it was being scored
+    # on and measured as the cheapest accuracy there is.
+    asked = " ".join(question.lower().split())
+    bank = tuple(pair for pair in bank if " ".join(pair[0].lower().split()) != asked)
+    if not bank:
+        return built
+
     ranked = sorted(bank, key=lambda pair: -fuzz.token_set_ratio(question, pair[0]))[:k]
     rendered = [_render_example(q, sql) for q, sql in ranked]
     block = "Examples of questions already answered correctly:\n\n" + "\n\n".join(rendered)

@@ -26,14 +26,25 @@ PRICE_PER_MTOK = {
 }
 
 
+#: Rows to pull before a result is treated as too big to fingerprint. The cap was
+#: 500, and `fetchmany` truncates before the sort below, so which rows survived
+#: depended on the query's own ORDER BY: two queries returning the same set in a
+#: different order fingerprinted differently and one was scored wrong.
+FINGERPRINT_MAX_ROWS = 50_000
+
+
 def fingerprint_result(sql: str, parameters: dict[str, Any] | None = None) -> str:
     """A hash of what a query returns, so two queries can be compared by result."""
     try:
-        columns, rows = execute(sql, parameters, max_rows=500)
+        columns, rows = execute(sql, parameters, max_rows=FINGERPRINT_MAX_ROWS + 1)
     except Exception as e:  # noqa: BLE001
         return f"error:{type(e).__name__}"
     if not rows:
         return "empty"
+    if len(rows) > FINGERPRINT_MAX_ROWS:
+        # Past the cap the comparison is between two truncations, not two answers.
+        # Say so, so the question goes unscored instead of being scored wrongly.
+        return f"truncated:{len(rows)}"
     body = sorted("\x1f".join("" if v is None else str(v) for v in row) for row in rows)
     return hashlib.sha256(("\x1e".join(body)).encode("utf-8")).hexdigest()[:16]
 
@@ -144,7 +155,8 @@ def consensus_reference(results: list[Result]) -> dict[str, str]:
     """
     by_question: dict[str, list[str]] = {}
     for result in results:
-        if result.success and result.result_hash not in ("", "empty"):
+        unusable = result.result_hash.startswith(("error:", "truncated:"))
+        if result.success and result.result_hash not in ("", "empty") and not unusable:
             by_question.setdefault(result.question, []).append(result.result_hash)
 
     reference: dict[str, str] = {}
@@ -269,7 +281,10 @@ def compare(
     for question in list(reference):
         gold = next(q["sql"] for q in items if q["question"] == question)
         reference[question] = fingerprint_result(gold)
-    reference = {q: h for q, h in reference.items() if h and not h.startswith("error:")}
+    reference = {
+        q: h for q, h in reference.items()
+        if h and h != "empty" and not h.startswith(("error:", "truncated:"))
+    }
     reference.update({q: h for q, h in consensus_reference(results).items() if q not in reference})
     score_against_reference(results, reference)
 
