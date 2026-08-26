@@ -31,8 +31,15 @@ DDL_WORDS = frozenset(
     "create table int real text blob numeric rows primary key foreign references".split()
 )
 
+# Three declaration forms, and nothing else. The LIKE form carries the same
+# information as the value form - a symbol and a real column - so it is verified
+# the same way, by provenance. Letting it fall through to the word check instead
+# would have put "pattern" in the allowlist, which is the hole that file warns
+# against: authored scaffolding must be verified by regeneration, not vocabulary.
 PARAM_LINE_RE = re.compile(
     r"^\s*:v\d+ = (?:a value of ([A-Za-z0-9_]+)\.([A-Za-z0-9_]+)"
+    r"|a LIKE pattern for ([A-Za-z0-9_]+)\.([A-Za-z0-9_]+) - match it with "
+    r"LIKE :v\d+, never with ="
     r"|a value of ([tc]\d+)\.([tc]\d+)|a number given by the analyst)\s*$"
 )
 LABEL_RE = re.compile(r"^[tc]\d+$")
@@ -289,7 +296,12 @@ def is_parameter_block(text: str) -> bool:
         match = PARAM_LINE_RE.match(line)
         if not match:
             return False
-        table, column = match.group(1), match.group(2)
+        # Groups 1-2 and 3-4 are the two forms that name a real column, and both
+        # must be checked against the schema. Groups 5-6 are the opaque arm's
+        # pseudonyms, `t1.c7`, which are labels rather than identifiers and are
+        # deliberately not looked up here.
+        table = match.group(1) or match.group(3)
+        column = match.group(2) or match.group(4)
         if table and (table not in known or column not in known):
             return False
     return True

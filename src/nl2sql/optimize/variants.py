@@ -365,17 +365,38 @@ def _with_examples(built: pr.Prompt, question: str, k: int) -> pr.Prompt:
 # ---------------------------------------------------------------------------------
 #  How hard is this question?
 # ---------------------------------------------------------------------------------
+#: Words that mean the query needs grouping, ordering or arithmetic rather than a
+#: single filtered read. Half the difficulty score rides on these.
+HARD_WORDS: tuple[str, ...] = (
+    "per ", "each ", "average", "rate", "ratio", "percentage", "proportion",
+    "most", "least", "top", "compare", "between", "trend", "median",
+)
+
+#: What each part contributes, and the count at which that part is already full.
+DIFFICULTY_WEIGHTS: dict[str, tuple[float, int]] = {
+    "tables": (0.25, 4),
+    "values": (0.25, 3),
+    "hard words": (0.50, 3),
+}
+
+
+def difficulty_parts(understanding: Understanding) -> dict[str, int]:
+    """The three counts `difficulty` is built from, so a score can be explained."""
+    question = understanding.question.lower()
+    return {
+        "tables": len(understanding.tables),
+        "values": len(understanding.values),
+        "hard words": sum(word in question for word in HARD_WORDS),
+    }
+
+
 def difficulty(understanding: Understanding) -> float:
     """A 0-to-1 score from what stage 1 already worked out. No model, no guessing."""
-    question = understanding.question.lower()
-    tables = len(understanding.tables)
-    values = len(understanding.values)
-    hard_words = sum(
-        word in question
-        for word in ("per ", "each ", "average", "rate", "ratio", "percentage", "proportion",
-                     "most", "least", "top", "compare", "between", "trend", "median")
+    parts = difficulty_parts(understanding)
+    score = sum(
+        weight * min(parts[name] / full, 1)
+        for name, (weight, full) in DIFFICULTY_WEIGHTS.items()
     )
-    score = 0.25 * min(tables / 4, 1) + 0.25 * min(values / 3, 1) + 0.5 * min(hard_words / 3, 1)
     return round(min(score, 1.0), 3)
 
 

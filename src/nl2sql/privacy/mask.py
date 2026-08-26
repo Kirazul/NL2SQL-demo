@@ -51,6 +51,9 @@ class Masked:
     mapping: dict[str, str] = field(default_factory=dict)   # ':v1' -> real value
     columns: dict[str, str] = field(default_factory=dict)   # ':v1' -> 'table.column'
     unresolved: list[str] = field(default_factory=list)
+    # ':v1' -> the word the analyst typed, where that word is a fragment of the
+    # stored value rather than the whole of it. See `_pattern_for`.
+    patterns: dict[str, str] = field(default_factory=dict)
 
     @property
     def symbol_count(self) -> int:
@@ -58,10 +61,16 @@ class Masked:
 
     def parameters(self) -> dict[str, str | int | float]:
         """Bound parameters for SQLite. A masked number is bound as a number."""
-        return {
-            symbol.lstrip(":"): (value if symbol in self.columns else _as_number(value))
-            for symbol, value in self.mapping.items()
-        }
+        out: dict[str, str | int | float] = {}
+        for symbol, value in self.mapping.items():
+            name = symbol.lstrip(":")
+            if symbol in self.patterns:
+                out[name] = f"%{self.patterns[symbol]}%"
+            elif symbol in self.columns:
+                out[name] = value
+            else:
+                out[name] = _as_number(value)
+        return out
 
     def declare(self, rename: dict[str, str] | None = None) -> str:
         """Describe the symbols to the model without revealing the values."""
@@ -72,10 +81,17 @@ class Masked:
             column = self.columns.get(symbol)
             if column and rename:
                 column = rename.get(column, column)
-            lines.append(
-                f"  {symbol} = a value of {column}" if column
-                else f"  {symbol} = a number given by the analyst"
-            )
+            if column and symbol in self.patterns:
+                # The analyst named part of what is stored - "aspirin" where the
+                # column holds "ASPIRIN EC 81 MG PO TBEC" and twenty other
+                # spellings. `= :v1` would find one of them, so say plainly that
+                # this symbol is a pattern.
+                lines.append(f"  {symbol} = a LIKE pattern for {column} - match it with "
+                             f"LIKE :{symbol.lstrip(':')}, never with =")
+            elif column:
+                lines.append(f"  {symbol} = a value of {column}")
+            else:
+                lines.append(f"  {symbol} = a number given by the analyst")
         return "\n".join(lines)
 
 
@@ -112,6 +128,49 @@ def _proposals(resolution: Resolution) -> tuple[str, ...]:
     return tuple(out[:4])
 
 
+def _spellings(column: str, mention: str) -> int:
+    """How many distinct values of this column contain the analyst's word (max 2).
+
+    Stops at two, because one is all the caller needs to distinguish "this word
+    names the whole value" from "this word appears in several of them".
+    """
+    from nl2sql.db import schema as sch
+    from nl2sql.db.sqlite import execute
+
+    table, _, name = column.partition(".")
+    tables = sch.read_schema()
+    if table not in tables or name not in {c.name for c in tables[table].columns}:
+        return 0
+    # Identifiers cannot be bound, so they are checked against the schema above
+    # and never taken from the question; the pattern itself is bound.
+    sql = (f"SELECT COUNT(*) FROM (SELECT DISTINCT {name} FROM {table} "
+           f"WHERE {name} LIKE :needle LIMIT 2)")
+    try:
+        _, rows = execute(sql, {"needle": f"%{mention}%"}, max_rows=1)
+    except Exception:  # noqa: BLE001 - a slow or missing table must not stop masking
+        return 0
+    return int(rows[0][0]) if rows else 0
+
+
+def _pattern_for(resolution: Resolution) -> str:
+    """The analyst's word, when the column stores it in more than one spelling.
+
+    `medication.drugname` holds twenty-one values containing ASPIRIN, and
+    `diagnosis.diagnosisstring` thirteen paths containing pneumonia. Stage 1
+    resolves the mention to exactly one of them, and `= :v1` then answers about
+    that one spelling: 79 patients where 433 received the drug. Where several
+    stored values contain the word, the honest query matches all of them, so the
+    symbol becomes a pattern rather than a literal.
+
+    Returns "" where the word names the whole value and nothing else - a gender,
+    an ethnicity, an organism - and `=` is exactly right.
+    """
+    mention = " ".join(str(resolution.mention).lower().split())
+    if not mention or not resolution.column:
+        return ""
+    return resolution.mention if _spellings(resolution.column, mention) > 1 else ""
+
+
 def mask(understanding: Understanding) -> Masked:
     """Turn an understanding into a masked question ready for the gate."""
     from nl2sql.core.steps import track
@@ -134,6 +193,7 @@ def mask(understanding: Understanding) -> Masked:
         question = understanding.question
         mapping: dict[str, str] = {}
         columns: dict[str, str] = {}
+        patterns: dict[str, str] = {}
 
         # Longest first, or replacing "aspirin" before "aspirin 81 mg" leaves ":v1 81 mg".
         for i, r in enumerate(sorted(understanding.values, key=lambda r: -len(r.mention)), 1):
@@ -142,6 +202,9 @@ def mask(understanding: Understanding) -> Masked:
             mapping[symbol] = r.value or ""
             if r.column:
                 columns[symbol] = r.column
+                fragment = _pattern_for(r)
+                if fragment:
+                    patterns[symbol] = fragment
 
         step.say(
             f"{len(mapping)} value(s) replaced by a symbol; the real values stay here"
@@ -152,4 +215,5 @@ def mask(understanding: Understanding) -> Masked:
             symbols=list(mapping),
             columns=columns,
         )
-        return Masked(question, mapping, columns, [r.mention for r in understanding.unresolved])
+        return Masked(question, mapping, columns,
+                      [r.mention for r in understanding.unresolved], patterns)

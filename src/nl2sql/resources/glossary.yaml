@@ -49,7 +49,7 @@
 patient:
   synonyms: [patients, patient, case, cases, admission, admissions, stay, stays, encounter]
   columns: [patient.uniquepid, patient.patienthealthsystemstayid, patient.patientunitstayid]
-  note: "Three nested ids: uniquepid is the person, patienthealthsystemstayid one hospital stay, patientunitstayid one ICU stay. COUNT DISTINCT of patients means uniquepid."
+  note: "Three nested ids: uniquepid is the person, patienthealthsystemstayid one hospital stay, patientunitstayid one ICU stay. COUNT DISTINCT of patients means uniquepid. uniquepid is text and patientunitstayid is an integer, so a patient identifier written as a plain number is a patientunitstayid."
 
 age:
   synonyms: [age, aged, older, younger, elderly]
@@ -138,7 +138,7 @@ drug:
   columns: [medication.drugname, admissiondrug.drugname, infusiondrug.drugname]
   # "home medication" avoided on purpose: `home` is a stored value of
   # `hospitaldischargelocation`, so the word would be stopped by the egress gate.
-  note: "medication holds prescriptions during the stay, admissiondrug the pre-admission treatment, infusiondrug continuous infusions."
+  note: "medication holds prescriptions during the stay, admissiondrug the pre-admission treatment, infusiondrug continuous infusions. medication.drugname is blank on many rows; exclude blanks when grouping or ranking by drug name, but not when counting the patients who received medication."
 
 dosage:
   # `mg` and `route` are excluded: they are values of dosage and routeadmin.
@@ -150,7 +150,10 @@ allergy:
   columns: [allergy.allergyname, allergy.allergytype]
 
 lab_test:
-  synonyms: [lab, labs, laboratory, lab test, lab tests, test, tests, blood test, result, results, lab result, lab results, measurement, measurements]
+  # "the average potassium level" named no concept, so the value search ran
+  # unscoped - and 'potassium' matches four columns at 1.00, the first being a
+  # drug name. These words are what make a question like that a lab question.
+  synonyms: [lab, labs, laboratory, lab test, lab tests, test, tests, blood test, result, results, lab result, lab results, measurement, measurements, level, levels, reading, readings]
   columns: [lab.labname, lab.labresult, lab.labmeasurenamesystem]
   note: "labresult is numeric and queryable; labresulttext is its text form and should be avoided in filters."
 

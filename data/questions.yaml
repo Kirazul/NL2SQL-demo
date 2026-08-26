@@ -8,10 +8,7 @@
 #             against what it returns rather than against a consensus
 
 - question: How many patients received aspirin?
-  sql: |
-    SELECT COUNT(DISTINCT p.uniquepid)
-    FROM medication m JOIN patient p ON m.patientunitstayid = p.patientunitstayid
-    WHERE UPPER(m.drugname) LIKE '%ASPIRIN%'
+  demo: true
   set: standard
   values:
     aspirin: medication.drugname|admissiondrug.drugname|allergy.allergyname
@@ -20,11 +17,11 @@
   tables:
   - medication
   - patient
-- question: How many patients were treated with vancomycin?
   sql: |
-    SELECT COUNT(DISTINCT p.uniquepid)
+    SELECT COUNT(DISTINCT p.uniquepid) AS patients
     FROM medication m JOIN patient p ON m.patientunitstayid = p.patientunitstayid
-    WHERE UPPER(m.drugname) LIKE '%VANCOMYCIN%'
+    WHERE UPPER(m.drugname) LIKE '%ASPIRIN%'
+- question: How many patients were treated with vancomycin?
   set: standard
   values:
     vancomycin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname
@@ -34,11 +31,6 @@
   - medication
   - patient
 - question: List patients who received insulin during their stay
-  sql: |
-    SELECT DISTINCT p.uniquepid
-    FROM medication m JOIN patient p ON m.patientunitstayid = p.patientunitstayid
-    WHERE UPPER(m.drugname) LIKE '%INSULIN%'
-    ORDER BY p.uniquepid
   set: standard
   values:
     insulin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname|intakeoutput.celllabel
@@ -48,11 +40,6 @@
   - medication
   - patient
 - question: Which patients were given heparin?
-  sql: |
-    SELECT DISTINCT p.uniquepid
-    FROM medication m JOIN patient p ON m.patientunitstayid = p.patientunitstayid
-    WHERE UPPER(m.drugname) LIKE '%HEPARIN%'
-    ORDER BY p.uniquepid
   set: standard
   values:
     heparin: medication.drugname|admissiondrug.drugname|infusiondrug.drugname|intakeoutput.celllabel
@@ -62,10 +49,6 @@
   - medication
   - patient
 - question: Count patients on warfarin
-  sql: |
-    SELECT COUNT(DISTINCT p.uniquepid)
-    FROM medication m JOIN patient p ON m.patientunitstayid = p.patientunitstayid
-    WHERE UPPER(m.drugname) LIKE '%WARFARIN%'
   set: standard
   values:
     warfarin: medication.drugname|admissiondrug.drugname
@@ -75,10 +58,6 @@
   - medication
   - patient
 - question: How many patients received furosemide?
-  sql: |
-    SELECT COUNT(DISTINCT p.uniquepid)
-    FROM medication m JOIN patient p ON m.patientunitstayid = p.patientunitstayid
-    WHERE UPPER(m.drugname) LIKE '%FUROSEMIDE%'
   set: standard
   values:
     furosemide: medication.drugname|admissiondrug.drugname|infusiondrug.drugname
@@ -88,11 +67,6 @@
   - medication
   - patient
 - question: Show patients treated with propofol
-  sql: |
-    SELECT DISTINCT p.uniquepid
-    FROM medication m JOIN patient p ON m.patientunitstayid = p.patientunitstayid
-    WHERE UPPER(m.drugname) LIKE '%PROPOFOL%'
-    ORDER BY p.uniquepid
   set: standard
   values:
     propofol: medication.drugname|infusiondrug.drugname|intakeoutput.celllabel
@@ -102,7 +76,6 @@
   - medication
   - patient
 - question: Which drugs were most often prescribed?
-  # No reference query: "most often" is ambiguous between number of
   # prescriptions and number of patients, and the question names no cut-off,
   # so any single answer here would be scoring against one arbitrary reading.
   set: standard
@@ -111,10 +84,6 @@
   tables:
   - medication
 - question: How many patients were diagnosed with sepsis?
-  sql: |
-    SELECT COUNT(DISTINCT p.uniquepid)
-    FROM diagnosis d JOIN patient p ON d.patientunitstayid = p.patientunitstayid
-    WHERE LOWER(d.diagnosisstring) LIKE '%sepsis%'
   set: standard
   values:
     sepsis: diagnosis.diagnosisstring|admissiondx.admitdxname|careplangoal.cplgoalvalue
@@ -125,10 +94,6 @@
   - diagnosis
   - patient
 - question: Count patients with acute renal failure
-  sql: |
-    SELECT COUNT(DISTINCT p.uniquepid)
-    FROM diagnosis d JOIN patient p ON d.patientunitstayid = p.patientunitstayid
-    WHERE LOWER(d.diagnosisstring) LIKE '%acute renal failure%'
   set: standard
   values:
     acute renal failure: diagnosis.diagnosisstring|treatment.treatmentstring|note.notevalue
@@ -138,10 +103,7 @@
   - diagnosis
   - patient
 - question: How many patients had pneumonia?
-  sql: |
-    SELECT COUNT(DISTINCT p.uniquepid)
-    FROM diagnosis d JOIN patient p ON d.patientunitstayid = p.patientunitstayid
-    WHERE LOWER(d.diagnosisstring) LIKE '%pneumonia%'
+  demo: true
   set: standard
   values:
     pneumonia: diagnosis.diagnosisstring|admissiondx.admitdxname|microlab.organism
@@ -150,12 +112,11 @@
   tables:
   - diagnosis
   - patient
-- question: List patients diagnosed with atrial fibrillation
   sql: |
-    SELECT DISTINCT p.uniquepid
+    SELECT COUNT(DISTINCT p.uniquepid) AS patients
     FROM diagnosis d JOIN patient p ON d.patientunitstayid = p.patientunitstayid
-    WHERE LOWER(d.diagnosisstring) LIKE '%atrial fibrillation%'
-    ORDER BY p.uniquepid
+    WHERE LOWER(d.diagnosisstring) LIKE '%pneumonia%'
+- question: List patients diagnosed with atrial fibrillation
   set: standard
   values:
     atrial fibrillation: diagnosis.diagnosisstring|pasthistory.pasthistoryvalue|admissiondx.admitdxname
@@ -166,10 +127,6 @@
   - diagnosis
   - patient
 - question: How many patients presented with cardiac arrest?
-  sql: |
-    SELECT COUNT(DISTINCT p.uniquepid)
-    FROM diagnosis d JOIN patient p ON d.patientunitstayid = p.patientunitstayid
-    WHERE LOWER(d.diagnosisstring) LIKE '%cardiac arrest%'
   set: standard
   values:
     cardiac arrest: diagnosis.diagnosisstring|admissiondx.admitdxname|treatment.treatmentstring
@@ -179,10 +136,6 @@
   - diagnosis
   - patient
 - question: Count patients with diabetes
-  sql: |
-    SELECT COUNT(DISTINCT p.uniquepid)
-    FROM diagnosis d JOIN patient p ON d.patientunitstayid = p.patientunitstayid
-    WHERE LOWER(d.diagnosisstring) LIKE '%diabetes%'
   set: standard
   values:
     diabetes: pasthistory.pasthistoryvalue|diagnosis.diagnosisstring|admissiondx.admitdxname
@@ -192,10 +145,6 @@
   - diagnosis
   - patient
 - question: How many patients suffered a stroke?
-  sql: |
-    SELECT COUNT(DISTINCT p.uniquepid)
-    FROM diagnosis d JOIN patient p ON d.patientunitstayid = p.patientunitstayid
-    WHERE LOWER(d.diagnosisstring) LIKE '%stroke%'
   set: standard
   values:
     stroke: diagnosis.diagnosisstring|admissiondx.admitdxname|pasthistory.pasthistoryvalue
@@ -205,8 +154,6 @@
   - diagnosis
   - patient
 - question: How many cultures grew Klebsiella pneumoniae?
-  sql: |
-    SELECT COUNT(*) FROM microlab WHERE organism = 'Klebsiella pneumoniae'
   set: standard
   values:
     Klebsiella pneumoniae: microlab.organism
@@ -215,11 +162,6 @@
   tables:
   - microlab
 - question: Which patients had Staphylococcus aureus?
-  sql: |
-    SELECT DISTINCT p.uniquepid
-    FROM microlab ml JOIN patient p ON ml.patientunitstayid = p.patientunitstayid
-    WHERE ml.organism = 'Staphylococcus aureus'
-    ORDER BY p.uniquepid
   set: standard
   values:
     Staphylococcus aureus: microlab.organism
@@ -229,8 +171,6 @@
   - microlab
   - patient
 - question: Count cultures positive for Escherichia coli
-  sql: |
-    SELECT COUNT(*) FROM microlab WHERE organism = 'Escherichia coli'
   set: standard
   values:
     Escherichia coli: microlab.organism
@@ -239,19 +179,15 @@
   tables:
   - microlab
 - question: What is the average potassium level?
-  sql: |
-    SELECT AVG(labresult) FROM lab WHERE labname = 'potassium' AND labresult IS NOT NULL
+  demo: true
   set: standard
   values:
     potassium: lab.labname|medication.drugname|intakeoutput.celllabel
   tables:
   - lab
-- question: Show the creatinine results for patients
   sql: |
-    SELECT p.uniquepid, l.labresult
-    FROM lab l JOIN patient p ON l.patientunitstayid = p.patientunitstayid
-    WHERE l.labname = 'creatinine' AND l.labresult IS NOT NULL
-    ORDER BY p.uniquepid, l.labresult
+    SELECT AVG(labresult) AS average_potassium FROM lab WHERE labname = 'potassium' AND labresult IS NOT NULL
+- question: Show the creatinine results for patients
   set: standard
   values:
     creatinine: lab.labname
@@ -262,19 +198,12 @@
   - lab
   - patient
 - question: What is the average glucose value?
-  sql: |
-    SELECT AVG(labresult) FROM lab WHERE labname = 'glucose' AND labresult IS NOT NULL
   set: standard
   values:
     glucose: lab.labname|intakeoutput.celllabel|medication.drugname
   tables:
   - lab
 - question: Average hemoglobin per hospital
-  sql: |
-    SELECT p.hospitalid, AVG(l.labresult) AS avg_hgb
-    FROM lab l JOIN patient p ON l.patientunitstayid = p.patientunitstayid
-    WHERE l.labname = 'Hgb' AND l.labresult IS NOT NULL
-    GROUP BY p.hospitalid ORDER BY p.hospitalid
   set: standard
   concepts:
   - hospital
@@ -282,8 +211,6 @@
   - lab
   - hospital
 - question: How many female patients are there?
-  sql: |
-    SELECT COUNT(DISTINCT uniquepid) FROM patient WHERE gender = 'Female'
   set: standard
   values:
     female: patient.gender
@@ -292,8 +219,6 @@
   tables:
   - patient
 - question: Count male patients admitted to the ICU
-  sql: |
-    SELECT COUNT(DISTINCT uniquepid) FROM patient WHERE gender = 'Male'
   set: standard
   values:
     male: patient.gender
@@ -304,8 +229,6 @@
   tables:
   - patient
 - question: How many Caucasian patients were admitted?
-  sql: |
-    SELECT COUNT(DISTINCT uniquepid) FROM patient WHERE ethnicity = 'Caucasian'
   set: standard
   values:
     Caucasian: patient.ethnicity
@@ -354,11 +277,14 @@
   tables:
   - patient
 - question: How many hospitals are there?
+  demo: true
   set: standard
   concepts:
   - hospitals
   tables:
   - hospital
+  sql: |
+    SELECT COUNT(DISTINCT hospitalid) AS hospitals FROM hospital
 - question: Count patients per hospital region
   set: standard
   concepts:
@@ -442,6 +368,7 @@
   - pasthistory
   - patient
 - question: How many patients received aspirin for sepsis?
+  demo: true
   set: standard
   values:
     aspirin: medication.drugname|admissiondrug.drugname|allergy.allergyname
@@ -452,6 +379,12 @@
   - medication
   - diagnosis
   - patient
+  sql: |
+    SELECT COUNT(DISTINCT p.uniquepid) AS patients
+    FROM patient p
+    JOIN medication m ON m.patientunitstayid = p.patientunitstayid
+    JOIN diagnosis d ON d.patientunitstayid = p.patientunitstayid
+    WHERE UPPER(m.drugname) LIKE '%ASPIRIN%' AND LOWER(d.diagnosisstring) LIKE '%sepsis%'
 - question: What is the mortality rate for patients treated with vancomycin?
   set: standard
   values:
@@ -496,6 +429,7 @@
   - medication
   - patient
 - question: What medications did patient 141764 receive?
+  demo: true
   set: standard
   concepts:
   - medications
@@ -503,6 +437,11 @@
   tables:
   - medication
   - patient
+  sql: |
+    SELECT DISTINCT drugname
+    FROM medication
+    WHERE patientunitstayid = 141764 AND drugname IS NOT NULL AND TRIM(drugname) <> ''
+    ORDER BY drugname
 - question: List all lab results for stay 143870
   set: standard
   concepts:
@@ -589,6 +528,7 @@
   - patient
   - diagnosis
 - question: Which Caucasian patients with atrial fibrillation received warfarin?
+  demo: true
   set: standard
   values:
     Caucasian: patient.ethnicity
@@ -600,6 +540,15 @@
   - patient
   - diagnosis
   - medication
+  sql: |
+    SELECT DISTINCT p.uniquepid
+    FROM patient p
+    JOIN diagnosis d ON d.patientunitstayid = p.patientunitstayid
+    JOIN medication m ON m.patientunitstayid = p.patientunitstayid
+    WHERE p.ethnicity = 'Caucasian'
+      AND LOWER(d.diagnosisstring) LIKE '%atrial fibrillation%'
+      AND UPPER(m.drugname) LIKE '%WARFARIN%'
+    ORDER BY p.uniquepid
 - question: How many patients were discharged to a Skilled Nursing Facility?
   set: standard
   values:
@@ -754,6 +703,7 @@
   - medication
   - patient
 - question: Which patient had the highest APACHE score?
+  demo: true
   set: standard
   concepts:
   - patient
@@ -761,6 +711,11 @@
   tables:
   - apachepatientresult
   - patient
+  sql: |
+    SELECT DISTINCT p.uniquepid, a.apachescore
+    FROM apachepatientresult a JOIN patient p ON a.patientunitstayid = p.patientunitstayid
+    WHERE a.apachescore = (SELECT MAX(apachescore) FROM apachepatientresult)
+    ORDER BY p.uniquepid
 - question: Show the diagnoses of the patient with the longest ICU stay
   set: standard
   concepts:
@@ -780,6 +735,7 @@
   - hospital
   - patient
 - question: What is the most frequently prescribed drug in the Cardiac ICU?
+  demo: true
   set: standard
   values:
     Cardiac ICU: patient.unittype
@@ -789,6 +745,13 @@
   tables:
   - medication
   - patient
+  sql: |
+    SELECT m.drugname, COUNT(*) AS prescriptions
+    FROM medication m JOIN patient p ON m.patientunitstayid = p.patientunitstayid
+    WHERE p.unittype = 'Cardiac ICU' AND m.drugname IS NOT NULL AND TRIM(m.drugname) <> ''
+    GROUP BY m.drugname
+    ORDER BY prescriptions DESC, m.drugname
+    LIMIT 1
 - question: List patients with a history of hypertension who received furosemide
   set: standard
   values:
@@ -981,6 +944,7 @@
   - medication
   - patient
 - question: For each hospital, how many unique patients received medication?
+  demo: true
   set: analytics
   concepts:
   - hospital
@@ -989,6 +953,11 @@
   tables:
   - patient
   - medication
+  sql: |
+    SELECT p.hospitalid, COUNT(DISTINCT p.uniquepid) AS patients
+    FROM medication m JOIN patient p ON m.patientunitstayid = p.patientunitstayid
+    GROUP BY p.hospitalid
+    ORDER BY p.hospitalid
 - question: Which hospitals have patients with the highest number of medication records?
   set: analytics
   concepts:

@@ -45,8 +45,28 @@ def fingerprint_result(sql: str, parameters: dict[str, Any] | None = None) -> st
         # Past the cap the comparison is between two truncations, not two answers.
         # Say so, so the question goes unscored instead of being scored wrongly.
         return f"truncated:{len(rows)}"
-    body = sorted("\x1f".join("" if v is None else str(v) for v in row) for row in rows)
+    body = sorted("\x1f".join(_cell(v) for v in row) for row in rows)
     return hashlib.sha256(("\x1e".join(body)).encode("utf-8")).hexdigest()[:16]
+
+
+#: Significant figures a float is compared at. Two queries that compute the same
+#: average by different routes - one dividing a SUM by a COUNT, the other calling
+#: AVG - agree to well beyond this and differ in the last bits, which `str()`
+#: printed in full and the hash then treated as two different answers.
+FLOAT_FIGURES = 9
+
+
+def _cell(value: Any) -> str:
+    """One value, rendered so that equal answers render identically."""
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return str(value)
+    if isinstance(value, float):
+        if value != value or value in (float("inf"), float("-inf")):
+            return str(value)
+        return f"{value:.{FLOAT_FIGURES}g}"
+    return str(value)
 
 
 def cost(state: State) -> float:
