@@ -228,8 +228,39 @@ def copy_from_setup() -> str:
     return f"the copy in {{marker.parent}}"
 
 
+def refresh_clone() -> str:
+    """Pull new commits into a clone this session already has.
+
+    Kaggle keeps /kaggle/working between runs of the same session, so the guard
+    below used to leave whatever the first run cloned in place for hours. A cell
+    then calls something added to the repository since, and the notebook reports
+    ImportError for a name that is plainly there on main.
+    """
+    if not (ROOT / ".git").is_dir():
+        return "the working directory (a copy, not a clone - left as it is)"
+    from kaggle_secrets import UserSecretsClient
+    try:
+        token = UserSecretsClient().get_secret("GITHUB_TOKEN")
+    except Exception as e:  # noqa: BLE001
+        print("not refreshed, GITHUB_TOKEN unreadable:", e)
+        return "the working directory (not refreshed)"
+    url = "{REPO}".replace("https://", f"https://{{token}}@")
+    subprocess.run(["git", "-C", str(ROOT), "fetch", "--depth", "1", url, "main"], check=True)
+    subprocess.run(["git", "-C", str(ROOT), "reset", "--hard", "FETCH_HEAD"], check=True)
+    # `reset --hard` leaves untracked files alone, so the database, the index and
+    # the weights that notebook 1 wrote here all survive.
+    #
+    # git records the URL it fetched from in .git/FETCH_HEAD, token and all, and
+    # Kaggle saves .git with the notebook output. Remove it now, the same reason
+    # the clone below puts the plain address back.
+    (ROOT / ".git" / "FETCH_HEAD").unlink(missing_ok=True)
+    head = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"],
+                          capture_output=True, text=True).stdout.strip()
+    return f"the working directory, refreshed to {{head}}"
+
+
 if ROOT.exists():
-    source = "the working directory"
+    source = refresh_clone()
 else:
     try:
         source = clone_from_github()
