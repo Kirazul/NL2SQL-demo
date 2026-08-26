@@ -608,12 +608,30 @@ def architectures(nb: Notebook) -> None:
 </table>
 ''')
 
-    nb.step(2, "Drawn from the code", "Each diagram is generated from the graph that runs, so it "
+    nb.step(2, "Drawn from the code", "Each diagram is drawn from the graph that runs, so it "
                                       "cannot describe something else.")
     nb.code('''
-from nl2sql.core import graph
+from IPython.display import Image, display
 
-print(graph.mermaid("hybrid"))
+from nl2sql.core import graph
+from nl2sql.core.state import ARMS
+
+# Four designs, two graphs. Masking is the node the hybrids add; what separates
+# hybrid from hybrid_opaque happens inside a node and not in the shape, and the
+# same is true of full_cloud against full_local. Group them so the page shows
+# that rather than four pictures, two of which would be duplicates.
+shapes: dict[str, list[str]] = {}
+for arm in ARMS:
+    shapes.setdefault(graph.mermaid(arm), []).append(arm)
+
+for source, arms in shapes.items():
+    print(" and ".join(arms))
+    png = graph.diagram(arms[0])
+    if png:
+        display(Image(png))
+    else:
+        # mermaid.ink draws these; without it, show what it would have drawn.
+        print(source)
 ''')
 
     nb.step(3, "One question, four times")

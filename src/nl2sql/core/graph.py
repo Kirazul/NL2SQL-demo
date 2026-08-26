@@ -89,3 +89,18 @@ def run(question: str, arm: Arm = "hybrid", write: bool = True, variant: str = "
 def mermaid(arm: Arm = "hybrid") -> str:
     """The graph as a diagram, generated from the object that runs."""
     return compiled(arm).get_graph().draw_mermaid()
+
+
+def diagram(arm: Arm = "hybrid") -> bytes | None:
+    """The same diagram drawn, as PNG bytes.
+
+    `mermaid` returns source, and a notebook prints source as thirty lines of
+    text — which is not a diagram. Rendering needs mermaid.ink, so this returns
+    None rather than raising when there is no network: the caller can fall back
+    to the source it would have drawn.
+    """
+    try:
+        png: bytes = compiled(arm).get_graph().draw_mermaid_png()
+    except Exception:
+        return None
+    return png
