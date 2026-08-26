@@ -750,8 +750,9 @@ for candidate in state.get("candidates", []):
 ''')
 
     nb.step(5, "The benchmark",
-            "Every variant over the same questions. Accuracy is measured against a reference "
-            "query where one exists, and against what the variants agree on where none does.")
+            "Every variant over the same questions. Where a question carries a reference "
+            "query the answer is scored against it; where none does - which is every question "
+            "in the set as it stands - variants are scored on agreeing with each other.")
     nb.code('''
 from nl2sql.optimize.benchmark import compare
 
@@ -770,8 +771,22 @@ else:
 
     nb.step(6, "The ranking")
     nb.code('''
-for position, (name, accuracy) in enumerate(report["ranking"], 1):
-    print(f"  {position}. {name:<11} {accuracy:.0%}")
+# What the column means depends on what there was to score against, so say which
+# it is here rather than let a number headed "accuracy" be quoted as correctness.
+basis = report["scoring"]
+scored = report["with_reference_query"] + report["scored_by_consensus"]
+print(f"ranked by {'agreement with the other variants' if basis == 'consensus' else basis},"
+      f" over {scored} scored question(s)")
+
+for position, (name, score) in enumerate(report["ranking"], 1):
+    print(f"  {position}. {name:<11} {score:.0%}")
+
+if basis == "consensus":
+    print()
+    print("  This rewards a variant for matching the others. lean scoring low means it")
+    print("  disagreed with them, which is not the same as being wrong - no question here")
+    print("  has a reference query to be wrong against. Fill in `sql:` for a question in")
+    print("  data/questions.yaml and that one gets scored on its answer instead.")
 
 print("\\nwhere each one failed:")
 for variant, failures in report["failures"].items():

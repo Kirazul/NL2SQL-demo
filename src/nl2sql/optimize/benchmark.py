@@ -128,8 +128,20 @@ def score_against_reference(results: list[Result], reference: dict[str, str]) ->
             result.correct = result.success and result.result_hash == expected
 
 
+#: How many variants must return the same rows before that counts as the answer.
+#: Two out of five is a plurality, not a majority: raising it shrinks the scored
+#: set instead of improving it, which is why the honest cure is a reference query
+#: rather than a bigger number here.
+CONSENSUS_VOTES = 2
+
+
 def consensus_reference(results: list[Result]) -> dict[str, str]:
-    """For questions with no hand-written query: what most variants agreed on."""
+    """For questions with no hand-written query: what most variants agreed on.
+
+    This makes the majority the definition of right, so a variant is scored on
+    agreeing with the others rather than on being correct. Anything scored this
+    way is `agreement`, not accuracy - see `compare`.
+    """
     by_question: dict[str, list[str]] = {}
     for result in results:
         if result.success and result.result_hash not in ("", "empty"):
@@ -137,9 +149,18 @@ def consensus_reference(results: list[Result]) -> dict[str, str]:
 
     reference: dict[str, str] = {}
     for question, hashes in by_question.items():
-        counts = {h: hashes.count(h) for h in set(hashes)}
-        best, votes = max(counts.items(), key=lambda kv: kv[1])
-        if votes >= 2:
+        # Sorted by votes then by hash. `max` over a set picked the first of an
+        # equal pair in whatever order PYTHONHASHSEED produced, so a tie decided
+        # the answer at random and the ranking moved between runs on identical
+        # results - baseline scored anywhere from 78% to 91%.
+        counts = sorted(
+            ((h, hashes.count(h)) for h in set(hashes)),
+            key=lambda kv: (-kv[1], kv[0]),
+        )
+        best, votes = counts[0]
+        # A tie is not a consensus. Two variants saying A and two saying B is no
+        # evidence about which is right, so score neither rather than crown one.
+        if votes >= CONSENSUS_VOTES and not (len(counts) > 1 and counts[1][1] == votes):
             reference[question] = best
     return reference
 
@@ -253,11 +274,34 @@ def compare(
     score_against_reference(results, reference)
 
     summaries = [summarise(name, results) for name in names]
+    gold = sum(1 for q in items if q.get("sql"))
+    by_consensus = len(reference) - gold
+    # Naming this is the difference between a defensible figure and a misleading
+    # one: with no reference query the column measures agreement with the other
+    # variants, and a variant that is right on its own scores zero for it.
+    scoring = "reference" if by_consensus == 0 else ("consensus" if gold == 0 else "mixed")
+    if scoring != "reference":
+        print()
+        print(f"  scored by {scoring}: {gold} question(s) have a reference query, "
+              f"{by_consensus} are scored on what {CONSENSUS_VOTES}+ variants agreed on.")
+        if scoring == "consensus":
+            print("  No question has a reference query, so the figure below is agreement")
+            print("  between variants, not accuracy. Add `sql:` to data/questions.yaml.")
+
+    rows = [s.as_row() for s in summaries]
+    if scoring != "reference":
+        # Not accuracy: the reference is the other variants. Heading the column
+        # "accuracy" is how a figure meaning "agreed with the pack" ends up
+        # quoted as though it meant "got the right answer".
+        rows = [{("agreement" if k == "accuracy" else k): v for k, v in r.items()} for r in rows]
+
     report = {
         "questions": len(items),
-        "with_reference_query": sum(1 for q in items if q.get("sql")),
-        "scored_by_consensus": len(reference) - sum(1 for q in items if q.get("sql")),
-        "table": [s.as_row() for s in summaries],
+        "with_reference_query": gold,
+        "scored_by_consensus": by_consensus,
+        "scoring": scoring,
+        "consensus_votes": CONSENSUS_VOTES,
+        "table": rows,
         "ranking": rank(summaries),
         "failures": {s.variant: s.failures for s in summaries},
         "results": [r.as_dict() for r in results],
