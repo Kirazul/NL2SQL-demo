@@ -17,7 +17,7 @@ are unreadable. Here they have one source file and are rebuilt from it.
 Notebook 1 is the only one that builds anything. The others install the package,
 then read notebook 1's saved output through `/kaggle/input` — the database, the
 index and the weights are opened where they are mounted rather than copied — and
-stop with instructions if that output is not attached.
+stop with instructions if that output is missing.
 """
 
 from __future__ import annotations
@@ -194,11 +194,16 @@ print("dependencies ready")
 
 LOCAL_RUNTIME = '''
 # Only the pages that run a model on this machine need llama-cpp-python, and
-# building it costs several minutes. Notebook 1 kept the wheel it built, so
-# installing from that is a copy.
-WHEELS = Path("/kaggle/input/nl2sql-1-setup/wheels")
-if WHEELS.exists():
-    !pip install -q --find-links {WHEELS} llama-cpp-python 2>&1 | tail -2
+# building it costs several minutes. Notebook 1 keeps the wheel it built with its
+# output, so installing from that is a copy. Runs after the cell above, so a mount
+# that turned out to be unusable stops the notebook before the compile, not after.
+wheelhouse = next(
+    (w.parent for m in MOUNTS for pattern in ("wheels/*.whl", "*/wheels/*.whl")
+     for w in m.glob(pattern)),
+    None,
+)
+if wheelhouse:
+    !pip install -q --find-links {wheelhouse} llama-cpp-python 2>&1 | tail -2
 else:
     print("no wheel in notebook 1's output - building from source, a few minutes")
     !pip install -q llama-cpp-python 2>&1 | tail -2
@@ -217,16 +222,33 @@ REUSE_SETUP = '''
 # every one of the three is opened read-only here too - so point the settings at
 # the mount rather than copying two gigabytes into the working directory.
 #
-# The clone above already contains a `data/` directory, which is why copying into
-# it used to be skipped and the database appeared to be missing.
-found = sorted(Path("/kaggle/input").glob("*/nl2sql/data/eicu.db"))
+# How deep inside the mount they sit depends on what notebook 1's working
+# directory held when it was saved. Matching one guessed shape reported a good
+# output as a missing database, so search the plausible depths instead, and when
+# nothing turns up print what is actually mounted rather than assert a cause.
+MOUNTS = sorted(p for p in Path("/kaggle/input").glob("*") if p.is_dir())
+found = [
+    hit
+    for m in MOUNTS
+    for pattern in ("data/eicu.db", "*/data/eicu.db", "*/*/data/eicu.db")
+    for hit in sorted(m.glob(pattern))
+]
 if not found:
+    print("mounted under /kaggle/input:" if MOUNTS else "nothing is mounted under /kaggle/input")
+    for m in MOUNTS:
+        print(" ", m.name + "/", " ".join(sorted(c.name for c in m.iterdir())[:8]))
     raise SystemExit(
-        "Notebook 1's output is not attached to this notebook. Open the sidebar, "
-        "Input -> Add Input -> Your Work -> NL2SQL 1 Setup, then run this cell "
-        "again. If notebook 1 has never been saved, run and save it first."
+        "No eicu.db under any of them. Notebook 1's saved output is what carries it: "
+        "open the sidebar, Input -> Add Input -> Your Work -> NL2SQL 1 Setup, and check "
+        "the version it pins is one that ran to the end."
     )
 SETUP = found[0].parents[1]
+
+# Name a missing piece here rather than several cells later, from inside whichever
+# library opens it first.
+for path in (SETUP / "data/index.db", SETUP / "models/gliner2-base-v1"):
+    if not path.exists():
+        print("missing from notebook 1's output:", path)
 
 # Set before nl2sql is imported anywhere: settings() is read once and cached. A
 # subprocess started later - the API server in notebook 5 - inherits these too.
@@ -275,6 +297,14 @@ def setup(nb: Notebook) -> None:
 !pip wheel -q --no-deps llama-cpp-python -w /kaggle/working/wheels 2>&1 | tail -2
 !pip install -q --find-links /kaggle/working/wheels llama-cpp-python 2>&1 | tail -2
 
+# `pip wheel -q` says nothing when the build fails, and the install above then
+# compiles from source instead - so the wheel is absent from this notebook's
+# output, notebooks 3 and 5 pay the six minutes again every session, and nothing
+# on this page says why. Look for the file.
+built = sorted(Path("/kaggle/working/wheels").glob("llama_cpp_python-*.whl"))
+print("wheel:", built[0].name if built else
+      "not built - notebooks 3 and 5 will compile from source instead")
+
 try:
     import llama_cpp
     print("llama-cpp-python", llama_cpp.__version__)
@@ -310,8 +340,10 @@ print("models ready")
 
     nb.md(
         f'<div style="font:400 14px/1.6 {FONT};color:#52525b;border-top:1px solid #e4e4e7;'
-        'padding-top:12px;margin-top:26px;">Save this notebook\'s output, then add it as an '
-        'input to notebooks 2 to 5.</div>'
+        'padding-top:12px;margin-top:26px;">Save Version &rarr; Save &amp; Run All, let '
+        'it finish, then add this notebook as an input to notebooks 2 to 5. They read '
+        'the database, the index and the weights out of that run&rsquo;s output, so a '
+        'version that stopped early leaves them nothing to read.</div>'
     )
 
 
@@ -468,8 +500,8 @@ def architectures(nb: Notebook) -> None:
     )
     nb.code(BOOTSTRAP)
     nb.code(INSTALL)
-    nb.code(LOCAL_RUNTIME)
     nb.code(REUSE_SETUP)
+    nb.code(LOCAL_RUNTIME)
     nb.code(SECRETS)
 
     nb.step(1, "The four designs")
@@ -670,8 +702,8 @@ def run_and_serve(nb: Notebook) -> None:
     )
     nb.code(BOOTSTRAP)
     nb.code(INSTALL)
-    nb.code(LOCAL_RUNTIME)
     nb.code(REUSE_SETUP)
+    nb.code(LOCAL_RUNTIME)
     nb.code(SECRETS)
 
     nb.step(1, "One question, end to end")
@@ -781,6 +813,10 @@ def push(notebook: Notebook) -> None:
         capture_output=True, text=True,
     )
     print((result.stdout or result.stderr).strip())
+    # kaggle exits non-zero on a rejected push and the message scrolls away behind
+    # the four that follow it; a failed upload must not read as a successful one.
+    if result.returncode != 0:
+        raise SystemExit(f"push of {notebook.kaggle_id} failed")
 
 
 def main() -> int:
