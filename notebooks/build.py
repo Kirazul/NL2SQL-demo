@@ -61,6 +61,7 @@ class Notebook:
     def md(self, text: str) -> None:
         self.cells.append({
             "cell_type": "markdown",
+            "id": f"md{len(self.cells)}",
             "metadata": {},
             "source": text.strip("\n").splitlines(keepends=True),
         })
@@ -82,8 +83,11 @@ class Notebook:
         except SyntaxError as e:
             raise SystemExit(f"{self.slug}: cell {len(self.cells)} does not compile - {e}") from e
 
+        # nbformat 4.5 wants an id on every cell and warns on each run without one,
+        # at the top of the log, where it reads like a fault in the notebook.
         self.cells.append({
             "cell_type": "code",
+            "id": f"code{len(self.cells)}",
             "execution_count": None,
             "metadata": {},
             "outputs": [],
@@ -204,11 +208,17 @@ else:
     except Exception as e:
         source = copy_from_setup()
         if not source:
+            # Attached-but-empty and nothing-attached read identically from here,
+            # and telling them apart is the whole difficulty, so name what is
+            # mounted instead of guessing which one it is.
+            mounted = sorted(p.name for p in Path("/kaggle/input").glob("*") if p.is_dir())
+            where = ("the attached input(s) " + ", ".join(mounted) + " carry no "
+                     "nl2sql/pyproject.toml") if mounted else "no input is attached"
             raise SystemExit(
-                f"Nothing to run from. GITHUB_TOKEN could not be read "
-                f"({{type(e).__name__}}: {{e}}) and notebook 1's output is not attached "
-                "either. Check Add-ons -> Secrets, or add Input -> Your Work -> "
-                "NL2SQL 1 Setup."
+                f"Nothing to run from: GITHUB_TOKEN could not be read "
+                f"({{type(e).__name__}}: {{e}}), and {{where}}. Save this notebook from the "
+                "browser, where the secret is readable - or attach a version of NL2SQL 1 "
+                "Setup that ran to the end."
             ) from e
         print("GITHUB_TOKEN unreadable, falling back to notebook 1's output:", e)
 
@@ -300,11 +310,22 @@ SECRETS = '''
 from kaggle_secrets import UserSecretsClient
 
 secrets = UserSecretsClient()
+unreadable = []
 for name in ("GROQ_API_KEY", "OPENROUTER_API_KEY", "LANGSMITH_API_KEY"):
     try:
         os.environ[name] = secrets.get_secret(name)
     except Exception:
-        print(f"{name} not set - the steps that need it will say so")
+        unreadable.append(name)
+
+# All three failing at once is one cause, not three: a version created through the
+# API cannot read a notebook secret however the editor shows it, and there is no
+# field for the attachment in kernel-metadata.json (Kaggle/kaggle-cli#582). Say so
+# once here rather than let every provider step fail separately further down.
+if unreadable:
+    print("could not read:", ", ".join(unreadable))
+    if len(unreadable) == 3:
+        print("A version created through the API cannot read notebook secrets. Save this")
+        print("notebook from the browser to run the steps that call a provider.")
 
 os.environ["LANGSMITH_TRACING"] = "1"
 os.environ["LANGSMITH_PROJECT"] = "nl2sql"
