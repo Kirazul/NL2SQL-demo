@@ -1,0 +1,966 @@
+{
+ "stats": {
+  "vocabulary_limit": 5000,
+  "columns_examined": 136,
+  "tier_A": 128,
+  "tier_B": 2,
+  "not_indexable": 6,
+  "values_indexed": 30854,
+  "tier_b_words": 2408,
+  "size_mb": 2.43
+ },
+ "columns": [
+  {
+   "table": "admissiondrug",
+   "column": "drugnotetype",
+   "tier": "A",
+   "distinct": 6,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "admissiondrug",
+   "column": "specialtytype",
+   "tier": "A",
+   "distinct": 3,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "admissiondrug",
+   "column": "usertype",
+   "tier": "A",
+   "distinct": 11,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "admissiondrug",
+   "column": "rxincluded",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "admissiondrug",
+   "column": "writtenineicu",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "admissiondrug",
+   "column": "drugname",
+   "tier": "A",
+   "distinct": 820,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "admissiondrug",
+   "column": "drugunit",
+   "tier": "A",
+   "distinct": 11,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "admissiondrug",
+   "column": "drugadmitfrequency",
+   "tier": "A",
+   "distinct": 7,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "admissiondx",
+   "column": "admitdxpath",
+   "tier": "A",
+   "distinct": 294,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "admissiondx",
+   "column": "admitdxname",
+   "tier": "A",
+   "distinct": 268,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "admissiondx",
+   "column": "admitdxtext",
+   "tier": "A",
+   "distinct": 280,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "allergy",
+   "column": "allergynotetype",
+   "tier": "A",
+   "distinct": 6,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "allergy",
+   "column": "specialtytype",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "allergy",
+   "column": "usertype",
+   "tier": "A",
+   "distinct": 10,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "allergy",
+   "column": "rxincluded",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "allergy",
+   "column": "writtenineicu",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "allergy",
+   "column": "drugname",
+   "tier": "A",
+   "distinct": 297,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "allergy",
+   "column": "allergytype",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "allergy",
+   "column": "allergyname",
+   "tier": "A",
+   "distinct": 666,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "apachepatientresult",
+   "column": "physicianspeciality",
+   "tier": "A",
+   "distinct": 34,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "apachepatientresult",
+   "column": "physicianinterventioncategory",
+   "tier": "A",
+   "distinct": 5,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "apachepatientresult",
+   "column": "apacheversion",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "apachepatientresult",
+   "column": "predictedicumortality",
+   "tier": null,
+   "distinct": 3507,
+   "reason": "near-unique (95%)"
+  },
+  {
+   "table": "apachepatientresult",
+   "column": "actualicumortality",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "apachepatientresult",
+   "column": "predictedhospitalmortality",
+   "tier": null,
+   "distinct": 3367,
+   "reason": "near-unique (92%)"
+  },
+  {
+   "table": "apachepatientresult",
+   "column": "actualhospitalmortality",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "apachepredvar",
+   "column": "admitdiagnosis",
+   "tier": "A",
+   "distinct": 240,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplancareprovider",
+   "column": "providertype",
+   "tier": null,
+   "distinct": 1,
+   "reason": "constant or empty"
+  },
+  {
+   "table": "careplancareprovider",
+   "column": "specialty",
+   "tier": "A",
+   "distinct": 40,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplancareprovider",
+   "column": "interventioncategory",
+   "tier": "A",
+   "distinct": 6,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplancareprovider",
+   "column": "managingphysician",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplancareprovider",
+   "column": "activeupondischarge",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplaneol",
+   "column": "activeupondischarge",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplangeneral",
+   "column": "activeupondischarge",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplangeneral",
+   "column": "cplgroup",
+   "tier": "A",
+   "distinct": 28,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplangeneral",
+   "column": "cplitemvalue",
+   "tier": "A",
+   "distinct": 251,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplangoal",
+   "column": "cplgoalcategory",
+   "tier": "A",
+   "distinct": 9,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplangoal",
+   "column": "cplgoalvalue",
+   "tier": "A",
+   "distinct": 76,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplangoal",
+   "column": "cplgoalstatus",
+   "tier": "A",
+   "distinct": 4,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplangoal",
+   "column": "activeupondischarge",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplaninfectiousdisease",
+   "column": "activeupondischarge",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplaninfectiousdisease",
+   "column": "infectdiseasesite",
+   "tier": "A",
+   "distinct": 11,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplaninfectiousdisease",
+   "column": "infectdiseaseassessment",
+   "tier": "A",
+   "distinct": 3,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplaninfectiousdisease",
+   "column": "responsetotherapy",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "careplaninfectiousdisease",
+   "column": "treatment",
+   "tier": "A",
+   "distinct": 4,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "customlab",
+   "column": "labothername",
+   "tier": "A",
+   "distinct": 19,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "customlab",
+   "column": "labotherresult",
+   "tier": "A",
+   "distinct": 17,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "customlab",
+   "column": "labothervaluetext",
+   "tier": "A",
+   "distinct": 24,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "diagnosis",
+   "column": "activeupondischarge",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "diagnosis",
+   "column": "diagnosisstring",
+   "tier": "A",
+   "distinct": 1091,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "diagnosis",
+   "column": "icd9code",
+   "tier": "A",
+   "distinct": 501,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "diagnosis",
+   "column": "diagnosispriority",
+   "tier": "A",
+   "distinct": 3,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "hospital",
+   "column": "numbedscategory",
+   "tier": "A",
+   "distinct": 5,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "hospital",
+   "column": "region",
+   "tier": "A",
+   "distinct": 5,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "infusiondrug",
+   "column": "drugname",
+   "tier": "A",
+   "distinct": 257,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "infusiondrug",
+   "column": "drugrate",
+   "tier": "A",
+   "distinct": 2274,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "infusiondrug",
+   "column": "infusionrate",
+   "tier": "A",
+   "distinct": 415,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "infusiondrug",
+   "column": "drugamount",
+   "tier": "A",
+   "distinct": 54,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "infusiondrug",
+   "column": "volumeoffluid",
+   "tier": "A",
+   "distinct": 23,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "infusiondrug",
+   "column": "patientweight",
+   "tier": "A",
+   "distinct": 93,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "intakeoutput",
+   "column": "cellpath",
+   "tier": "A",
+   "distinct": 775,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "intakeoutput",
+   "column": "celllabel",
+   "tier": "A",
+   "distinct": 740,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "intakeoutput",
+   "column": "cellvaluetext",
+   "tier": "B",
+   "distinct": 5769,
+   "reason": "5769 distinct: resolved on demand"
+  },
+  {
+   "table": "lab",
+   "column": "labname",
+   "tier": "A",
+   "distinct": 147,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "lab",
+   "column": "labresulttext",
+   "tier": "B",
+   "distinct": 7669,
+   "reason": "7669 distinct: resolved on demand"
+  },
+  {
+   "table": "lab",
+   "column": "labmeasurenamesystem",
+   "tier": "A",
+   "distinct": 32,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "lab",
+   "column": "labmeasurenameinterface",
+   "tier": "A",
+   "distinct": 342,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "medication",
+   "column": "drugivadmixture",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "medication",
+   "column": "drugordercancelled",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "medication",
+   "column": "drugname",
+   "tier": "A",
+   "distinct": 1402,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "medication",
+   "column": "dosage",
+   "tier": "A",
+   "distinct": 633,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "medication",
+   "column": "routeadmin",
+   "tier": "A",
+   "distinct": 377,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "medication",
+   "column": "frequency",
+   "tier": "A",
+   "distinct": 528,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "medication",
+   "column": "loadingdose",
+   "tier": "A",
+   "distinct": 3,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "medication",
+   "column": "prn",
+   "tier": "A",
+   "distinct": 3,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "microlab",
+   "column": "culturesite",
+   "tier": "A",
+   "distinct": 13,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "microlab",
+   "column": "organism",
+   "tier": "A",
+   "distinct": 16,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "microlab",
+   "column": "antibiotic",
+   "tier": "A",
+   "distinct": 30,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "microlab",
+   "column": "sensitivitylevel",
+   "tier": "A",
+   "distinct": 4,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "note",
+   "column": "notetype",
+   "tier": "A",
+   "distinct": 16,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "note",
+   "column": "notepath",
+   "tier": "A",
+   "distinct": 360,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "note",
+   "column": "notevalue",
+   "tier": "A",
+   "distinct": 280,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "note",
+   "column": "notetext",
+   "tier": "A",
+   "distinct": 283,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "nurseassessment",
+   "column": "cellattributepath",
+   "tier": "A",
+   "distinct": 81,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "nurseassessment",
+   "column": "celllabel",
+   "tier": "A",
+   "distinct": 20,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "nurseassessment",
+   "column": "cellattribute",
+   "tier": "A",
+   "distinct": 73,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "nurseassessment",
+   "column": "cellattributevalue",
+   "tier": "A",
+   "distinct": 247,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "nursecare",
+   "column": "celllabel",
+   "tier": "A",
+   "distinct": 10,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "nursecare",
+   "column": "cellattributepath",
+   "tier": "A",
+   "distinct": 19,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "nursecare",
+   "column": "cellattribute",
+   "tier": "A",
+   "distinct": 19,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "nursecare",
+   "column": "cellattributevalue",
+   "tier": "A",
+   "distinct": 133,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "nursecharting",
+   "column": "nursingchartcelltypecat",
+   "tier": "A",
+   "distinct": 7,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "nursecharting",
+   "column": "nursingchartcelltypevallabel",
+   "tier": "A",
+   "distinct": 60,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "nursecharting",
+   "column": "nursingchartcelltypevalname",
+   "tier": "A",
+   "distinct": 49,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "nursecharting",
+   "column": "nursingchartvalue",
+   "tier": "A",
+   "distinct": 2765,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "pasthistory",
+   "column": "pasthistorynotetype",
+   "tier": "A",
+   "distinct": 6,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "pasthistory",
+   "column": "pasthistorypath",
+   "tier": "A",
+   "distinct": 190,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "pasthistory",
+   "column": "pasthistoryvalue",
+   "tier": "A",
+   "distinct": 174,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "pasthistory",
+   "column": "pasthistoryvaluetext",
+   "tier": "A",
+   "distinct": 174,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "gender",
+   "tier": "A",
+   "distinct": 3,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "age",
+   "tier": "A",
+   "distinct": 77,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "ethnicity",
+   "tier": "A",
+   "distinct": 7,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "apacheadmissiondx",
+   "tier": "A",
+   "distinct": 237,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "hospitaladmittime24",
+   "tier": "A",
+   "distinct": 1339,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "hospitaladmitsource",
+   "tier": "A",
+   "distinct": 14,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "hospitaldischargetime24",
+   "tier": "A",
+   "distinct": 715,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "hospitaldischargelocation",
+   "tier": "A",
+   "distinct": 9,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "hospitaldischargestatus",
+   "tier": "A",
+   "distinct": 3,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "unittype",
+   "tier": "A",
+   "distinct": 8,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "unitadmittime24",
+   "tier": "A",
+   "distinct": 1148,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "unitadmitsource",
+   "tier": "A",
+   "distinct": 14,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "unitstaytype",
+   "tier": "A",
+   "distinct": 4,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "unitdischargetime24",
+   "tier": "A",
+   "distinct": 978,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "unitdischargelocation",
+   "tier": "A",
+   "distinct": 16,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "unitdischargestatus",
+   "tier": "A",
+   "distinct": 3,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "patient",
+   "column": "uniquepid",
+   "tier": null,
+   "distinct": 1841,
+   "reason": "de-facto identifier (73% unique)"
+  },
+  {
+   "table": "physicalexam",
+   "column": "physicalexampath",
+   "tier": "A",
+   "distinct": 310,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "physicalexam",
+   "column": "physicalexamvalue",
+   "tier": "A",
+   "distinct": 215,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "physicalexam",
+   "column": "physicalexamtext",
+   "tier": "A",
+   "distinct": 3460,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycare",
+   "column": "airwaytype",
+   "tier": "A",
+   "distinct": 5,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycare",
+   "column": "airwaysize",
+   "tier": "A",
+   "distinct": 5,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycare",
+   "column": "airwayposition",
+   "tier": "A",
+   "distinct": 26,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycare",
+   "column": "apneaparams",
+   "tier": "A",
+   "distinct": 5,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycare",
+   "column": "setapneainterval",
+   "tier": "A",
+   "distinct": 3,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycare",
+   "column": "setapneatv",
+   "tier": "A",
+   "distinct": 15,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycare",
+   "column": "setapneaippeephigh",
+   "tier": "A",
+   "distinct": 3,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycare",
+   "column": "setapnearr",
+   "tier": "A",
+   "distinct": 10,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycare",
+   "column": "setapneapeakflow",
+   "tier": "A",
+   "distinct": 11,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycare",
+   "column": "setapneainsptime",
+   "tier": null,
+   "distinct": 3,
+   "reason": "values too short (1.5 chars)"
+  },
+  {
+   "table": "respiratorycare",
+   "column": "setapneaie",
+   "tier": null,
+   "distinct": 1,
+   "reason": "constant or empty"
+  },
+  {
+   "table": "respiratorycare",
+   "column": "setapneafio2",
+   "tier": "A",
+   "distinct": 6,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycharting",
+   "column": "respcharttypecat",
+   "tier": "A",
+   "distinct": 3,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycharting",
+   "column": "respchartvaluelabel",
+   "tier": "A",
+   "distinct": 172,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "respiratorycharting",
+   "column": "respchartvalue",
+   "tier": "A",
+   "distinct": 2662,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "treatment",
+   "column": "treatmentstring",
+   "tier": "A",
+   "distinct": 1199,
+   "reason": "bounded vocabulary"
+  },
+  {
+   "table": "treatment",
+   "column": "activeupondischarge",
+   "tier": "A",
+   "distinct": 2,
+   "reason": "bounded vocabulary"
+  }
+ ]
+}
